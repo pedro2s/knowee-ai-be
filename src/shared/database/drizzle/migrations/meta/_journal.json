@@ -1,0 +1,13 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1766005734770,
+      "tag": "0000_conscious_starbolt",
+      "breakpoints": true
+    }
+  ]
+}
