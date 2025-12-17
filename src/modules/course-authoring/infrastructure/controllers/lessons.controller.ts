@@ -7,7 +7,8 @@ export class LessonsController {
 
 	@Post(':id/video')
 	async geneateLessonVideo(@Param('id') lessonId: string, @Body() body) {
-		this.generateAudio.execute({ // Updated method call
+		this.generateAudio.execute({
+			// Updated method call
 			lessonId,
 			imageProvider: body.imageProvider,
 			audioProvider: body.audioProvider,
