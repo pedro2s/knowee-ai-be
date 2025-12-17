@@ -3,7 +3,7 @@ import { eq } from 'drizzle-orm';
 import { DrizzleService } from 'src/shared/database/drizzle/drizzle.service';
 import { Lesson } from 'src/modules/course-authoring/domain/entities/lesson.entity';
 import { LessonRepositoryPort } from 'src/modules/course-authoring/domain/ports/lesson-repository.port';
-import { lessons } from '../../../../../shared/database/drizzle/schema';
+import { lessons } from 'src/shared/database/drizzle/schema';
 
 type LessonSchema = typeof lessons.$inferSelect;
 
@@ -22,8 +22,8 @@ export class DrizzleLessonRepository implements LessonRepositoryPort {
 			data.assets,
 			data.orderIndex,
 			data.duration,
-			data.createdAt,
-			data.updatedAt,
+			new Date(data.createdAt),
+			new Date(data.updatedAt),
 		);
 
 		return lesson;
@@ -80,7 +80,7 @@ export class DrizzleLessonRepository implements LessonRepositoryPort {
 
 		const [updatedLesson] = await this.drizzle.db
 			.update(lessons)
-			.set({ ...persistenceData, updatedAt: new Date() })
+			.set({ ...persistenceData, updatedAt: new Date().toISOString() })
 			.where(eq(lessons.id, id))
 			.returning();
 
