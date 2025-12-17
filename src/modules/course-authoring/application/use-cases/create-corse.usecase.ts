@@ -1,15 +1,17 @@
 import { Inject, Injectable } from '@nestjs/common';
-import type { CourseRepositoryPort } from '../../domain/ports/course-repository.port';
+import {
+	COURSE_REPOSITORY,
+	type CourseRepositoryPort,
+} from '../../domain/ports/course-repository.port';
 import { CreateCouseInput } from '../../domain/entities/course.entity';
 import { ProviderRegistry } from 'src/modules/ai/infrasctructure/providers/provider.registry';
-import { DrizzleCourseRepository } from '../../infrastructure/persistence/drizzle/repositories/drizzle-course.repository';
 
 @Injectable()
 export class CreateCourseUseCase {
 	constructor(
+		@Inject(COURSE_REPOSITORY)
+		private readonly courseRepository: CourseRepositoryPort,
 		private readonly providerRegistry: ProviderRegistry,
-		@Inject(DrizzleCourseRepository)
-		private readonly repo: CourseRepositoryPort,
 	) {}
 
 	async execute(input: CreateCouseInput) {
@@ -17,6 +19,6 @@ export class CreateCourseUseCase {
 			input.provider || 'openai',
 		);
 		const generated = await courseGen.generate(input);
-		return this.repo.saveCourseTree(generated, input.userId);
+		return this.courseRepository.saveCourseTree(generated, input.userId);
 	}
 }

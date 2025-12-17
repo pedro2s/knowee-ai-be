@@ -1,8 +1,11 @@
 import { Lesson } from '../entities/lesson.entity';
-import { ScriptSection } from '../entities/script-section.entity';
+
+export const LESSON_REPOSITORY = 'LessonRepository';
 
 export interface LessonRepositoryPort {
-  save(lesson: Lesson): Promise<Lesson>;
-  getScriptSections(lessonId: string): Promise<ScriptSection[]>;
-  // Add other lesson-related methods as needed
+	create(lesson: Lesson): Promise<Lesson>;
+	update(id: string, lesson: Partial<Lesson>): Promise<Lesson | null>;
+	findById(id: string): Promise<Lesson | null>;
+	findAllByModuleId(moduleId: string): Promise<Lesson[]>;
+	delete(id: string): Promise<void>;
 }

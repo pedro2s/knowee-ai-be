@@ -1,14 +1,16 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { ProviderRegistry } from 'src/modules/ai/infrasctructure/providers/provider.registry';
-import type { LessonRepositoryPort } from '../../domain/ports/lesson-repository.port';
+import {
+	LESSON_REPOSITORY,
+	type LessonRepositoryPort,
+} from '../../domain/ports/lesson-repository.port';
 import { MediaService } from 'src/shared/media/media.service';
-import { DrizzleLessonRepository } from '../../infrastructure/persistence/drizzle/repositories/drizzle-lesson.repository';
 
 @Injectable()
 export class GenerateLessonAudioUseCase {
 	// Renamed class
 	constructor(
-		@Inject(DrizzleLessonRepository)
+		@Inject(LESSON_REPOSITORY)
 		private readonly lessonRepository: LessonRepositoryPort,
 		private readonly registry: ProviderRegistry,
 		private readonly mediaService: MediaService,
@@ -19,11 +21,12 @@ export class GenerateLessonAudioUseCase {
 		imageProvider: string;
 		audioProvider: string;
 	}) {
-		const sections = await this.lessonRepository.getScriptSections(
-			input.lessonId,
-		);
+		const lesson = await this.lessonRepository.findById(input.lessonId);
+		if (!lesson) throw new Error('Aula não encontrada');
 
 		const audioGen = this.registry.getAudioStrategy(input.audioProvider);
+
+		const sections = lesson.content.scriptSection;
 
 		for (const section of sections) {
 			const audio = await audioGen.generate({
