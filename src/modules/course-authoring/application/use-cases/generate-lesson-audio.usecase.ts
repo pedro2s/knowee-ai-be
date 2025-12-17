@@ -1,14 +1,17 @@
-import { Injectable } from '@nestjs/common';
-import { AudioProviderRegistry } from 'src/modules/ai/infrasctructure/providers/audio-provider.registry';
+import { Inject, Injectable } from '@nestjs/common';
+import { ProviderRegistry } from 'src/modules/ai/infrasctructure/providers/provider.registry';
 import type { LessonRepositoryPort } from '../../domain/ports/lesson-repository.port';
 import { MediaService } from 'src/shared/media/media.service';
+import { DrizzleLessonRepository } from '../../infrastructure/persistence/drizzle/repositories/drizzle-lesson.repository';
 
 @Injectable()
-export class GenerateLessonAudioUseCase { // Renamed class
+export class GenerateLessonAudioUseCase {
+	// Renamed class
 	constructor(
-		private readonly scripts: LessonRepositoryPort,
-		private readonly registry: AudioProviderRegistry,
-		private readonly media: MediaService,
+		@Inject(DrizzleLessonRepository)
+		private readonly lessonRepository: LessonRepositoryPort,
+		private readonly registry: ProviderRegistry,
+		private readonly mediaService: MediaService,
 	) {}
 
 	async execute(input: {
@@ -16,9 +19,11 @@ export class GenerateLessonAudioUseCase { // Renamed class
 		imageProvider: string;
 		audioProvider: string;
 	}) {
-		const sections = await this.scripts.getScriptSections(input.lessonId);
+		const sections = await this.lessonRepository.getScriptSections(
+			input.lessonId,
+		);
 
-		const audioGen = this.registry.getProvider(input.audioProvider);
+		const audioGen = this.registry.getAudioStrategy(input.audioProvider);
 
 		for (const section of sections) {
 			const audio = await audioGen.generate({

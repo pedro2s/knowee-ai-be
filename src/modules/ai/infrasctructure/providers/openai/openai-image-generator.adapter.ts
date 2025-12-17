@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import OpenAI from 'openai';
-import { OPENAI_CLIENT } from 'src/modules/ai/ai.module';
+import { OPENAI_CLIENT } from 'src/modules/ai/ai.constants';
 import { ImageGeneratorPort } from 'src/modules/course-authoring/domain/ports/image-generator.port';
 
 @Injectable()

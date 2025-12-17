@@ -1,5 +1,5 @@
 import { CreateCouseInput, GeneratedCourse } from '../entities/course.entity';
 
-export interface CourseAIGeneratorPort {
+export interface CourseGeneratorPort {
 	generate(input: CreateCouseInput): Promise<GeneratedCourse>;
 }

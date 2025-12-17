@@ -5,14 +5,13 @@ import { CourseAuthoringModule } from './modules/course-authoring/course-authori
 import { DatabaseModule } from './shared/database/database.module';
 
 @Module({
-  imports: [
-    ConfigModule.forRoot({
-      isGlobal: true,
-      envFilePath: '.env',
-    }),
-    DatabaseModule,
-    AIModule,
-    CourseAuthoringModule,
-  ],
+	imports: [
+		ConfigModule.forRoot({
+			isGlobal: true,
+		}),
+		DatabaseModule,
+		AIModule,
+		CourseAuthoringModule,
+	],
 })
 export class AppModule {}
