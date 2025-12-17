@@ -1,4 +1,3 @@
-export * from './auth';
 export * from './courses';
 export * from './modules';
 export * from './lessons';
@@ -11,4 +10,5 @@ export * from './qa-history';
 export * from './subscribers';
 export * from './subscription-tier';
 export * from './token-usage';
+export * from './pgmigrations';
 export * from './relations';
