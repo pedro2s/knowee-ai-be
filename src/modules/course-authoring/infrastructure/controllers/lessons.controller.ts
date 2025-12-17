@@ -1,5 +1,5 @@
 import { Body, Controller, Param, Post } from '@nestjs/common';
-import { GeneratorLessonVideoUseCase } from 'src/course-authoring/application/use-cases/generate-lesson-video.usecase';
+import { GeneratorLessonVideoUseCase } from '../../application/use-cases/generate-lesson-audio.usecase';
 
 @Controller('lessons')
 export class LessonsController {

@@ -1,5 +1,5 @@
 import { Body, Controller, Post, Req } from '@nestjs/common';
-import { CreateCourseUseCase } from 'src/course-authoring/application/use-cases/create-corse.usecase';
+import { CreateCourseUseCase } from '../../application/use-cases/create-corse.usecase';
 
 @Controller('courses')
 export class CoursesController {

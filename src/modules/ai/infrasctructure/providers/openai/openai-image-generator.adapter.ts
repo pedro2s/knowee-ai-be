@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { ImageGeneratorPort } from 'src/modules/ai/domain/ports/image-generator.port';
+import { ImageGeneratorPort } from 'src/modules/course-authoring/domain/ports/image-generator.port';
 
 @Injectable()
 export class OpenAIImageGeneratorAdapter implements ImageGeneratorPort {

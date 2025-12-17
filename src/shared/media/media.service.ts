@@ -1,6 +1,122 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
+import { spawn } from 'child_process';
+import ffmpegPath from 'ffmpeg-static';
 
 @Injectable()
 export class MediaService {
-	constructor() {}
+	private readonly logger = new Logger(MediaService.name);
+
+	private runFFmpeg(args: string[]): Promise<void> {
+		return new Promise((resolve, reject) => {
+			const ffmpeg = spawn(ffmpegPath!, args);
+
+			ffmpeg.stderr.on('data', (data) => {
+				this.logger.verbose(`FFmpeg Error: ${data}`);
+			});
+			ffmpeg.on('error', reject);
+			ffmpeg.on('close', (code) => {
+				if (code === 0) {
+					resolve();
+				} else {
+					reject(
+						new Error(`FFmpeg process exited with code ${code}`),
+					);
+				}
+			});
+		});
+	}
+
+	mergeAudios(files: string[], output: string) {
+		return this.runFFmpeg([
+			'-y',
+			...files.flatMap((f) => ['-i', f]),
+			'-filter_complex',
+			`concat=n=${files.length}:v=0:a=1`,
+			output,
+		]);
+	}
+
+	addBackgroundMusic(
+		voice: string,
+		music: string,
+		output: string,
+		vol = 0.15,
+	) {
+		return this.runFFmpeg([
+			'-y',
+			'-i',
+			voice,
+			'-i',
+			music,
+			'-filter_complex',
+			`[1:a]volume=${vol}[bg];[0:a][bg]amix=inputs=2`,
+			output,
+		]);
+	}
+
+	cutMedia(input: string, start: string, duration: string, output: string) {
+		return this.runFFmpeg([
+			'-y',
+			'-i',
+			input,
+			'-ss',
+			start,
+			'-t',
+			duration,
+			output,
+		]);
+	}
+
+	imageToVideo(image: string, audio: string, output: string) {
+		return this.runFFmpeg([
+			'-y',
+			'-loop',
+			'1',
+			'-i',
+			image,
+			'-i',
+			audio,
+			'-c:v',
+			'libx264',
+			'-c:a',
+			'aac',
+			'-shortest',
+			'-pix_fmt',
+			'yuv420p',
+			output,
+		]);
+	}
+
+	concatVideos(listFile: string, output: string) {
+		return this.runFFmpeg([
+			'-y',
+			'-f',
+			'concat',
+			'-safe',
+			'0',
+			'-i',
+			listFile,
+			'-c',
+			'copy',
+			output,
+		]);
+	}
+
+	syncVideoWithAudio(video: string, audio: string, output: string) {
+		return this.runFFmpeg([
+			'-y',
+			'-i',
+			video,
+			'-i',
+			audio,
+			'-map',
+			'0:v',
+			'-map',
+			'1:a',
+			'-c:v',
+			'copy',
+			'-shortest',
+			output,
+		]);
+	}
 }

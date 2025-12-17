@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { ScriptGeneratorPort } from 'src/modules/ai/domain/ports/script-generator.port';
+import { ScriptGeneratorPort } from 'src/modules/course-authoring/domain/ports/script-generator.port';
 
 @Injectable()
 export class OpenAIScriptGeneratorAdapter implements ScriptGeneratorPort {

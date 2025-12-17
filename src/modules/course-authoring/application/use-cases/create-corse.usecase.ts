@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { CourseAIGeneratorPort } from 'src/course-authoring/domain/course/ports/course-ai-generator.port';
-import { CourseRepositoryPort } from 'src/course-authoring/domain/course/ports/course-repository.port';
+import { CourseAIGeneratorPort } from '../../domain/ports/course-ai-generator.port';
+import { CourseRepositoryPort } from '../../domain/ports/course-repository.port';
 
 @Injectable()
 export class CreateCourseUseCase {

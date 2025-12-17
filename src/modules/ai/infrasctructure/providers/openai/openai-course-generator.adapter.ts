@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { CourseAIGeneratorPort } from 'src/course-authoring/domain/course/ports/course-ai-generator.port';
+import { CourseAIGeneratorPort } from 'src/modules/course-authoring/domain/ports/course-ai-generator.port';
 
 @Injectable()
 export class OpenAICourseGeneratorAdapter implements CourseAIGeneratorPort {

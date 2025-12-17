@@ -1,5 +1,5 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
-import { AudioGeneratorPort } from '../../domain/ports/audio-generator.port';
+import { AudioGeneratorPort } from '../../../course-authoring/domain/ports/audio-generator.port';
 import { OpenAIAudioGeneratorAdapter } from './openai/openai-audio-generator.adapter';
 
 @Injectable()

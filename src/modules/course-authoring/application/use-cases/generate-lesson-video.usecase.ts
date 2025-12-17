@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import { ProviderRegistry } from 'src/shared/ai/providers/provider.registry';
+import { AudioProviderRegistry } from 'src/modules/ai/infrasctructure/providers/audio-provider.registry';
 
 @Injectable()
 export class GeneratorLessonVideoUseCase {
 	constructor(
 		private readonly scripts: ScriptRepositoryPort,
-		private readonly registry: ProviderRegistry,
+		private readonly registry: AudioProviderRegistry,
 		private readonly media: MediaService,
 	) {}
 
@@ -17,7 +17,7 @@ export class GeneratorLessonVideoUseCase {
 		const sections = await this.scripts.getScriptSections(input.lessonId);
 
 		const imageGen = this.registry.getImage(input.imageProvider);
-		const audioGen = this.registry.getAudio(input.audioProvider);
+		const audioGen = this.registry.getProvider(input.audioProvider);
 
 		for (const section of sections) {
 			const image = await imageGen.generate({
