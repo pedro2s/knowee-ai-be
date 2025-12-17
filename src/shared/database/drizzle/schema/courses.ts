@@ -1,28 +1,67 @@
 import {
 	pgTable,
+	pgPolicy,
 	uuid,
-	varchar,
 	text,
-	jsonb,
+	foreignKey,
 	timestamp,
+	jsonb,
 } from 'drizzle-orm/pg-core';
+import { sql } from 'drizzle-orm';
 import { users } from './auth';
 
-export const courses = pgTable('courses', {
-	id: uuid('id').defaultRandom().primaryKey(),
-	userId: uuid('user_id')
-		.notNull()
-		.references(() => users.id, {
-			onDelete: 'cascade',
+export const courses = pgTable(
+	'courses',
+	{
+		id: uuid().defaultRandom().primaryKey().notNull(),
+		userId: uuid('user_id').notNull(),
+		title: text().notNull(),
+		description: text(),
+		category: text(),
+		level: text(),
+		duration: text(),
+		targetAudience: text('target_audience'),
+		objectives: text(),
+		files: jsonb().default([]),
+		createdAt: timestamp('created_at', {
+			withTimezone: true,
+			mode: 'string',
+		})
+			.defaultNow()
+			.notNull(),
+		updatedAt: timestamp('updated_at', {
+			withTimezone: true,
+			mode: 'string',
+		})
+			.defaultNow()
+			.notNull(),
+	},
+	(table) => [
+		foreignKey({
+			columns: [table.userId],
+			foreignColumns: [users.id],
+			name: 'courses_user_id_fkey',
 		}),
-	title: varchar('title', { length: 256 }).notNull(),
-	description: text('description'),
-	category: varchar('category', { length: 30 }),
-	level: varchar('level', { length: 20 }),
-	duration: varchar('duration', { length: 20 }),
-	targetAudience: text('target_audience'),
-	objectives: text('objectives'),
-	files: jsonb().default('[]'),
-	createdAt: timestamp('created_at').defaultNow().notNull(),
-	updatedAt: timestamp('updated_at').defaultNow().notNull(),
-});
+		pgPolicy('Users can view their own courses', {
+			as: 'permissive',
+			for: 'select',
+			to: ['public'],
+			using: sql`(auth.uid() = user_id)`,
+		}),
+		pgPolicy('Users can create their own courses', {
+			as: 'permissive',
+			for: 'insert',
+			to: ['public'],
+		}),
+		pgPolicy('Users can update their own courses', {
+			as: 'permissive',
+			for: 'update',
+			to: ['public'],
+		}),
+		pgPolicy('Users can delete their own courses', {
+			as: 'permissive',
+			for: 'delete',
+			to: ['public'],
+		}),
+	],
+);
