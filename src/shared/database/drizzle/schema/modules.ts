@@ -16,4 +16,8 @@ export const modules = pgTable('modules', {
 			onDelete: 'cascade',
 		}),
 	title: varchar('title', { length: 256 }).notNull(),
+	description: text('description'),
+	orderIndex: integer('order_index').notNull(),
+	createdAt: timestamp('created_at').defaultNow().notNull(),
+	updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
