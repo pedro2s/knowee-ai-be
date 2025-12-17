@@ -1,8 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { AudioProviderRegistry } from 'src/modules/ai/infrasctructure/providers/audio-provider.registry';
+import type { LessonRepositoryPort } from '../../domain/ports/lesson-repository.port';
+import { MediaService } from 'src/shared/media/media.service';
 
 @Injectable()
-export class GeneratorLessonVideoUseCase {
+export class GenerateLessonAudioUseCase { // Renamed class
 	constructor(
 		private readonly scripts: LessonRepositoryPort,
 		private readonly registry: AudioProviderRegistry,

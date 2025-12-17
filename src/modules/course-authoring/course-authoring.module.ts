@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
-import { GeneratorLessonVideoUseCase } from './application/use-cases/generate-lesson-audio.usecase';
+import { GenerateLessonAudioUseCase } from './application/use-cases/generate-lesson-audio.usecase';
 
 @Module({
-	providers: [GeneratorLessonVideoUseCase],
+	providers: [GenerateLessonAudioUseCase],
 })
 export class CourseAuthoringModule {}

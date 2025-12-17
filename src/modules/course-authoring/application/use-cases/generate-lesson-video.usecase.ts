@@ -1,5 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { AudioProviderRegistry } from 'src/modules/ai/infrasctructure/providers/audio-provider.registry';
+import { MediaService } from 'src/shared/media/media.service';
+import type { ScriptRepositoryPort } from '../../domain/ports/script-repository.port';
 
 @Injectable()
 export class GeneratorLessonVideoUseCase {
