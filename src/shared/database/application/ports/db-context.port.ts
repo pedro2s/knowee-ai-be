@@ -3,6 +3,8 @@ export interface AuthContext {
 	role: 'authenticated' | 'anon' | 'service_role';
 }
 
+export const DB_CONTEXT = 'DbContext';
+
 export interface DbContext {
 	runAsUser<T>(
 		auth: AuthContext,

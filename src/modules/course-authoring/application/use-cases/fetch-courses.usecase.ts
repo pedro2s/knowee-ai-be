@@ -13,6 +13,7 @@ export class FetchCoursesUseCase {
 	) {}
 
 	async execute(userId: string): Promise<Course[]> {
+		console.log('userId:', userId);
 		const courses = await this.courseRepository.findAllByUserId(userId);
 		return courses;
 	}
