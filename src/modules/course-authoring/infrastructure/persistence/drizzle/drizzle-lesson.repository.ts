@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { eq } from 'drizzle-orm';
-import { DrizzleService } from 'src/shared/database/drizzle/drizzle.service';
+import { DrizzleService } from 'src/shared/database/infrastructure/drizzle/drizzle.service';
 import { Lesson } from 'src/modules/course-authoring/domain/entities/lesson.entity';
 import { LessonRepositoryPort } from 'src/modules/course-authoring/domain/ports/lesson-repository.port';
-import { lessons } from 'src/shared/database/drizzle/schema';
+import { lessons } from 'src/shared/database/infrastructure/drizzle/schema';
 
 type LessonSchema = typeof lessons.$inferSelect;
 

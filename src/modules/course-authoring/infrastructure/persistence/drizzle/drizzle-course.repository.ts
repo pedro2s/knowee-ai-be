@@ -5,8 +5,12 @@ import {
 	GeneratedCourse,
 } from 'src/modules/course-authoring/domain/entities/course.entity';
 import { CourseRepositoryPort } from 'src/modules/course-authoring/domain/ports/course-repository.port';
-import { DrizzleService } from 'src/shared/database/drizzle/drizzle.service';
-import { courses, lessons, modules } from 'src/shared/database/drizzle/schema';
+import { DrizzleService } from 'src/shared/database/infrastructure/drizzle/drizzle.service';
+import {
+	courses,
+	lessons,
+	modules,
+} from 'src/shared/database/infrastructure/drizzle/schema';
 import { eq } from 'drizzle-orm';
 import { v4 as uuidv4 } from 'uuid';
 

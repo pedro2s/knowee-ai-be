@@ -8,12 +8,17 @@ import { MediaModule } from 'src/shared/media/media.module';
 import { LESSON_REPOSITORY } from './domain/ports/lesson-repository.port';
 import { COURSE_REPOSITORY } from './domain/ports/course-repository.port';
 import { DatabaseModule } from 'src/shared/database/database.module';
+import { CoursesController } from './infrastructure/controllers/courses.controller';
+import { LessonsController } from './infrastructure/controllers/lessons.controller';
+import { FetchCoursesUseCase } from './application/use-cases/fetch-courses.usecase';
 
 @Module({
+	controllers: [CoursesController, LessonsController],
 	imports: [DatabaseModule, AIModule, MediaModule],
 	providers: [
 		{ provide: COURSE_REPOSITORY, useClass: DrizzleCourseRepository },
 		{ provide: LESSON_REPOSITORY, useClass: DrizzleLessonRepository },
+		FetchCoursesUseCase,
 		CreateCourseUseCase,
 		GenerateLessonAudioUseCase,
 		GenerateLessonAudioUseCase,
