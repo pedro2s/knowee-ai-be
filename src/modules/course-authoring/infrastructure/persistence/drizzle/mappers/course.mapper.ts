@@ -1,13 +1,19 @@
 import { Course } from 'src/modules/course-authoring/domain/entities/course.entity';
+import { CourseTitle } from 'src/modules/course-authoring/domain/value-objects/course-title.vo';
 import { SelectCourse } from 'src/shared/database/infrastructure/drizzle/schema';
 
 export class CourseMapper {
-	/** Banco de Dados -> Domínio */
+	/** Banco de Dados -> Domínio (Entity + VOs) */
 	static toDomain(raw: SelectCourse): Course {
+		// ATENÇÃO: Ao restaurar do banco, assumimos que o dado já é válidado.
+		// Usamos o create() do VO para garantir que a integridade se mantém.
+		// Se o banco tiver dados sujos (legado), isso pode lançar erro.
+		const titleVO = CourseTitle.create(raw.title);
+
 		return Course.restore({
 			id: raw.id,
 			userId: raw.userId,
-			title: raw.title,
+			title: titleVO,
 			description: raw.description,
 			category: raw.category,
 			level: raw.level,
@@ -22,6 +28,7 @@ export class CourseMapper {
 
 	/** Domínio -> Banco de Dados */
 	static toPersistence(entity: Course): SelectCourse {
+		// Usamos o método toPrimitives() que criamos na entidade para facilitar
 		const props = entity.toPrimitives();
 
 		return {

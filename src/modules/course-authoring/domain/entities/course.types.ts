@@ -1,8 +1,10 @@
+import { CourseTitle } from '../value-objects/course-title.vo';
+
 /** O que a entidade PRECISA para existir */
 export interface CourseProps {
 	id: string;
 	userId: string;
-	title: string;
+	title: CourseTitle;
 	description: string | null;
 	category: string | null;
 	level: string | null;

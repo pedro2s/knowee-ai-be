@@ -1,5 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 import { CourseProps, CreateCourseInput } from './course.types';
+import { CourseTitle } from '../value-objects/course-title.vo';
 
 export class Course {
 	/** O estado é privado! O Drizzle não toca aqui */
@@ -7,13 +8,12 @@ export class Course {
 
 	/** FACTORY METHOD: Para criar novos cursos na aplicação (Regra de Negócio) */
 	static create(input: CreateCourseInput): Course {
-		// if (input.title.length < 5) {
-		// 	throw new Error('O título do curso deve ter pelo menos 5 caracteres.')
-		// }
+		// Cria o VO. Se for inválido, estoura o erro aqui mesmo.
+		const titleVO = CourseTitle.create(input.title);
 
 		return new Course({
 			id: uuidv4(),
-			title: input.title,
+			title: titleVO,
 			description: input.description || null,
 			category: input.category || null,
 			level: input.level || null,
@@ -44,8 +44,15 @@ export class Course {
 		return this.props.userId;
 	}
 
+	// Getters podem expor o VO ou o valor primitivo, depende da sua estratégia.
+	// Geralmente expor o valor primitivo facilita para a camada de View/DTO
 	get title(): string {
-		return this.props.title;
+		return this.props.title.value;
+	}
+
+	// Se precisar acessar métodos do VO (ex: slug)
+	get slug(): string {
+		return this.props.title.toSlug();
 	}
 
 	get description(): string | null {
@@ -88,7 +95,7 @@ export class Course {
 	 * O SEGREDO DO MAPPER: Método para extrair dados brutos.
 	 * Retorna uma cópia do estado para não quebrar o encapsulamento
 	 */
-	public toPrimitives(): CourseProps {
-		return { ...this.props };
+	public toPrimitives() {
+		return { ...this.props, title: this.props.title.value };
 	}
 }
