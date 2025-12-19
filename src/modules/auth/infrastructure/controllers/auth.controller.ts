@@ -1,8 +1,19 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Post, Get, UseGuards } from '@nestjs/common';
 import { SignInUseCase } from '../../application/use-cases/sign-in.usecase';
 import { SignUpUseCase } from '../../application/use-cases/sign-up.usecase';
 import { SignInDto } from '../../application/dtos/sign-in.dto';
 import { SignUpDto } from '../../application/dtos/sign-up.dto';
+import { CurrentUser } from 'src/shared/infrastructure/decorators'; // Importar o novo decorator
+import { SupabaseAuthGuard } from '../guards/supabase-auth.guard'; // Importar o guard
+
+// Definir uma interface para o payload do usuário que será anexado à requisição.
+// Esta interface deve ser movida para um local compartilhado (ex: shared/types ou auth/domain/types)
+// e deve refletir a estrutura real do seu objeto de usuário após a validação do token.
+interface UserPayload {
+	id: string;
+	email: string;
+	// Adicione outras propriedades do usuário conforme necessário
+}
 
 @Controller('auth')
 export class AuthController {
@@ -19,5 +30,14 @@ export class AuthController {
 	@Post('sign-up')
 	async signUp(@Body() dto: SignUpDto) {
 		return this.signUpUseCase.execute(dto);
+	}
+
+	@Get('profile')
+	@UseGuards(SupabaseAuthGuard)
+	async getProfile(@CurrentUser() user: UserPayload) {
+		// O objeto 'user' agora contém as informações do usuário logado,
+		// tipadas de acordo com a interface UserPayload.
+		// Você pode retornar este objeto ou processá-lo conforme necessário.
+		return user;
 	}
 }
