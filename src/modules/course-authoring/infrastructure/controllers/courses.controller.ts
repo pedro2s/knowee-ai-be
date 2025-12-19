@@ -3,18 +3,13 @@ import { CreateCourseUseCase } from '../../application/use-cases/create-corse.us
 import { SupabaseAuthGuard } from 'src/modules/auth/infrastructure/guards/supabase-auth.guard';
 import { Request } from 'express';
 import { FetchCoursesUseCase } from '../../application/use-cases/fetch-courses.usecase';
+import { CourseResponseDto } from '../../application/dtos/course.response.dto';
+import { CreateCourseDto } from '../../application/dtos/create-course.dto';
 
 interface RequestWithUser extends Request {
 	user: {
 		id: string;
 		email: string;
-	};
-}
-
-interface CreateCourseBody {
-	title: string;
-	ai?: {
-		model?: string;
 	};
 }
 
@@ -32,11 +27,18 @@ export class CoursesController {
 	}
 
 	@Post()
-	async create(@Req() req: RequestWithUser, @Body() body: CreateCourseBody) {
-		return this.createCourse.execute({
+	async create(
+		@Req() req: RequestWithUser,
+		@Body() body: CreateCourseDto,
+	): Promise<CourseResponseDto> {
+		// 1. Chama o Caso de Uso passando os dados validos
+		const courseEntity = await this.createCourse.execute({
 			...(body as any),
 			userId: req.user.id,
 			model: body.ai?.model,
 		});
+
+		// 2. Converte a Entidade de Domínio para o Contrato da API (Response DTO)
+		return CourseResponseDto.fromDomain(courseEntity);
 	}
 }

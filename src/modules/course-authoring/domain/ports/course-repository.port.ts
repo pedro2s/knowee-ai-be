@@ -14,5 +14,5 @@ export interface CourseRepositoryPort {
 		auth: AuthContext,
 	): Promise<Course | null>;
 	delete(id: string, auth: AuthContext): Promise<void>;
-	saveCourseTree(course: GeneratedCourse, userId: string): Promise<void>;
+	saveCourseTree(course: GeneratedCourse, userId: string): Promise<Course>;
 }

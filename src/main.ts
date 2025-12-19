@@ -5,7 +5,13 @@ import { ValidationPipe, VersioningType } from '@nestjs/common';
 async function bootstrap() {
 	const app = await NestFactory.create(AppModule);
 	app.enableCors({ origin: '*' });
-	app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
+	app.useGlobalPipes(
+		new ValidationPipe({
+			whitelist: true, // Remove propriedades que não estão no DTO (Segurança!)
+			forbidNonWhitelisted: true, // Retorna erro se enviarem campos extras
+			transform: true, // Transforma o payload em instância da classe DTO
+		}),
+	);
 	app.setGlobalPrefix('api');
 	app.enableVersioning({
 		type: VersioningType.URI,

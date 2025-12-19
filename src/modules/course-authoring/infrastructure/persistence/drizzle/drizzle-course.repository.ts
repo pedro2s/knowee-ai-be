@@ -119,8 +119,8 @@ export class DrizzleCourseRepository implements CourseRepositoryPort {
 	async saveCourseTree(
 		generatedCourse: GeneratedCourse,
 		userId: string,
-	): Promise<void> {
-		await this.dbContext.runAsUser(
+	): Promise<Course> {
+		return this.dbContext.runAsUser(
 			{ userId, role: 'authenticated' },
 			async (db) => {
 				const tx = db as DrizzleDB;
@@ -160,6 +160,8 @@ export class DrizzleCourseRepository implements CourseRepositoryPort {
 				if (lessonsToInsert.length > 0) {
 					await tx.insert(lessons).values(lessonsToInsert);
 				}
+
+				return CourseMapper.toDomain(course);
 			},
 		);
 	}
