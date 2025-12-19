@@ -72,3 +72,6 @@ export const modules = pgTable(
 		}),
 	],
 );
+
+export type SelectModule = typeof modules.$inferSelect;
+export type InsertModule = typeof modules.$inferInsert;

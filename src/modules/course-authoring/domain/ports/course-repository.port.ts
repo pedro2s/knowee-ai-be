@@ -10,7 +10,7 @@ export interface CourseRepositoryPort {
 	findAllByUserId(userId: string): Promise<Course[]>;
 	update(
 		id: string,
-		course: Partial<CreateCourseInput>,
+		values: Partial<CreateCourseInput>,
 		auth: AuthContext,
 	): Promise<Course | null>;
 	delete(id: string, auth: AuthContext): Promise<void>;

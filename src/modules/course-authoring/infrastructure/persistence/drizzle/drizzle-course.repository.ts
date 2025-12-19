@@ -5,11 +5,6 @@ import {
 } from 'src/modules/course-authoring/domain/entities/course.types';
 import { Course } from 'src/modules/course-authoring/domain/entities/course.entity';
 import { CourseRepositoryPort } from 'src/modules/course-authoring/domain/ports/course-repository.port';
-import {
-	courses,
-	lessons,
-	modules,
-} from 'src/shared/database/infrastructure/drizzle/schema';
 import { eq } from 'drizzle-orm';
 import { v4 as uuidv4 } from 'uuid';
 import {
@@ -34,7 +29,7 @@ export class DrizzleCourseRepository implements CourseRepositoryPort {
 		return this.dbContext.runAsUser(auth, async (db) => {
 			const tx = db as DrizzleDB;
 			const [newCourse] = await tx
-				.insert(courses)
+				.insert(schema.courses)
 				.values(data)
 				.returning();
 			return CourseMapper.toDomain(newCourse);
@@ -48,7 +43,7 @@ export class DrizzleCourseRepository implements CourseRepositoryPort {
 		return this.dbContext.runAsUser(auth, async (db) => {
 			const tx = db as DrizzleDB;
 			const [newCourse] = await tx
-				.insert(courses)
+				.insert(schema.courses)
 				.values(data)
 				.onConflictDoUpdate({ target: schema.courses.id, set: data })
 				.returning();
@@ -61,8 +56,8 @@ export class DrizzleCourseRepository implements CourseRepositoryPort {
 			const tx = db as DrizzleDB;
 			const [course] = await tx
 				.select()
-				.from(courses)
-				.where(eq(courses.id, id));
+				.from(schema.courses)
+				.where(eq(schema.courses.id, id));
 			return course ? CourseMapper.toDomain(course) : null;
 		});
 	}
@@ -86,8 +81,8 @@ export class DrizzleCourseRepository implements CourseRepositoryPort {
 
 				const userCourses = await tx
 					.select()
-					.from(courses)
-					.where(eq(courses.userId, userId));
+					.from(schema.courses)
+					.where(eq(schema.courses.userId, userId));
 				return userCourses.map(CourseMapper.toDomain);
 			},
 		);
@@ -95,15 +90,15 @@ export class DrizzleCourseRepository implements CourseRepositoryPort {
 
 	async update(
 		id: string,
-		course: Partial<CreateCourseInput>,
+		values: Partial<CreateCourseInput>,
 		auth: AuthContext,
 	): Promise<Course | null> {
 		return this.dbContext.runAsUser(auth, async (db) => {
 			const tx = db as DrizzleDB;
 			const [updatedCourse] = await tx
-				.update(courses)
-				.set(course)
-				.where(eq(courses.id, id))
+				.update(schema.courses)
+				.set(values)
+				.where(eq(schema.courses.id, id))
 				.returning();
 			return updatedCourse ? CourseMapper.toDomain(updatedCourse) : null;
 		});
@@ -112,7 +107,7 @@ export class DrizzleCourseRepository implements CourseRepositoryPort {
 	async delete(id: string, auth: AuthContext): Promise<void> {
 		await this.dbContext.runAsUser(auth, async (db) => {
 			const tx = db as DrizzleDB;
-			await tx.delete(courses).where(eq(courses.id, id));
+			await tx.delete(schema.courses).where(eq(schema.courses.id, id));
 		});
 	}
 
@@ -125,7 +120,7 @@ export class DrizzleCourseRepository implements CourseRepositoryPort {
 			async (db) => {
 				const tx = db as DrizzleDB;
 				const [course] = await tx
-					.insert(courses)
+					.insert(schema.courses)
 					.values({
 						...generatedCourse.course,
 						userId,
@@ -135,7 +130,7 @@ export class DrizzleCourseRepository implements CourseRepositoryPort {
 				const courseId = course.id;
 
 				const [module] = await tx
-					.insert(modules)
+					.insert(schema.modules)
 					.values({
 						id: uuidv4(),
 						courseId,
@@ -158,7 +153,7 @@ export class DrizzleCourseRepository implements CourseRepositoryPort {
 				);
 
 				if (lessonsToInsert.length > 0) {
-					await tx.insert(lessons).values(lessonsToInsert);
+					await tx.insert(schema.lessons).values(lessonsToInsert);
 				}
 
 				return CourseMapper.toDomain(course);
