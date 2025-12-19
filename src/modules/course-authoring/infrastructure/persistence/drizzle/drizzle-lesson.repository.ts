@@ -1,94 +1,88 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { eq } from 'drizzle-orm';
-import { DrizzleService } from 'src/shared/database/infrastructure/drizzle/drizzle.service';
 import { Lesson } from 'src/modules/course-authoring/domain/entities/lesson.entity';
 import { LessonRepositoryPort } from 'src/modules/course-authoring/domain/ports/lesson-repository.port';
 import { lessons } from 'src/shared/database/infrastructure/drizzle/schema';
+import { CreateLessonInput } from 'src/modules/course-authoring/domain/entities/lesson.types';
+import {
+	AuthContext,
+	DB_CONTEXT,
+	type DbContext,
+} from 'src/shared/database/application/ports/db-context.port';
+import * as schema from 'src/shared/database/infrastructure/drizzle/schema';
+import { NodePgDatabase } from 'drizzle-orm/node-postgres';
+import { LessonMapper } from './mappers/lesson.mapper';
 
-type LessonSchema = typeof lessons.$inferSelect;
+type DrizzleDB = NodePgDatabase<typeof schema>;
 
 @Injectable()
 export class DrizzleLessonRepository implements LessonRepositoryPort {
-	constructor(private readonly drizzle: DrizzleService) {}
+	constructor(@Inject(DB_CONTEXT) private readonly dbContext: DbContext) {}
 
-	private toDomain(data: LessonSchema): Lesson {
-		const lesson = new Lesson(
-			data.id,
-			data.moduleId,
-			data.title,
-			data.description,
-			data.lessonType,
-			data.content,
-			data.assets,
-			data.orderIndex,
-			data.duration,
-			new Date(data.createdAt),
-			new Date(data.updatedAt),
-		);
+	create(lesson: Lesson, auth: AuthContext): Promise<Lesson> {
+		// Domínio -> Mapper -> Schema Drizzle
+		const data = LessonMapper.toPersistence(lesson);
 
-		return lesson;
-	}
+		return this.dbContext.runAsUser(auth, async (db) => {
+			const tx = db as DrizzleDB;
+			const [newLesson] = await tx
+				.insert(schema.lessons)
+				.values(data)
+				.returning();
 
-	private toPersistence(
-		data: Partial<Lesson>,
-	): Omit<typeof lessons.$inferInsert, 'id' | 'createdAt' | 'updatedAt'> {
-		const persistenceData: any = {
-			title: data.title,
-			moduleId: data.moduleId,
-			orderIndex: data.orderIndex,
-			content: JSON.stringify(data.content || {}),
-		};
-
-		return persistenceData;
-	}
-
-	async create(domainLesson: Lesson): Promise<Lesson> {
-		const persistenceData = {
-			...this.toPersistence(domainLesson),
-			id: domainLesson.id,
-		};
-
-		const [newLesson] = await this.drizzle.db
-			.insert(lessons)
-			.values(persistenceData)
-			.returning();
-
-		return this.toDomain(newLesson);
-	}
-
-	async findById(id: string): Promise<Lesson | null> {
-		const lessonData = await this.drizzle.db.query.lessons.findFirst({
-			where: eq(lessons.id, id),
+			// Schema Drizzle -> Mapper -> Domínio
+			return LessonMapper.toDomain(newLesson);
 		});
-
-		if (!lessonData) return null;
-		return this.toDomain(lessonData);
 	}
 
-	async findAllByModuleId(moduleId: string): Promise<Lesson[]> {
-		const result = await this.drizzle.db.query.lessons.findMany({
-			where: eq(lessons.moduleId, moduleId),
+	findById(id: string, auth: AuthContext): Promise<Lesson | null> {
+		return this.dbContext.runAsUser(auth, async (db) => {
+			const tx = db as DrizzleDB;
+			const [lesson] = await tx
+				.select()
+				.from(schema.lessons)
+				.where(eq(schema.lessons.id, id));
+
+			// Schema Drizzle -> Mapper -> Domínio
+			return lesson ? LessonMapper.toDomain(lesson) : null;
 		});
-		return result.map((l) => this.toDomain(l));
 	}
 
-	async update(
+	findAllByModuleId(moduleId: string, auth: AuthContext): Promise<Lesson[]> {
+		return this.dbContext.runAsUser(auth, async (db) => {
+			const tx = db as DrizzleDB;
+			const moduleLessons = await tx
+				.select()
+				.from(schema.lessons)
+				.where(eq(schema.lessons.moduleId, moduleId));
+
+			// Schema Drizzle -> Mapper -> Domínio
+			return moduleLessons.map(LessonMapper.toDomain);
+		});
+	}
+
+	update(
 		id: string,
-		domainLessonPartial: Partial<Lesson>,
+		lesson: Partial<CreateLessonInput>,
+		auth: AuthContext,
 	): Promise<Lesson | null> {
-		const persistenceData = this.toPersistence(domainLessonPartial);
+		return this.dbContext.runAsUser(auth, async (db) => {
+			const tx = db as DrizzleDB;
+			const [updatedLesson] = await tx
+				.update(schema.lessons)
+				.set(lesson)
+				.where(eq(schema.lessons.id, id))
+				.returning();
 
-		const [updatedLesson] = await this.drizzle.db
-			.update(lessons)
-			.set({ ...persistenceData, updatedAt: new Date().toISOString() })
-			.where(eq(lessons.id, id))
-			.returning();
-
-		if (!updatedLesson) return null;
-		return this.toDomain(updatedLesson);
+			// Schema Drizzle -> Mapper -> Domínio
+			return updatedLesson ? LessonMapper.toDomain(updatedLesson) : null;
+		});
 	}
 
-	async delete(id: string): Promise<void> {
-		await this.drizzle.db.delete(lessons).where(eq(lessons.id, id));
+	delete(id: string, auth: AuthContext): Promise<void> {
+		return this.dbContext.runAsUser(auth, async (db) => {
+			const tx = db as DrizzleDB;
+			await tx.delete(schema.lessons).where(eq(schema.lessons.id, id));
+		});
 	}
 }

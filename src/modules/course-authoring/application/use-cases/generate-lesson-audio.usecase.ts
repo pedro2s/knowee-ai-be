@@ -20,13 +20,19 @@ export class GenerateLessonAudioUseCase {
 		lessonId: string;
 		imageProvider: string;
 		audioProvider: string;
+		userId: string;
 	}) {
-		const lesson = await this.lessonRepository.findById(input.lessonId);
+		const lesson = await this.lessonRepository.findById(input.lessonId, {
+			userId: input.userId,
+			role: 'authenticated',
+		});
+
 		if (!lesson) throw new Error('Aula não encontrada');
 
 		const audioGen = this.registry.getAudioStrategy(input.audioProvider);
 
-		const sections = lesson.content.scriptSection;
+		const sections = (lesson.content as { scriptSection: any[] })
+			.scriptSection;
 
 		for (const section of sections) {
 			const audio = await audioGen.generate({

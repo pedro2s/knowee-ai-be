@@ -22,8 +22,8 @@ export class Module {
 
 	/**
 	 * RECONSTITUITION METHOD: Para o Mapper recriar a entidade vinda do Banco.
-	 * Aqui não rodamos validação de criação, pois confiamos no banco.
 	 */
+	// Aqui não rodamos validação de criação, pois confiamos no banco.
 	static restore(props: ModuleProps): Module {
 		return new Module(props);
 	}
@@ -58,7 +58,7 @@ export class Module {
 	}
 
 	/**
-	 * O SECREDO DO MAPPER: Método para extrair dados brutos.
+	 * O SEGREDO DO MAPPER: Método para extrair dados brutos.
 	 * Retorna uma cópia do estado para não quebrar o encapsulamento
 	 */
 	public toPrimitives() {

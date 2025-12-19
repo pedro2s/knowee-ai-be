@@ -96,3 +96,6 @@ export const lessons = pgTable(
 		),
 	],
 );
+
+export type SelectLesson = typeof lessons.$inferSelect;
+export type InsertLesson = typeof lessons.$inferInsert;
