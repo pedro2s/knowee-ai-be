@@ -1,3 +1,5 @@
+import { Lesson } from './lesson.entity';
+
 /** O que a entidade PRECISA para existir */
 export interface ModuleProps {
 	id: string;
@@ -7,6 +9,8 @@ export interface ModuleProps {
 	orderIndex: number;
 	createdAt: Date;
 	updatedAt: Date;
+
+	lessons?: Lesson[];
 }
 
 /** O que é necessário para criar um NOVO módulo (sem ID, datas automáticas, etc) */

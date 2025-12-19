@@ -1,14 +1,34 @@
 import { Course } from 'src/modules/course-authoring/domain/entities/course.entity';
 import { CourseTitle } from 'src/modules/course-authoring/domain/value-objects/course-title.vo';
-import { SelectCourse } from 'src/shared/database/infrastructure/drizzle/schema';
+import {
+	SelectCourse,
+	SelectLesson,
+	SelectModule,
+} from 'src/shared/database/infrastructure/drizzle/schema';
+import { ModuleMapper } from './module.mapper';
+
+// Tipo para o módulo bruto do Drizzle quando inclui lições
+type SelectModuleWithLessons = SelectModule & {
+	lessons?: SelectLesson[];
+};
+
+// Tipo para o curso bruto do Drizzle quando inclui módulos (com suas lições)
+type SelectCourseWithModules = SelectCourse & {
+	modules?: SelectModuleWithLessons[];
+};
 
 export class CourseMapper {
 	/** Banco de Dados -> Domínio (Entity + VOs) */
-	static toDomain(raw: SelectCourse): Course {
+	static toDomain(raw: SelectCourseWithModules): Course {
 		// ATENÇÃO: Ao restaurar do banco, assumimos que o dado já é válidado.
 		// Usamos o create() do VO para garantir que a integridade se mantém.
 		// Se o banco tiver dados sujos (legado), isso pode lançar erro.
 		const titleVO = CourseTitle.create(raw.title);
+
+		// Mapeia os módulos, se existirem, usando o ModuleMapper atualizado
+		const modules = raw.modules
+			? raw.modules.map(ModuleMapper.toDomain)
+			: undefined;
 
 		return Course.restore({
 			id: raw.id,
@@ -23,6 +43,7 @@ export class CourseMapper {
 			files: raw.files,
 			createdAt: new Date(raw.createdAt),
 			updatedAt: new Date(raw.updatedAt),
+			modules, // Passa os módulos mapeados para a entidade de domínio
 		});
 	}
 

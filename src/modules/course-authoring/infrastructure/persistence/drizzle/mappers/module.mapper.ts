@@ -1,10 +1,24 @@
 import { Module } from 'src/modules/course-authoring/domain/entities/module.entity';
-import { SelectModule } from 'src/shared/database/infrastructure/drizzle/schema';
+import {
+	SelectLesson,
+	SelectModule,
+} from 'src/shared/database/infrastructure/drizzle/schema';
+import { LessonMapper } from './lesson.mapper';
+
+// Tipo para o dado bruto do Drizzle quando inclui lições
+type SelectModuleWithLessons = SelectModule & {
+	lessons?: SelectLesson[];
+};
 
 export class ModuleMapper {
 	/** Banco de Dados -> Domínio (Entity + VOs) */
-	static toDomain(raw: SelectModule): Module {
+	static toDomain(raw: SelectModuleWithLessons): Module {
 		// ATENÇÃO: Ao restaurar no banco, assumimos que o dado já é válidado
+
+		// Mapeia as lições, se existirem
+		const lessons = raw.lessons
+			? raw.lessons.map(LessonMapper.toDomain)
+			: undefined;
 
 		return Module.restore({
 			id: raw.id,
@@ -14,6 +28,7 @@ export class ModuleMapper {
 			orderIndex: raw.orderIndex,
 			createdAt: new Date(raw.createdAt),
 			updatedAt: new Date(raw.updatedAt),
+			lessons, // Passa as lições mapeadas para a entidade de domínio
 		});
 	}
 

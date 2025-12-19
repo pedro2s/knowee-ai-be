@@ -54,10 +54,16 @@ export class DrizzleCourseRepository implements CourseRepositoryPort {
 	async findById(id: string, auth: AuthContext): Promise<Course | null> {
 		return this.dbContext.runAsUser(auth, async (db) => {
 			const tx = db as DrizzleDB;
-			const [course] = await tx
-				.select()
-				.from(schema.courses)
-				.where(eq(schema.courses.id, id));
+			const course = await tx.query.courses.findFirst({
+				where: eq(schema.courses.id, id),
+				with: {
+					modules: {
+						with: {
+							lessons: true, // Carrega as lições para cada módulo
+						},
+					},
+				},
+			});
 			return course ? CourseMapper.toDomain(course) : null;
 		});
 	}
@@ -67,22 +73,16 @@ export class DrizzleCourseRepository implements CourseRepositoryPort {
 			{ userId, role: 'authenticated' },
 			async (db) => {
 				const tx = db as DrizzleDB;
-				// const userCourses = await tx.query.courses.findMany({
-				// 	where: eq(courses.userId, userId),
-				// 	with: {
-				// 		modules: {
-				// 			with: {
-				// 				lessons: true,
-				// 			},
-				// 		},
-				// 	},
-				// });
-				// console.log('userCourses:', userCourses);
-
-				const userCourses = await tx
-					.select()
-					.from(schema.courses)
-					.where(eq(schema.courses.userId, userId));
+				const userCourses = await tx.query.courses.findMany({
+					where: eq(schema.courses.userId, userId),
+					with: {
+						modules: {
+							with: {
+								lessons: true,
+							},
+						},
+					},
+				});
 				return userCourses.map(CourseMapper.toDomain);
 			},
 		);

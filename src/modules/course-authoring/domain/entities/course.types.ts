@@ -1,4 +1,5 @@
 import { CourseTitle } from '../value-objects/course-title.vo';
+import { Module } from './module.entity';
 
 /** O que a entidade PRECISA para existir */
 export interface CourseProps {
@@ -14,6 +15,8 @@ export interface CourseProps {
 	files: unknown;
 	createdAt: Date;
 	updatedAt: Date;
+
+	modules?: Module[];
 }
 
 /** O que é necessário para criar um NOVO curso (sem ID, datas automáticas, etc) */
