@@ -1,9 +1,9 @@
 import { Inject, Injectable } from '@nestjs/common';
 import {
-	Course,
-	CreateCouseInput,
+	CreateCourseInput,
 	GeneratedCourse,
-} from 'src/modules/course-authoring/domain/entities/course.entity';
+} from 'src/modules/course-authoring/domain/entities/course.types';
+import { Course } from 'src/modules/course-authoring/domain/entities/course.entity';
 import { CourseRepositoryPort } from 'src/modules/course-authoring/domain/ports/course-repository.port';
 import {
 	courses,
@@ -19,37 +19,40 @@ import {
 } from 'src/shared/database/application/ports/db-context.port';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import * as schema from 'src/shared/database/infrastructure/drizzle/schema';
+import { CourseMapper } from './mappers/course.mapper';
 
-export type SelectCourse = typeof courses.$inferSelect;
 type DrizzleDB = NodePgDatabase<typeof schema>;
 
 @Injectable()
 export class DrizzleCourseRepository implements CourseRepositoryPort {
 	constructor(@Inject(DB_CONTEXT) private readonly dbContext: DbContext) {}
 
-	private toCourse(dbCourse: SelectCourse): Course {
-		return {
-			id: dbCourse.id,
-			title: dbCourse.title,
-			description: dbCourse.description,
-			category: dbCourse.category,
-			level: dbCourse.level,
-			duration: dbCourse.duration,
-			targetAudience: dbCourse.targetAudience,
-			userId: dbCourse.userId,
-			createdAt: new Date(dbCourse.createdAt),
-			updatedAt: new Date(dbCourse.updatedAt),
-		};
-	}
+	async create(course: Course, auth: AuthContext): Promise<Course> {
+		// Domínio -> Mapper -> Schema Drizzle
+		const data = CourseMapper.toPersistence(course);
 
-	async create(course: CreateCouseInput, auth: AuthContext): Promise<Course> {
 		return this.dbContext.runAsUser(auth, async (db) => {
 			const tx = db as DrizzleDB;
 			const [newCourse] = await tx
 				.insert(courses)
-				.values(course)
+				.values(data)
 				.returning();
-			return this.toCourse(newCourse);
+			return CourseMapper.toDomain(newCourse);
+		});
+	}
+
+	async save(course: Course, auth: AuthContext): Promise<Course> {
+		// Domínio -> Mapper -> Schema Drizzle
+		const data = CourseMapper.toPersistence(course);
+
+		return this.dbContext.runAsUser(auth, async (db) => {
+			const tx = db as DrizzleDB;
+			const [newCourse] = await tx
+				.insert(courses)
+				.values(data)
+				.onConflictDoUpdate({ target: schema.courses.id, set: data })
+				.returning();
+			return CourseMapper.toDomain(newCourse);
 		});
 	}
 
@@ -60,7 +63,7 @@ export class DrizzleCourseRepository implements CourseRepositoryPort {
 				.select()
 				.from(courses)
 				.where(eq(courses.id, id));
-			return course ? this.toCourse(course) : null;
+			return course ? CourseMapper.toDomain(course) : null;
 		});
 	}
 
@@ -69,29 +72,30 @@ export class DrizzleCourseRepository implements CourseRepositoryPort {
 			{ userId, role: 'authenticated' },
 			async (db) => {
 				const tx = db as DrizzleDB;
-				const userCourses = await tx.query.courses.findMany({
-					where: eq(courses.userId, userId),
-					with: {
-						modules: {
-							with: {
-								lessons: true,
-							},
-						},
-					},
-				});
-				console.log('userCourses:', userCourses);
-				// const userCourses = await tx
-				// 	.select()
-				// 	.from(courses)
-				// 	.where(eq(courses.userId, userId));
-				return userCourses.map(this.toCourse);
+				// const userCourses = await tx.query.courses.findMany({
+				// 	where: eq(courses.userId, userId),
+				// 	with: {
+				// 		modules: {
+				// 			with: {
+				// 				lessons: true,
+				// 			},
+				// 		},
+				// 	},
+				// });
+				// console.log('userCourses:', userCourses);
+
+				const userCourses = await tx
+					.select()
+					.from(courses)
+					.where(eq(courses.userId, userId));
+				return userCourses.map(CourseMapper.toDomain);
 			},
 		);
 	}
 
 	async update(
 		id: string,
-		course: Partial<CreateCouseInput>,
+		course: Partial<CreateCourseInput>,
 		auth: AuthContext,
 	): Promise<Course | null> {
 		return this.dbContext.runAsUser(auth, async (db) => {
@@ -101,7 +105,7 @@ export class DrizzleCourseRepository implements CourseRepositoryPort {
 				.set(course)
 				.where(eq(courses.id, id))
 				.returning();
-			return updatedCourse ? this.toCourse(updatedCourse) : null;
+			return updatedCourse ? CourseMapper.toDomain(updatedCourse) : null;
 		});
 	}
 

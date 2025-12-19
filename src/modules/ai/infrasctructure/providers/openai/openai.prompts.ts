@@ -1,4 +1,4 @@
-import { CreateCouseInput } from 'src/modules/course-authoring/domain/entities/course.entity';
+import { CreateCourseInput } from 'src/modules/course-authoring/domain/entities/course.types';
 import OpenAI from 'openai';
 
 const courseSchema = {
@@ -40,7 +40,7 @@ const courseSchema = {
 };
 
 export function buildCoursePrompt(
-	input: CreateCouseInput,
+	input: CreateCourseInput,
 ): OpenAI.Chat.Completions.ChatCompletionMessageParam[] {
 	return [
 		{

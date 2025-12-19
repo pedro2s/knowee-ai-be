@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { CourseGeneratorPort } from 'src/modules/course-authoring/domain/ports/course-generator.port';
 import {
-	CreateCouseInput,
+	CreateCourseInput,
 	GeneratedCourse,
-} from 'src/modules/course-authoring/domain/entities/course.entity';
+} from 'src/modules/course-authoring/domain/entities/course.types';
 import { buildCoursePrompt, courseStructure } from './openai.prompts';
 import OpenAI from 'openai';
 
@@ -17,7 +17,7 @@ export class OpenAICourseGeneratorAdapter implements CourseGeneratorPort {
 		});
 	}
 
-	async generate(input: CreateCouseInput): Promise<GeneratedCourse> {
+	async generate(input: CreateCourseInput): Promise<GeneratedCourse> {
 		const completion = await this.openai.chat.completions.create({
 			model: input.model ?? 'gpt-4.1',
 			messages: buildCoursePrompt(input),

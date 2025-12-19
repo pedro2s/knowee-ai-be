@@ -28,14 +28,13 @@ export class CoursesController {
 
 	@Get()
 	async findAll(@Req() req: RequestWithUser) {
-		console.log('user:', req.user);
 		return this.fetchCourses.execute(req.user.id);
 	}
 
 	@Post()
 	async create(@Req() req: RequestWithUser, @Body() body: CreateCourseBody) {
 		return this.createCourse.execute({
-			...body,
+			...(body as any),
 			userId: req.user.id,
 			model: body.ai?.model,
 		});

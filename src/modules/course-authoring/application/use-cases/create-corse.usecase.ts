@@ -3,7 +3,7 @@ import {
 	COURSE_REPOSITORY,
 	type CourseRepositoryPort,
 } from '../../domain/ports/course-repository.port';
-import { CreateCouseInput } from '../../domain/entities/course.entity';
+import { CreateCourseInput } from '../../domain/entities/course.types';
 import { ProviderRegistry } from 'src/modules/ai/infrasctructure/providers/provider.registry';
 
 @Injectable()
@@ -14,9 +14,9 @@ export class CreateCourseUseCase {
 		private readonly providerRegistry: ProviderRegistry,
 	) {}
 
-	async execute(input: CreateCouseInput) {
+	async execute(input: CreateCourseInput) {
 		const courseGen = this.providerRegistry.getCourseStrategy(
-			input.provider || 'openai',
+			input.model || 'openai',
 		);
 		const generated = await courseGen.generate(input);
 		return this.courseRepository.saveCourseTree(generated, input.userId);

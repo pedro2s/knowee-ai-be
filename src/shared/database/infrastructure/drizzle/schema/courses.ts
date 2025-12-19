@@ -65,3 +65,7 @@ export const courses = pgTable(
 		}),
 	],
 );
+
+// Tipo inferido pelo Drizzle (Basicamente o que o SELECT retorna)
+export type SelectCourse = typeof courses.$inferSelect;
+export type InsertCourse = typeof courses.$inferInsert;
