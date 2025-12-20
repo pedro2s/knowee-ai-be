@@ -5,15 +5,7 @@ import { SignInDto } from '../../application/dtos/sign-in.dto';
 import { SignUpDto } from '../../application/dtos/sign-up.dto';
 import { CurrentUser } from 'src/shared/infrastructure/decorators'; // Importar o novo decorator
 import { SupabaseAuthGuard } from '../guards/supabase-auth.guard'; // Importar o guard
-
-// Definir uma interface para o payload do usuário que será anexado à requisição.
-// Esta interface deve ser movida para um local compartilhado (ex: shared/types ou auth/domain/types)
-// e deve refletir a estrutura real do seu objeto de usuário após a validação do token.
-interface UserPayload {
-	id: string;
-	email: string;
-	// Adicione outras propriedades do usuário conforme necessário
-}
+import type { UserPayload } from 'src/shared/types/user.types';
 
 @Controller('auth')
 export class AuthController {
