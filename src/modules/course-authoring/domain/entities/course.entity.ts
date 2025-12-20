@@ -1,6 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
 import { CourseProps, CreateCourseInput } from './course.types';
 import { CourseTitle } from '../value-objects/course-title.vo';
+import { Module } from './module.entity';
 
 export class Course {
 	/** O estado é privado! O Drizzle não toca aqui */
@@ -91,11 +92,19 @@ export class Course {
 		return this.props.updatedAt;
 	}
 
+	get modules(): Module[] | undefined {
+		return this.props.modules;
+	}
+
 	/**
 	 * O SEGREDO DO MAPPER: Método para extrair dados brutos.
 	 * Retorna uma cópia do estado para não quebrar o encapsulamento
 	 */
 	public toPrimitives() {
-		return { ...this.props, title: this.props.title.value };
+		return {
+			...this.props,
+			title: this.props.title.value,
+			modules: this.props.modules?.map((module) => module.toPrimitives()),
+		};
 	}
 }

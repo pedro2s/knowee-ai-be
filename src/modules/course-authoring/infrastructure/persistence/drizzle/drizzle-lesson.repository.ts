@@ -2,7 +2,6 @@ import { Inject, Injectable } from '@nestjs/common';
 import { eq } from 'drizzle-orm';
 import { Lesson } from 'src/modules/course-authoring/domain/entities/lesson.entity';
 import { LessonRepositoryPort } from 'src/modules/course-authoring/domain/ports/lesson-repository.port';
-import { lessons } from 'src/shared/database/infrastructure/drizzle/schema';
 import { CreateLessonInput } from 'src/modules/course-authoring/domain/entities/lesson.types';
 import {
 	AuthContext,

@@ -13,6 +13,25 @@ export class CourseResponseDto {
 	createdAt: string; // Datas geralmente viram strings ISO no front
 	updatedAt: string;
 
+	modules?: Array<{
+		id: string;
+		title: string;
+		orderIndex: number;
+		description: string | null;
+		createdAt: string;
+		updatedAt: string;
+
+		lessons?: Array<{
+			id: string;
+			title: string;
+			orderIndex: number;
+			description: string | null;
+			content: unknown;
+			createdAt: string;
+			updatedAt: string;
+		}>;
+	}>;
+
 	constructor(props: CourseResponseDto) {
 		Object.assign(this, props);
 	}
@@ -33,6 +52,16 @@ export class CourseResponseDto {
 			targetAudience: primitives.targetAudience,
 			createdAt: primitives.createdAt.toISOString(),
 			updatedAt: primitives.updatedAt.toISOString(),
+			modules: primitives.modules?.map((module) => ({
+				...module,
+				createdAt: module.createdAt.toISOString(),
+				updatedAt: module.updatedAt.toISOString(),
+				lessons: module.lessons?.map((lesson) => ({
+					...lesson,
+					createdAt: lesson.createdAt.toISOString(),
+					updatedAt: lesson.updatedAt.toISOString(),
+				})),
+			})),
 		});
 	}
 }
