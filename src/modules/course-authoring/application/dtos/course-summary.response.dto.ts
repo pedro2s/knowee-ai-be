@@ -1,6 +1,6 @@
 import { Course } from '../../domain/entities/course.entity';
 
-export class DashboardItemResponseDto {
+export class CourseSummaryResponseDto {
 	// Definimos explicitamente o que é público
 	id: string;
 	title: string;
@@ -12,16 +12,16 @@ export class DashboardItemResponseDto {
 	modulesQty: number;
 	createdAt: string;
 
-	constructor(props: DashboardItemResponseDto) {
+	constructor(props: CourseSummaryResponseDto) {
 		Object.assign(this, props);
 	}
 
 	/** O Mapper da Camada de Apresentação */
-	static fromDomain(entity: Course): DashboardItemResponseDto {
+	static fromDomain(entity: Course): CourseSummaryResponseDto {
 		// Usamos o toPrimitives() ou acessamos os getters da entidade
 		const primitives = entity.toPrimitives();
 
-		return new DashboardItemResponseDto({
+		return new CourseSummaryResponseDto({
 			id: primitives.id,
 			title: primitives.title,
 			slug: entity.slug,

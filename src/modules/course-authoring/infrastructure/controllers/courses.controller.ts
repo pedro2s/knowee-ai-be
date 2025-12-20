@@ -6,7 +6,7 @@ import { CourseResponseDto } from '../../application/dtos/course.response.dto';
 import { CreateCourseDto } from '../../application/dtos/create-course.dto';
 import { CurrentUser } from 'src/shared/infrastructure/decorators';
 import type { UserPayload } from 'src/shared/types/user.types';
-import { DashboardItemResponseDto } from '../../application/dtos/dashboard-item.response.dto';
+import { CourseSummaryResponseDto } from '../../application/dtos/course-summary.response.dto';
 
 @Controller('courses')
 @UseGuards(SupabaseAuthGuard)
@@ -19,9 +19,9 @@ export class CoursesController {
 	@Get()
 	async findAll(
 		@CurrentUser() user: UserPayload,
-	): Promise<DashboardItemResponseDto[]> {
+	): Promise<CourseSummaryResponseDto[]> {
 		const courses = await this.fetchCourses.execute(user.id);
-		return courses.map(DashboardItemResponseDto.fromDomain);
+		return courses.map(CourseSummaryResponseDto.fromDomain);
 	}
 
 	@Post()
