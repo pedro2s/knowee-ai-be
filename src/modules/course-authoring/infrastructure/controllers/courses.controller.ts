@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
 import { CreateCourseUseCase } from '../../application/use-cases/create-corse.usecase';
 import { SupabaseAuthGuard } from 'src/modules/auth/infrastructure/guards/supabase-auth.guard';
 import { FetchCoursesUseCase } from '../../application/use-cases/fetch-courses.usecase';
@@ -7,6 +7,7 @@ import { CreateCourseDto } from '../../application/dtos/create-course.dto';
 import { CurrentUser } from 'src/shared/infrastructure/decorators';
 import type { UserPayload } from 'src/shared/types/user.types';
 import { CourseSummaryResponseDto } from '../../application/dtos/course-summary.response.dto';
+import { GetCourseUseCase } from '../../application/use-cases/get-course.usecase';
 
 @Controller('courses')
 @UseGuards(SupabaseAuthGuard)
@@ -14,6 +15,7 @@ export class CoursesController {
 	constructor(
 		private readonly createCourse: CreateCourseUseCase,
 		private readonly fetchCourses: FetchCoursesUseCase,
+		private readonly getCourse: GetCourseUseCase,
 	) {}
 
 	@Get()
@@ -22,6 +24,18 @@ export class CoursesController {
 	): Promise<CourseSummaryResponseDto[]> {
 		const courses = await this.fetchCourses.execute(user.id);
 		return courses.map(CourseSummaryResponseDto.fromDomain);
+	}
+
+	@Get('/:id')
+	async findOne(
+		@Param('id') id: string,
+		@CurrentUser() user: UserPayload,
+	): Promise<CourseResponseDto> {
+		const course = await this.getCourse.execute({
+			id,
+			userId: user.id,
+		});
+		return CourseResponseDto.fromDomain(course);
 	}
 
 	@Post()

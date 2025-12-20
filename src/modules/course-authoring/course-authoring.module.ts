@@ -11,6 +11,7 @@ import { DatabaseModule } from 'src/shared/database/database.module';
 import { CoursesController } from './infrastructure/controllers/courses.controller';
 import { LessonsController } from './infrastructure/controllers/lessons.controller';
 import { FetchCoursesUseCase } from './application/use-cases/fetch-courses.usecase';
+import { GetCourseUseCase } from './application/use-cases/get-course.usecase';
 
 @Module({
 	controllers: [CoursesController, LessonsController],
@@ -18,6 +19,7 @@ import { FetchCoursesUseCase } from './application/use-cases/fetch-courses.useca
 	providers: [
 		{ provide: COURSE_REPOSITORY, useClass: DrizzleCourseRepository },
 		{ provide: LESSON_REPOSITORY, useClass: DrizzleLessonRepository },
+		GetCourseUseCase,
 		FetchCoursesUseCase,
 		CreateCourseUseCase,
 		GenerateLessonAudioUseCase,
