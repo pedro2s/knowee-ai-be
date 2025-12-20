@@ -59,4 +59,27 @@ export class SupabaseAuthAdapter extends AuthServicePort {
 
 		return { user: data.user };
 	}
+
+	async refreshSession(refreshToken: string): Promise<{
+		access_token: string;
+		refresh_token: string;
+	}> {
+		const {
+			data: { session },
+			error,
+		} = await this.supabaseService
+			.getClient()
+			.auth.refreshSession({ refresh_token: refreshToken });
+
+		if (error) {
+			throw error;
+		}
+
+		if (!session) {
+			throw new Error('Session not found');
+		}
+
+		const { access_token, refresh_token } = session;
+		return { access_token, refresh_token };
+	}
 }

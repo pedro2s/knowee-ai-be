@@ -8,4 +8,9 @@ export abstract class AuthServicePort {
 	): Promise<{ access_token: string; refresh_token: string }>;
 
 	abstract signUp(dto: SignUpDto): Promise<{ user: User }>;
+
+	abstract refreshSession(refreshToken: string): Promise<{
+		access_token: string;
+		refresh_token: string;
+	}>;
 }

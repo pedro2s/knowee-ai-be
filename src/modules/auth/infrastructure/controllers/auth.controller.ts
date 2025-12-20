@@ -6,12 +6,15 @@ import { SignUpDto } from '../../application/dtos/sign-up.dto';
 import { CurrentUser } from 'src/shared/infrastructure/decorators'; // Importar o novo decorator
 import { SupabaseAuthGuard } from '../guards/supabase-auth.guard'; // Importar o guard
 import type { UserPayload } from 'src/shared/types/user.types';
+import { RefreshTokenUseCase } from '../../application/use-cases/refresh-token.usecase';
+import { RefreshTokenDto } from '../../application/dtos/refresh-token.dto';
 
 @Controller('auth')
 export class AuthController {
 	constructor(
 		private readonly signInUseCase: SignInUseCase,
 		private readonly signUpUseCase: SignUpUseCase,
+		private readonly refreshTokenUseCase: RefreshTokenUseCase,
 	) {}
 
 	@Post('sign-in')
@@ -22,6 +25,11 @@ export class AuthController {
 	@Post('sign-up')
 	async signUp(@Body() dto: SignUpDto) {
 		return this.signUpUseCase.execute(dto);
+	}
+
+	@Post('refresh')
+	async refresh(@Body() dto: RefreshTokenDto) {
+		return this.refreshTokenUseCase.execute(dto);
 	}
 
 	@Get('profile')
