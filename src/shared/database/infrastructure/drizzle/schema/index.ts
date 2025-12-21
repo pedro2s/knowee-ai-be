@@ -6,7 +6,7 @@ export * from './history-summary';
 export * from './history';
 export * from './mux-data';
 export * from './profiles';
-export * from './qa-history';
+export * from './questions-answers';
 export * from './subscribers';
 export * from './subscription-tier';
 export * from './token-usage';

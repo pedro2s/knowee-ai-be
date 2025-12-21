@@ -12,8 +12,7 @@ export class FetchCoursesUseCase {
 		private readonly courseRepository: CourseRepositoryPort,
 	) {}
 
-	async execute(userId: string): Promise<Course[]> {
-		const courses = await this.courseRepository.findAllByUserId(userId);
-		return courses;
+	execute(userId: string): Promise<Course[]> {
+		return this.courseRepository.findAllByUserId(userId);
 	}
 }

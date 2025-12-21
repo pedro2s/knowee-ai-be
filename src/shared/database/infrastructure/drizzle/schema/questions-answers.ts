@@ -1,7 +1,6 @@
 import {
 	pgTable,
 	pgPolicy,
-	serial,
 	uuid,
 	text,
 	foreignKey,
@@ -11,14 +10,14 @@ import { sql } from 'drizzle-orm';
 import { users } from './auth';
 import { courses } from './courses';
 
-export const qaHistory = pgTable(
+export const questionsAnswers = pgTable(
 	'qa_history',
 	{
-		id: serial().primaryKey().notNull(),
-		userId: uuid('user_id'),
-		courseId: uuid('course_id'),
-		question: text(),
-		answer: text(),
+		id: uuid().defaultRandom().primaryKey().notNull(),
+		userId: uuid('user_id').notNull(),
+		courseId: uuid('course_id').notNull(),
+		question: text().notNull(),
+		answer: text().notNull(),
 		createdAt: timestamp('created_at', {
 			withTimezone: true,
 			mode: 'string',
@@ -50,3 +49,6 @@ export const qaHistory = pgTable(
 		}),
 	],
 );
+
+export type SelectQuestionAnswer = typeof questionsAnswers.$inferSelect;
+export type InsertQuestionAnswer = typeof questionsAnswers.$inferInsert;

@@ -8,6 +8,13 @@
       "when": 1766005734770,
       "tag": "0000_conscious_starbolt",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1766274824572,
+      "tag": "0001_curious_bullseye",
+      "breakpoints": true
     }
   ]
 }

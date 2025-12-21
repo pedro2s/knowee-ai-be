@@ -1,7 +1,7 @@
 import { relations } from 'drizzle-orm/relations';
 import { courses } from './courses';
 import { modules } from './modules';
-import { qaHistory } from './qa-history';
+import { questionsAnswers } from './questions-answers';
 import { profiles } from './profiles';
 import { history } from './history';
 import { lessons } from './lessons';
@@ -23,7 +23,7 @@ export const modulesRelations = relations(modules, ({ one, many }) => ({
 
 export const coursesRelations = relations(courses, ({ one, many }) => ({
 	modules: many(modules),
-	qaHistories: many(qaHistory),
+	qaHistories: many(questionsAnswers),
 	histories: many(history),
 	usersInAuth: one(usersInAuth, {
 		fields: [courses.userId],
@@ -33,19 +33,19 @@ export const coursesRelations = relations(courses, ({ one, many }) => ({
 	historySummaries: many(historySummary),
 }));
 
-export const qaHistoryRelations = relations(qaHistory, ({ one }) => ({
+export const qaHistoryRelations = relations(questionsAnswers, ({ one }) => ({
 	course: one(courses, {
-		fields: [qaHistory.courseId],
+		fields: [questionsAnswers.courseId],
 		references: [courses.id],
 	}),
 	usersInAuth: one(usersInAuth, {
-		fields: [qaHistory.userId],
+		fields: [questionsAnswers.userId],
 		references: [usersInAuth.id],
 	}),
 }));
 
 export const usersInAuthRelations = relations(usersInAuth, ({ many }) => ({
-	qaHistories: many(qaHistory),
+	qaHistories: many(questionsAnswers),
 	profiles: many(profiles),
 	subscribers: many(subscribers),
 	courses: many(courses),

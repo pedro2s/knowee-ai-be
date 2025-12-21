@@ -31,8 +31,8 @@ export class Course {
 	/**
 	 * RECONSTITUITION METHOD: Para o Mapper recriar a entidade vinda do Banco.
 	 */
-	// Aqui não rodamos validação de criação, pois confiamos no banco.
 	static restore(props: CourseProps): Course {
+		// Aqui não rodamos validação de criação, pois confiamos no banco.
 		return new Course(props);
 	}
 
