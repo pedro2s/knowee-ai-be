@@ -1,10 +1,10 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { ProviderRegistry } from 'src/modules/ai/infrasctructure/providers/provider.registry';
 import {
 	LESSON_REPOSITORY,
 	type LessonRepositoryPort,
 } from '../../domain/ports/lesson-repository.port';
 import { MediaService } from 'src/shared/media/media.service';
+import { ProviderRegistry } from '../../infrastructure/providers/provider.registry';
 
 @Injectable()
 export class GenerateLessonAudioUseCase {

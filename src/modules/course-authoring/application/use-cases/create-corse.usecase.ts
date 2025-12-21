@@ -4,7 +4,7 @@ import {
 	type CourseRepositoryPort,
 } from '../../domain/ports/course-repository.port';
 import { CreateCourseInput } from '../../domain/entities/course.types';
-import { ProviderRegistry } from 'src/modules/ai/infrasctructure/providers/provider.registry';
+import { ProviderRegistry } from '../../infrastructure/providers/provider.registry';
 
 @Injectable()
 export class CreateCourseUseCase {
