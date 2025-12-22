@@ -14,7 +14,7 @@ export const historySummary = pgTable(
 	{
 		userId: uuid('user_id').notNull(),
 		courseId: uuid('course_id').notNull(),
-		summary: text().default(''),
+		summary: text().default('').notNull(),
 		createdAt: timestamp('created_at', {
 			withTimezone: true,
 			mode: 'string',
@@ -45,3 +45,6 @@ export const historySummary = pgTable(
 		}),
 	],
 );
+
+export type SelectHistorySummary = typeof historySummary.$inferSelect;
+export type InsertHistorySummary = typeof historySummary.$inferInsert;

@@ -1,11 +1,15 @@
 import {
 	HISTORY_REPOSITORY,
-	type HistoryRepository,
-} from 'src/modules/history/domain/ports/history.repository.port';
+	type HistoryRepositoryPort,
+} from 'src/modules/history/domain/ports/history-repository.port';
 import { AuthContext } from 'src/shared/database/application/ports/db-context.port';
 import { Inject, Injectable } from '@nestjs/common';
 import { History } from 'src/modules/history/domain/entities/history.entity';
 import { HistoryMessage } from '../../domain/value-objects/history-message.vo';
+import {
+	HISTORY_SUMMARY_REPOSITORY,
+	type HistorySummaryRepositoryPort,
+} from '../../domain/ports/history-summary-repository.port';
 
 const MAX_WINDOW_MESSAGES = 10;
 
@@ -13,7 +17,9 @@ const MAX_WINDOW_MESSAGES = 10;
 export class HistoryService {
 	constructor(
 		@Inject(HISTORY_REPOSITORY)
-		private readonly historyRepository: HistoryRepository,
+		private readonly historyRepository: HistoryRepositoryPort,
+		@Inject(HISTORY_SUMMARY_REPOSITORY)
+		private readonly historySummaryRepository: HistorySummaryRepositoryPort,
 	) {}
 
 	public getWindowMessages(context: AuthContext, courseId: string) {
@@ -25,7 +31,7 @@ export class HistoryService {
 	}
 
 	public getSummary(context: AuthContext, courseId: string) {
-		return this.historyRepository.findSummary(courseId, context);
+		return this.historySummaryRepository.findSummary(courseId, context);
 	}
 
 	public async shouldSummarizeHistory(
@@ -45,8 +51,13 @@ export class HistoryService {
 		role: 'user' | 'assistant' | 'system',
 		content: string,
 	): Promise<void> {
-		const message = new HistoryMessage(role, content);
-		return this.historyRepository.saveMessage(context, courseId, message);
+		const message = HistoryMessage.create(role, content);
+		const history = History.create({
+			userId: context.userId,
+			courseId,
+			message,
+		});
+		return this.historyRepository.saveMessage(courseId, history, context);
 	}
 
 	public saveSummary(

@@ -9,7 +9,7 @@ import {
 	history,
 	historySummary,
 } from 'src/shared/database/infrastructure/drizzle/schema';
-import { HistoryRepository } from 'src/modules/history/domain/ports/history.repository.port';
+import { HistoryRepositoryPort } from 'src/modules/history/domain/ports/history-repository.port';
 import { History } from 'src/modules/history/domain/entities/history.entity';
 import { HistoryMapper } from './mappers/history.mapper';
 import * as schema from 'src/shared/database/infrastructure/drizzle/schema';
@@ -17,7 +17,7 @@ import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 
 type DrizzleDB = NodePgDatabase<typeof schema>;
 @Injectable()
-export class DrizzleHistoryRepository implements HistoryRepository {
+export class DrizzleHistoryRepository implements HistoryRepositoryPort {
 	constructor(@Inject(DB_CONTEXT) private readonly dbContext: DbContext) {}
 
 	async findWindowMessages(
@@ -38,31 +38,6 @@ export class DrizzleHistoryRepository implements HistoryRepository {
 			});
 
 			return result.map(HistoryMapper.toDomain).reverse();
-		});
-	}
-
-	async findSummary(
-		courseId: string,
-		context: AuthContext,
-	): Promise<{ summary: string | null }> {
-		return this.dbContext.runAsUser(context, async (db) => {
-			const tx = db as DrizzleDB;
-			const result = await tx
-				.select()
-				.from(historySummary)
-				.where(
-					and(
-						eq(historySummary.userId, context.userId),
-						eq(historySummary.courseId, courseId),
-					),
-				)
-				.limit(1);
-
-			if (result.length === 0) {
-				return { summary: '' };
-			}
-
-			return { summary: result[0].summary };
 		});
 	}
 
@@ -101,27 +76,6 @@ export class DrizzleHistoryRepository implements HistoryRepository {
 				courseId,
 				message: persistence.message,
 			});
-		});
-	}
-
-	async saveSummary(
-		courseId: string,
-		summary: string,
-		context: AuthContext,
-	): Promise<void> {
-		await this.dbContext.runAsUser(context, async (db) => {
-			const tx = db as DrizzleDB;
-			await tx
-				.insert(historySummary)
-				.values({
-					userId: context.userId,
-					courseId,
-					summary,
-				})
-				.onConflictDoUpdate({
-					target: [historySummary.userId, historySummary.courseId],
-					set: { summary },
-				});
 		});
 	}
 }
