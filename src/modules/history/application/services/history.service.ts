@@ -1,10 +1,11 @@
 import {
-	HistoryRepository,
 	HISTORY_REPOSITORY,
-} from '@history/domain/ports/history.repository.port';
-import { AuthContext } from '@shared/database/application/ports/db-context.port';
+	type HistoryRepository,
+} from 'src/modules/history/domain/ports/history.repository.port';
+import { AuthContext } from 'src/shared/database/application/ports/db-context.port';
 import { Inject, Injectable } from '@nestjs/common';
-import { HistoryMessageEntity } from '@history/domain/entities/history-message.entity';
+import { History } from 'src/modules/history/domain/entities/history.entity';
+import { HistoryMessage } from '../../domain/value-objects/history-message.vo';
 
 const MAX_WINDOW_MESSAGES = 10;
 
@@ -17,14 +18,14 @@ export class HistoryService {
 
 	public getWindowMessages(context: AuthContext, courseId: string) {
 		return this.historyRepository.findWindowMessages(
-			context,
 			courseId,
 			MAX_WINDOW_MESSAGES,
+			context,
 		);
 	}
 
 	public getSummary(context: AuthContext, courseId: string) {
-		return this.historyRepository.findSummary(context, courseId);
+		return this.historyRepository.findSummary(courseId, context);
 	}
 
 	public async shouldSummarizeHistory(
@@ -32,8 +33,8 @@ export class HistoryService {
 		courseId: string,
 	): Promise<boolean> {
 		const messageCount = await this.historyRepository.countMessages(
-			context,
 			courseId,
+			context,
 		);
 		return messageCount > MAX_WINDOW_MESSAGES;
 	}
@@ -44,7 +45,7 @@ export class HistoryService {
 		role: 'user' | 'assistant' | 'system',
 		content: string,
 	): Promise<void> {
-		const message = new HistoryMessageEntity(role, content);
+		const message = new HistoryMessage(role, content);
 		return this.historyRepository.saveMessage(context, courseId, message);
 	}
 
@@ -53,6 +54,6 @@ export class HistoryService {
 		courseId: string,
 		summary: string,
 	): Promise<void> {
-		return this.historyRepository.saveSummary(context, courseId, summary);
+		return this.historyRepository.saveSummary(courseId, summary, context);
 	}
 }

@@ -1,31 +1,31 @@
-import { AuthContext } from '@shared/database/application/ports/db-context.port';
-import { HistoryMessageEntity } from '../entities/history-message.entity';
+import { AuthContext } from 'src/shared/database/application/ports/db-context.port';
+import { History } from '../entities/history.entity';
 
 export const HISTORY_REPOSITORY = 'HISTORY_REPOSITORY';
 
 export interface HistoryRepository {
 	findWindowMessages(
-		context: AuthContext,
 		courseId: string,
 		windowSize: number,
-	): Promise<HistoryMessageEntity[]>;
+		context: AuthContext,
+	): Promise<History[]>;
 
 	findSummary(
-		context: AuthContext,
 		courseId: string,
+		context: AuthContext,
 	): Promise<{ summary: string | null }>;
 
-	countMessages(context: AuthContext, courseId: string): Promise<number>;
+	countMessages(courseId: string, context: AuthContext): Promise<number>;
 
 	saveMessage(
-		context: AuthContext,
 		courseId: string,
-		message: HistoryMessageEntity,
+		message: History,
+		context: AuthContext,
 	): Promise<void>;
 
 	saveSummary(
-		context: AuthContext,
 		courseId: string,
 		summary: string,
+		context: AuthContext,
 	): Promise<void>;
 }

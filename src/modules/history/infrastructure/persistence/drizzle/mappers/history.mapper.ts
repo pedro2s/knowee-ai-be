@@ -1,30 +1,34 @@
-import { HistoryMessageEntity } from '@history/domain/entities/history-message.entity';
-import { history } from '@shared/database/infrastructure/drizzle/schema';
-
-type HistoryDb = typeof history.$inferSelect;
+import { History } from 'src/modules/history/domain/entities/history.entity';
+import { HistoryMessage } from 'src/modules/history/domain/value-objects/history-message.vo';
+import { SelectHistory } from 'src/shared/database/infrastructure/drizzle/schema';
 
 export class HistoryMapper {
-	static toEntity(data: HistoryDb): HistoryMessageEntity {
-		if (!data.message || typeof data.message !== 'object') {
-			// Handle case where message is null, undefined, or not an object
-			return new HistoryMessageEntity('system', '');
-		}
-		const message = data.message as {
+	/** Banco de Dados -> Domínio (Entity + VOs) */
+	static toDomain(raw: SelectHistory): History {
+		const { role, content } = raw.message as {
 			role: 'user' | 'assistant' | 'system';
 			content: string;
 		};
-		return new HistoryMessageEntity(
-			message.role ?? 'system',
-			message.content ?? '',
-		);
+		const messageVO = HistoryMessage.create(role, content);
+
+		return History.restore({
+			id: raw.id,
+			userId: raw.userId,
+			courseId: raw.courseId,
+			message: messageVO,
+			createdAt: new Date(raw.createdAt),
+		});
 	}
 
-	static toPersistence(entity: HistoryMessageEntity) {
+	static toPersistence(entity: History): SelectHistory {
+		const props = entity.toPrimitives();
+
 		return {
-			message: {
-				role: entity.role,
-				content: entity.content,
-			},
+			id: props.id,
+			userId: props.userId,
+			courseId: props.courseId,
+			message: props.message,
+			createdAt: props.createdAt.toISOString(),
 		};
 	}
 }

@@ -2,52 +2,52 @@ import { Inject, Injectable } from '@nestjs/common';
 import {
 	AuthContext,
 	DB_CONTEXT,
-	DbContext,
-} from '@shared/database/application/ports/db-context.port';
+	type DbContext,
+} from 'src/shared/database/application/ports/db-context.port';
 import { and, desc, eq, sql } from 'drizzle-orm';
 import {
 	history,
 	historySummary,
-} from '@shared/database/infrastructure/drizzle/schema';
-import {
-	HISTORY_REPOSITORY,
-	HistoryRepository,
-} from '@history/domain/ports/history.repository.port';
-import { HistoryMessageEntity } from '@history/domain/entities/history-message.entity';
+} from 'src/shared/database/infrastructure/drizzle/schema';
+import { HistoryRepository } from 'src/modules/history/domain/ports/history.repository.port';
+import { History } from 'src/modules/history/domain/entities/history.entity';
 import { HistoryMapper } from './mappers/history.mapper';
+import * as schema from 'src/shared/database/infrastructure/drizzle/schema';
+import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 
+type DrizzleDB = NodePgDatabase<typeof schema>;
 @Injectable()
 export class DrizzleHistoryRepository implements HistoryRepository {
 	constructor(@Inject(DB_CONTEXT) private readonly dbContext: DbContext) {}
 
 	async findWindowMessages(
-		context: AuthContext,
 		courseId: string,
 		windowSize: number,
-	): Promise<HistoryMessageEntity[]> {
-		const result = await this.dbContext.runAsUser(context, (db) =>
-			db
-				.select()
-				.from(history)
-				.where(
-					and(
-						eq(history.userId, context.userId),
-						eq(history.courseId, courseId),
-					),
-				)
-				.orderBy(desc(history.createdAt))
-				.limit(windowSize),
-		);
+		context: AuthContext,
+	): Promise<History[]> {
+		return this.dbContext.runAsUser(context, async (db) => {
+			const tx = db as DrizzleDB;
 
-		return result.map(HistoryMapper.toEntity).reverse();
+			const result = await tx.query.history.findMany({
+				where: and(
+					eq(schema.history.userId, context.userId),
+					eq(schema.history.courseId, courseId),
+				),
+				orderBy: (history, { desc }) => [desc(history.createdAt)],
+				limit: windowSize,
+			});
+
+			return result.map(HistoryMapper.toDomain).reverse();
+		});
 	}
 
 	async findSummary(
-		context: AuthContext,
 		courseId: string,
+		context: AuthContext,
 	): Promise<{ summary: string | null }> {
-		const result = await this.dbContext.runAsUser(context, (db) =>
-			db
+		return this.dbContext.runAsUser(context, async (db) => {
+			const tx = db as DrizzleDB;
+			const result = await tx
 				.select()
 				.from(historySummary)
 				.where(
@@ -56,22 +56,23 @@ export class DrizzleHistoryRepository implements HistoryRepository {
 						eq(historySummary.courseId, courseId),
 					),
 				)
-				.limit(1),
-		);
+				.limit(1);
 
-		if (result.length === 0) {
-			return { summary: null };
-		}
+			if (result.length === 0) {
+				return { summary: '' };
+			}
 
-		return { summary: result[0].summary };
+			return { summary: result[0].summary };
+		});
 	}
 
 	async countMessages(
-		context: AuthContext,
 		courseId: string,
+		context: AuthContext,
 	): Promise<number> {
-		const result = await this.dbContext.runAsUser(context, (db) =>
-			db
+		return this.dbContext.runAsUser(context, async (db) => {
+			const tx = db as DrizzleDB;
+			const result = await tx
 				.select({
 					count: sql<number>`cast(count(${history.id}) as int)`,
 				})
@@ -81,34 +82,36 @@ export class DrizzleHistoryRepository implements HistoryRepository {
 						eq(history.userId, context.userId),
 						eq(history.courseId, courseId),
 					),
-				),
-		);
-
-		return result[0].count;
+				);
+			return result[0].count;
+		});
 	}
 
 	async saveMessage(
-		context: AuthContext,
 		courseId: string,
-		message: HistoryMessageEntity,
+		message: History,
+		context: AuthContext,
 	): Promise<void> {
 		const persistence = HistoryMapper.toPersistence(message);
-		await this.dbContext.runAsUser(context, (db) =>
-			db.insert(history).values({
+		await this.dbContext.runAsUser(context, async (db) => {
+			const tx = db as DrizzleDB;
+
+			await tx.insert(history).values({
 				userId: context.userId,
 				courseId,
 				message: persistence.message,
-			}),
-		);
+			});
+		});
 	}
 
 	async saveSummary(
-		context: AuthContext,
 		courseId: string,
 		summary: string,
+		context: AuthContext,
 	): Promise<void> {
-		await this.dbContext.runAsUser(context, (db) =>
-			db
+		await this.dbContext.runAsUser(context, async (db) => {
+			const tx = db as DrizzleDB;
+			await tx
 				.insert(historySummary)
 				.values({
 					userId: context.userId,
@@ -118,7 +121,7 @@ export class DrizzleHistoryRepository implements HistoryRepository {
 				.onConflictDoUpdate({
 					target: [historySummary.userId, historySummary.courseId],
 					set: { summary },
-				}),
-		);
+				});
+		});
 	}
 }

@@ -14,8 +14,8 @@ import { courses } from './courses';
 export const history = pgTable(
 	'history',
 	{
-		id: serial().primaryKey().notNull(),
-		userId: uuid('user_id'),
+		id: uuid().defaultRandom().primaryKey().notNull(),
+		userId: uuid('user_id').notNull(),
 		message: jsonb(),
 		createdAt: timestamp('created_at', {
 			withTimezone: true,
@@ -23,7 +23,7 @@ export const history = pgTable(
 		})
 			.defaultNow()
 			.notNull(),
-		courseId: uuid('course_id'),
+		courseId: uuid('course_id').notNull(),
 	},
 	(table) => [
 		index('history_user_id_idx').using(
@@ -53,3 +53,6 @@ export const history = pgTable(
 		}),
 	],
 );
+
+export type SelectHistory = typeof history.$inferSelect;
+export type InsertHistory = typeof history.$inferInsert;
