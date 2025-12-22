@@ -33,7 +33,7 @@ export class SubmitQuestionUseCase {
 		);
 
 		const aiAssistant = this.providerRegistry.getAIAssistantStrategy(
-			input.provider,
+			input.provider || 'openai',
 		);
 
 		const answer = await aiAssistant.ask({

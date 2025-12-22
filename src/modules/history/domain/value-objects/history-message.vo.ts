@@ -1,4 +1,8 @@
 type MessageRole = 'user' | 'assistant' | 'system';
+type MessageContent = Array<{
+	type: 'text';
+	text: string;
+}>;
 
 export class HistoryMessage {
 	private _role: MessageRole;
@@ -9,9 +13,21 @@ export class HistoryMessage {
 		this._content = content;
 	}
 
-	public static create(role: MessageRole, content: string): HistoryMessage {
-		if (!content || content.trim().length === 0) {
+	public static create(
+		role: MessageRole,
+		content: string | MessageContent,
+	): HistoryMessage {
+		if (
+			!content ||
+			(typeof content === 'string' && content.trim().length === 0)
+		) {
 			throw new Error('O conteúdo da mensagem não pode ser vazio.');
+		}
+		if (Array.isArray(content)) {
+			const texts = content
+				.filter((part) => part.type === 'text')
+				.map((part) => part.text);
+			content = texts.join('\n').trim();
 		}
 		return new HistoryMessage(role, content.trim());
 	}

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import OpenAI from 'openai';
 import {
 	AIAssistantPort,
@@ -6,10 +6,11 @@ import {
 } from 'src/modules/assistant/domain/ports/ai-assistant.port';
 import { QuestionAnswered } from 'src/modules/assistant/domain/entities/question-answer.types';
 import { ChatCompletionMessageParam } from 'openai/resources';
+import { OPENAI_CLIENT } from 'src/shared/ai/ai.constants';
 
 @Injectable()
 export class OpenAIAssistantAdapter implements AIAssistantPort {
-	constructor(private readonly openai: OpenAI) {}
+	constructor(@Inject(OPENAI_CLIENT) private readonly openai: OpenAI) {}
 
 	async ask(input: AskQuestionInput): Promise<QuestionAnswered> {
 		const { question, context } = input;

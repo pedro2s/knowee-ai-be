@@ -8,6 +8,7 @@ import { SubmitQuestionUseCase } from './application/use-cases/submit-question.u
 import { HistoryModule } from 'src/modules/history/history.module';
 import { AIModule } from 'src/shared/ai/ai.module';
 import { ProviderRegistry } from './infrastructure/providers/provider.resgistre';
+import { OpenAIAssistantAdapter } from './infrastructure/providers/openai/openai-assistant.adapter';
 
 @Module({
 	controllers: [AssistantController],
@@ -20,6 +21,7 @@ import { ProviderRegistry } from './infrastructure/providers/provider.resgistre'
 		GetChatHistoryUseCase,
 		SubmitQuestionUseCase,
 		ProviderRegistry,
+		OpenAIAssistantAdapter,
 	],
 })
 export class AssistantModule {}

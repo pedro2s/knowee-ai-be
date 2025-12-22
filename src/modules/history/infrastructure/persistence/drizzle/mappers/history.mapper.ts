@@ -9,6 +9,7 @@ export class HistoryMapper {
 			role: 'user' | 'assistant' | 'system';
 			content: string;
 		};
+		console.log('Mapping history message:', raw.message);
 		const messageVO = HistoryMessage.create(role, content);
 
 		return History.restore({

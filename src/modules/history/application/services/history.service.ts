@@ -58,11 +58,10 @@ export class HistoryService {
 		role: 'user' | 'assistant' | 'system',
 		content: string,
 	): Promise<void> {
-		const message = HistoryMessage.create(role, content);
 		const history = History.create({
 			userId: context.userId,
 			courseId,
-			message,
+			message: { role, content },
 		});
 		return this.historyRepository.saveHistory(courseId, history, context);
 	}
