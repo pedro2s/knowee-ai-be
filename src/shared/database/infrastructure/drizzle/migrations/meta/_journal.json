@@ -15,6 +15,13 @@
       "when": 1766274824572,
       "tag": "0001_curious_bullseye",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1766444495165,
+      "tag": "0002_supreme_eternals",
+      "breakpoints": true
     }
   ]
 }

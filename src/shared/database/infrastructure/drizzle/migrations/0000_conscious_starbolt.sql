@@ -1,6 +1,5 @@
 -- Current sql file was generated after introspecting the database
 -- If you want to run this migration please uncomment this code before executing migrations
-/*
 CREATE TABLE "documents" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"user_id" uuid,
@@ -195,4 +194,3 @@ CREATE POLICY "Users can view their own course lessons" ON "lessons" AS PERMISSI
 CREATE POLICY "Users can create lessons for their courses" ON "lessons" AS PERMISSIVE FOR INSERT TO public;--> statement-breakpoint
 CREATE POLICY "Users can update their course lessons" ON "lessons" AS PERMISSIVE FOR UPDATE TO public;--> statement-breakpoint
 CREATE POLICY "Users can delete their course lessons" ON "lessons" AS PERMISSIVE FOR DELETE TO public;
-*/
