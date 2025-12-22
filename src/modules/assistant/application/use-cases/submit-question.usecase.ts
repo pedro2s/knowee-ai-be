@@ -18,8 +18,13 @@ export class SubmitQuestionUseCase {
 		private readonly historyService: HistoryService,
 	) {}
 
-	async execute(input: SubmitQuestionDto, auth: AuthContext) {
+	async execute(input: SubmitQuestionDto, userId: string) {
 		const { courseId, question } = input;
+
+		const auth: AuthContext = {
+			userId: userId,
+			role: 'authenticated',
+		};
 
 		const summary = await this.historyService.getSummary(auth, courseId);
 		const window = await this.historyService.getWindowMessages(
@@ -31,13 +36,16 @@ export class SubmitQuestionUseCase {
 			input.provider,
 		);
 
-		const answer = await aiAssistant.ask(question, {
-			summary: summary.summary,
-			history: window.map((h) => h.toPlain()),
+		const answer = await aiAssistant.ask({
+			question: question,
+			context: {
+				summary: summary || null,
+				recentHistory: window,
+			},
 		});
 
 		await this.historyService.saveMessage(auth, courseId, 'user', question);
-		await this.historyService.addMessageAndSummarizeIfNecessary(
+		await this.historyService.saveMessageAndSummarizeIfNecessary(
 			auth,
 			courseId,
 			'assistant',

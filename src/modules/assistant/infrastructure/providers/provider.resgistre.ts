@@ -1,11 +1,11 @@
 import { OnModuleInit } from '@nestjs/common';
 import { AIAssistantPort } from '../../domain/ports/ai-assistant.port';
-import { OpeanAIAssistantAdapter } from './openai/openai-assistant.adapter';
+import { OpenAIAssistantAdapter } from './openai/openai-assistant.adapter';
 
 export class ProviderRegistry implements OnModuleInit {
 	private readonly providers: Map<string, AIAssistantPort> = new Map();
 
-	constructor(private readonly openAIAssistant: OpeanAIAssistantAdapter) {}
+	constructor(private readonly openAIAssistant: OpenAIAssistantAdapter) {}
 
 	onModuleInit() {
 		this.register('openai', this.openAIAssistant);

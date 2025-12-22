@@ -25,35 +25,12 @@ export class HistoryService {
 		private readonly openAISumarizeHistory: OpenAISummarizeHistoryAdapter,
 	) {}
 
-	public async addMessageAndSummarizeIfNecessary(
-		context: AuthContext,
-		courseId: string,
-		role: 'user' | 'assistant' | 'system',
-		content: string,
-	): Promise<void> {
-		await this.saveMessage(context, courseId, role, content);
-
-		const shouldSummarize = await this.shouldSummarizeHistory(
-			context,
-			courseId,
-		);
-
-		if (shouldSummarize) {
-			// Executa em background para não bloquear a resposta ao usuário
-			this.summarizeHistory(context, courseId);
-		}
-	}
-
 	public async getWindowMessages(context: AuthContext, courseId: string) {
-		const windowHistory = await this.historyRepository.findWindowHistory(
+		return this.historyRepository.findWindowHistory(
 			courseId,
 			MAX_WINDOW_MESSAGES,
 			context,
 		);
-		return windowHistory.map((h) => {
-			const { message } = h.toPrimitives();
-			return message;
-		});
 	}
 
 	public async getSummary(context: AuthContext, courseId: string) {
@@ -61,7 +38,7 @@ export class HistoryService {
 			courseId,
 			context,
 		);
-		return summary?.summary || '';
+		return summary?.summary;
 	}
 
 	public async shouldSummarizeHistory(
@@ -88,6 +65,25 @@ export class HistoryService {
 			message,
 		});
 		return this.historyRepository.saveHistory(courseId, history, context);
+	}
+
+	public async saveMessageAndSummarizeIfNecessary(
+		context: AuthContext,
+		courseId: string,
+		role: 'user' | 'assistant' | 'system',
+		content: string,
+	): Promise<void> {
+		await this.saveMessage(context, courseId, role, content);
+
+		const shouldSummarize = await this.shouldSummarizeHistory(
+			context,
+			courseId,
+		);
+
+		if (shouldSummarize) {
+			// Executa em background para não bloquear a resposta ao usuário
+			this.summarizeHistory(context, courseId);
+		}
 	}
 
 	public async summarizeHistory(

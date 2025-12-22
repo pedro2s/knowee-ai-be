@@ -1,7 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { HistorySummaryRepositoryPort } from 'src/modules/history/domain/ports/history-summary-repository.port';
 import {
 	AuthContext,
+	DB_CONTEXT,
 	type DbContext,
 } from 'src/shared/database/application/ports/db-context.port';
 import * as schema from 'src/shared/database/infrastructure/drizzle/schema';
@@ -14,7 +15,7 @@ type DrizzleDB = NodePgDatabase<typeof schema>;
 
 @Injectable()
 export class DrizzleHistorySummaryRepository implements HistorySummaryRepositoryPort {
-	constructor(private readonly dbContext: DbContext) {}
+	constructor(@Inject(DB_CONTEXT) private readonly dbContext: DbContext) {}
 
 	findHistorySummary(
 		courseId: string,

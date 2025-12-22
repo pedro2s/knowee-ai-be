@@ -6,11 +6,12 @@ import { DrizzleQuestionAnswerRepository } from './infrastructure/persistence/dr
 import { DatabaseModule } from 'src/shared/database/database.module';
 import { SubmitQuestionUseCase } from './application/use-cases/submit-question.usecase';
 import { HistoryModule } from 'src/modules/history/history.module';
-import { AiModule } from 'src/shared/ai/ai.module';
+import { AIModule } from 'src/shared/ai/ai.module';
+import { ProviderRegistry } from './infrastructure/providers/provider.resgistre';
 
 @Module({
 	controllers: [AssistantController],
-	imports: [DatabaseModule, HistoryModule, AiModule],
+	imports: [DatabaseModule, HistoryModule, AIModule],
 	providers: [
 		{
 			provide: QUESTION_ANSWER_REPOSITORY,
@@ -18,6 +19,7 @@ import { AiModule } from 'src/shared/ai/ai.module';
 		},
 		GetChatHistoryUseCase,
 		SubmitQuestionUseCase,
+		ProviderRegistry,
 	],
 })
 export class AssistantModule {}

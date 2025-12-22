@@ -1,8 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import OpenAI from 'openai';
-
-export const OPENAI_CLIENT = 'OPENAI_CLIENT';
+import { OPENAI_CLIENT } from './ai.constants';
 
 @Module({
 	providers: [
