@@ -15,5 +15,5 @@ export interface QuestionAnswerInput {
 }
 
 export interface QuestionAnswered {
-	answer: string;
+	content: string;
 }

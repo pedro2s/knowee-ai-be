@@ -10,6 +10,8 @@ import {
 	HISTORY_SUMMARY_REPOSITORY,
 	type HistorySummaryRepositoryPort,
 } from '../../domain/ports/history-summary-repository.port';
+import { OpenAISummarizeHistoryAdapter } from '../../infrastructure/providers/openai/openai-summarize-history.adapter';
+import { HistorySummary } from '../../domain/entities/history-summary.entity';
 
 const MAX_WINDOW_MESSAGES = 10;
 
@@ -20,18 +22,46 @@ export class HistoryService {
 		private readonly historyRepository: HistoryRepositoryPort,
 		@Inject(HISTORY_SUMMARY_REPOSITORY)
 		private readonly historySummaryRepository: HistorySummaryRepositoryPort,
+		private readonly openAISumarizeHistory: OpenAISummarizeHistoryAdapter,
 	) {}
 
-	public getWindowMessages(context: AuthContext, courseId: string) {
-		return this.historyRepository.findWindowMessages(
+	public async addMessageAndSummarizeIfNecessary(
+		context: AuthContext,
+		courseId: string,
+		role: 'user' | 'assistant' | 'system',
+		content: string,
+	): Promise<void> {
+		await this.saveMessage(context, courseId, role, content);
+
+		const shouldSummarize = await this.shouldSummarizeHistory(
+			context,
+			courseId,
+		);
+
+		if (shouldSummarize) {
+			// Executa em background para não bloquear a resposta ao usuário
+			this.summarizeHistory(context, courseId);
+		}
+	}
+
+	public async getWindowMessages(context: AuthContext, courseId: string) {
+		const windowHistory = await this.historyRepository.findWindowHistory(
 			courseId,
 			MAX_WINDOW_MESSAGES,
 			context,
 		);
+		return windowHistory.map((h) => {
+			const { message } = h.toPrimitives();
+			return message;
+		});
 	}
 
-	public getSummary(context: AuthContext, courseId: string) {
-		return this.historySummaryRepository.findSummary(courseId, context);
+	public async getSummary(context: AuthContext, courseId: string) {
+		const summary = await this.historySummaryRepository.findHistorySummary(
+			courseId,
+			context,
+		);
+		return summary?.summary || '';
 	}
 
 	public async shouldSummarizeHistory(
@@ -57,14 +87,48 @@ export class HistoryService {
 			courseId,
 			message,
 		});
-		return this.historyRepository.saveMessage(courseId, history, context);
+		return this.historyRepository.saveHistory(courseId, history, context);
 	}
 
-	public saveSummary(
+	public async summarizeHistory(
 		context: AuthContext,
 		courseId: string,
-		summary: string,
 	): Promise<void> {
-		return this.historyRepository.saveSummary(courseId, summary, context);
+		const history = await this.historyRepository.findHistory(
+			courseId,
+			context,
+		);
+
+		if (history.length === 0) {
+			console.log(
+				`[SummarizeHistoryUseCase] No history found to summarize.`,
+			);
+			return;
+		}
+
+		const textToSummarize = history
+			.map((h) => {
+				const message = h.toPrimitives().message;
+				return `${message.role}: ${message.content}`;
+			})
+			.join('\n');
+
+		const summaryText =
+			await this.openAISumarizeHistory.summarize(textToSummarize);
+
+		const summary = HistorySummary.create({
+			courseId,
+			userId: context.userId,
+			summary: summaryText,
+		});
+
+		await this.historySummaryRepository.saveHistorySummary(
+			summary,
+			context,
+		);
+		console.log(`[SummarizeHistoryUseCase] Summary upserted.`);
+
+		await this.historyRepository.deleteHistory(courseId, context);
+		console.log(`[SummarizeHistoryUseCase] History deleted.`);
 	}
 }

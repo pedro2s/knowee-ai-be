@@ -4,7 +4,7 @@ import { GetChatHistoryUseCase } from './application/use-cases/get-chat-history.
 import { QUESTION_ANSWER_REPOSITORY } from './domain/ports/question-anwer-repository.port';
 import { DrizzleQuestionAnswerRepository } from './infrastructure/persistence/drizzle/drizzle-question-answer.repository';
 import { DatabaseModule } from 'src/shared/database/database.module';
-import { SubmitQuestionUseCase } from './application/use-cases/submit-question.usecase.ts';
+import { SubmitQuestionUseCase } from './application/use-cases/submit-question.usecase';
 import { HistoryModule } from 'src/modules/history/history.module';
 import { AiModule } from 'src/shared/ai/ai.module';
 

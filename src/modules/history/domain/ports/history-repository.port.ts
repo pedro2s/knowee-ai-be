@@ -4,7 +4,9 @@ import { History } from '../entities/history.entity';
 export const HISTORY_REPOSITORY = 'HISTORY_REPOSITORY';
 
 export interface HistoryRepositoryPort {
-	findWindowMessages(
+	findHistory(courseId: string, context: AuthContext): Promise<History[]>;
+
+	findWindowHistory(
 		courseId: string,
 		windowSize: number,
 		context: AuthContext,
@@ -12,9 +14,11 @@ export interface HistoryRepositoryPort {
 
 	countMessages(courseId: string, context: AuthContext): Promise<number>;
 
-	saveMessage(
+	saveHistory(
 		courseId: string,
 		message: History,
 		context: AuthContext,
 	): Promise<void>;
+
+	deleteHistory(courseId: string, context: AuthContext): Promise<void>;
 }

@@ -4,14 +4,13 @@ import { HistorySummary } from '../entities/history-summary.entity';
 export const HISTORY_SUMMARY_REPOSITORY = 'HISTORY_SUMMARY_REPOSITORY';
 
 export interface HistorySummaryRepositoryPort {
-	findSummary(
+	findHistorySummary(
 		courseId: string,
 		context: AuthContext,
 	): Promise<HistorySummary | null>;
 
-	saveSummary(
-		courseId: string,
-		summary: string,
+	saveHistorySummary(
+		historySummary: HistorySummary,
 		context: AuthContext,
 	): Promise<void>;
 }

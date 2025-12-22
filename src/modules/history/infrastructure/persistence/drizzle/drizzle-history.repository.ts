@@ -4,11 +4,8 @@ import {
 	DB_CONTEXT,
 	type DbContext,
 } from 'src/shared/database/application/ports/db-context.port';
-import { and, desc, eq, sql } from 'drizzle-orm';
-import {
-	history,
-	historySummary,
-} from 'src/shared/database/infrastructure/drizzle/schema';
+import { and, eq, sql } from 'drizzle-orm';
+import { history } from 'src/shared/database/infrastructure/drizzle/schema';
 import { HistoryRepositoryPort } from 'src/modules/history/domain/ports/history-repository.port';
 import { History } from 'src/modules/history/domain/entities/history.entity';
 import { HistoryMapper } from './mappers/history.mapper';
@@ -20,7 +17,26 @@ type DrizzleDB = NodePgDatabase<typeof schema>;
 export class DrizzleHistoryRepository implements HistoryRepositoryPort {
 	constructor(@Inject(DB_CONTEXT) private readonly dbContext: DbContext) {}
 
-	async findWindowMessages(
+	async findHistory(
+		courseId: string,
+		context: AuthContext,
+	): Promise<History[]> {
+		return this.dbContext.runAsUser(context, async (db) => {
+			const tx = db as DrizzleDB;
+
+			const result = await tx.query.history.findMany({
+				where: and(
+					eq(history.userId, context.userId),
+					eq(history.courseId, courseId),
+				),
+				orderBy: (history, { asc }) => [asc(history.createdAt)],
+			});
+
+			return result.map(HistoryMapper.toDomain);
+		});
+	}
+
+	async findWindowHistory(
 		courseId: string,
 		windowSize: number,
 		context: AuthContext,
@@ -30,8 +46,8 @@ export class DrizzleHistoryRepository implements HistoryRepositoryPort {
 
 			const result = await tx.query.history.findMany({
 				where: and(
-					eq(schema.history.userId, context.userId),
-					eq(schema.history.courseId, courseId),
+					eq(history.userId, context.userId),
+					eq(history.courseId, courseId),
 				),
 				orderBy: (history, { desc }) => [desc(history.createdAt)],
 				limit: windowSize,
@@ -62,7 +78,7 @@ export class DrizzleHistoryRepository implements HistoryRepositoryPort {
 		});
 	}
 
-	async saveMessage(
+	async saveHistory(
 		courseId: string,
 		message: History,
 		context: AuthContext,
@@ -76,6 +92,21 @@ export class DrizzleHistoryRepository implements HistoryRepositoryPort {
 				courseId,
 				message: persistence.message,
 			});
+		});
+	}
+
+	deleteHistory(courseId: string, context: AuthContext): Promise<void> {
+		return this.dbContext.runAsUser(context, async (db) => {
+			const tx = db as DrizzleDB;
+
+			await tx
+				.delete(history)
+				.where(
+					and(
+						eq(history.userId, context.userId),
+						eq(history.courseId, courseId),
+					),
+				);
 		});
 	}
 }

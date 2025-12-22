@@ -1,9 +1,5 @@
 import { HistorySummary } from 'src/modules/history/domain/entities/history-summary.entity';
-import { History } from 'src/modules/history/domain/entities/history.entity';
-import {
-	SelectHistory,
-	SelectHistorySummary,
-} from 'src/shared/database/infrastructure/drizzle/schema';
+import { SelectHistorySummary } from 'src/shared/database/infrastructure/drizzle/schema';
 
 export class HistorySummaryMapper {
 	/** Banco de Dados -> Domínio (Entity + VOs) */
@@ -17,15 +13,15 @@ export class HistorySummaryMapper {
 		});
 	}
 
-	static toPersistence(entity: History): SelectHistory {
+	static toPersistence(entity: HistorySummary): SelectHistorySummary {
 		const props = entity.toPrimitives();
 
 		return {
-			id: props.id,
 			userId: props.userId,
 			courseId: props.courseId,
-			message: props.message,
+			summary: props.summary,
 			createdAt: props.createdAt.toISOString(),
+			updatedAt: props.updatedAt.toISOString(),
 		};
 	}
 }

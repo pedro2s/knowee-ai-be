@@ -16,7 +16,7 @@ type DrizzleDB = NodePgDatabase<typeof schema>;
 export class DrizzleHistorySummaryRepository implements HistorySummaryRepositoryPort {
 	constructor(private readonly dbContext: DbContext) {}
 
-	findSummary(
+	findHistorySummary(
 		courseId: string,
 		context: AuthContext,
 	): Promise<HistorySummary | null> {
@@ -38,26 +38,23 @@ export class DrizzleHistorySummaryRepository implements HistorySummaryRepository
 		});
 	}
 
-	async saveSummary(
-		courseId: string,
-		summary: string,
+	async saveHistorySummary(
+		historySummary: HistorySummary,
 		context: AuthContext,
 	): Promise<void> {
+		const data = HistorySummaryMapper.toPersistence(historySummary);
+
 		await this.dbContext.runAsUser(context, async (db) => {
 			const tx = db as DrizzleDB;
 			await tx
 				.insert(schema.historySummary)
-				.values({
-					userId: context.userId,
-					courseId,
-					summary,
-				})
+				.values(data)
 				.onConflictDoUpdate({
 					target: [
 						schema.historySummary.userId,
 						schema.historySummary.courseId,
 					],
-					set: { summary },
+					set: { summary: data.summary },
 				});
 		});
 	}

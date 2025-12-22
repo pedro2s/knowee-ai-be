@@ -27,13 +27,17 @@ export class SubmitQuestionUseCase {
 			courseId,
 		);
 
-		const answer = await this.aiAssistant.ask(question, {
+		const aiAssistant = this.providerRegistry.getAIAssistantStrategy(
+			input.provider,
+		);
+
+		const answer = await aiAssistant.ask(question, {
 			summary: summary.summary,
 			history: window.map((h) => h.toPlain()),
 		});
 
 		await this.historyService.saveMessage(auth, courseId, 'user', question);
-		await this.historyService.saveMessage(
+		await this.historyService.addMessageAndSummarizeIfNecessary(
 			auth,
 			courseId,
 			'assistant',
@@ -41,42 +45,13 @@ export class SubmitQuestionUseCase {
 		);
 
 		const qaEntity = QuestionAnswer.create({
+			userId: auth.userId,
 			courseId: courseId,
 			question: question,
-			answer: answer,
+			answer: answer.content,
 		});
 		await this.questionAnswerRepository.create(qaEntity, auth);
 
-		this.summarizeHistoryIfNeeded(auth, courseId);
-
 		return answer;
-	}
-
-	private async summarizeHistoryIfNeeded(
-		auth: AuthContext,
-		courseId: string,
-	) {
-		const shouldSummarize =
-			await this.historyService.shouldSummarizeHistory(auth, courseId);
-
-		if (shouldSummarize) {
-			const summary = await this.historyService.getSummary(
-				auth,
-				courseId,
-			);
-			const window = await this.historyService.getWindowMessages(
-				auth,
-				courseId,
-			);
-			const newSummary = await this.aiAssistant.summarize(
-				window.map((h) => h.toPlain()),
-				summary.summary,
-			);
-			await this.historyService.saveSummary(
-				auth,
-				courseId,
-				newSummary.content,
-			);
-		}
 	}
 }
