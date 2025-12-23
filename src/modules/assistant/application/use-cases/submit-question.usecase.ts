@@ -7,7 +7,7 @@ import { HistoryService } from 'src/modules/history/application/services/history
 import { SubmitQuestionDto } from '../dtos/submit-question.dto';
 import { AuthContext } from 'src/shared/database/application/ports/db-context.port';
 import { QuestionAnswer } from 'src/modules/assistant/domain/entities/question-answer.entity';
-import { ProviderRegistry } from '../../infrastructure/providers/provider.resgistre';
+import { ProviderRegistry } from '../../infrastructure/providers/provider.registry';
 
 @Injectable()
 export class SubmitQuestionUseCase {

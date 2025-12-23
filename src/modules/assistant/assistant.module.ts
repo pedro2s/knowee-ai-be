@@ -7,7 +7,7 @@ import { DatabaseModule } from 'src/shared/database/database.module';
 import { SubmitQuestionUseCase } from './application/use-cases/submit-question.usecase';
 import { HistoryModule } from 'src/modules/history/history.module';
 import { AIModule } from 'src/shared/ai/ai.module';
-import { ProviderRegistry } from './infrastructure/providers/provider.resgistre';
+import { ProviderRegistry } from './infrastructure/providers/provider.registry';
 import { OpenAIAssistantAdapter } from './infrastructure/providers/openai/openai-assistant.adapter';
 
 @Module({
