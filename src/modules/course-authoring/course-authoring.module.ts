@@ -17,15 +17,20 @@ import { OpenAICourseGeneratorAdapter } from './infrastructure/providers/openai/
 import { OpenAIScriptGeneratorAdapter } from './infrastructure/providers/openai/openai-script-generator.adapter';
 import { OpenAIAudioGeneratorAdapter } from './infrastructure/providers/openai/openai-audio-generator.adapter';
 import { OpenAIImageGeneratorAdapter } from './infrastructure/providers/openai/openai-image-generator.adapter';
+import { ModulesController } from './infrastructure/controllers/modules.controller';
+import { FetchLessonsUseCase } from './application/use-cases/fetchLessons.usecase';
+import { GetLessonUseCase } from './application/use-cases/get-lesson.usecase';
 
 @Module({
-	controllers: [CoursesController, LessonsController],
+	controllers: [CoursesController, ModulesController, LessonsController],
 	imports: [DatabaseModule, AIModule, MediaModule],
 	providers: [
 		{ provide: COURSE_REPOSITORY, useClass: DrizzleCourseRepository },
 		{ provide: LESSON_REPOSITORY, useClass: DrizzleLessonRepository },
 		GetCourseUseCase,
+		GetLessonUseCase,
 		FetchCoursesUseCase,
+		FetchLessonsUseCase,
 		CreateCourseUseCase,
 		GenerateLessonAudioUseCase,
 		GenerateLessonAudioUseCase,
