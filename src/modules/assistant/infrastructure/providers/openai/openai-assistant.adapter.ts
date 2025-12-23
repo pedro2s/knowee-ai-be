@@ -44,7 +44,7 @@ Caso contrário, devolva respostas sem formatação markdown.`,
 		// Adiciona a pergunta atual do usuário
 		messages.push({
 			role: 'user',
-			content: `Pergunta do usuário:\nquestion}`,
+			content: `Pergunta do usuário:\n${question}`,
 		});
 
 		const completion = await this.openai.chat.completions.create({
