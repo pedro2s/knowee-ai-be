@@ -68,24 +68,24 @@ export class DrizzleCourseRepository implements CourseRepositoryPort {
 		});
 	}
 
-	async findAllByUserId(userId: string): Promise<Course[]> {
-		return this.dbContext.runAsUser(
-			{ userId, role: 'authenticated' },
-			async (db) => {
-				const tx = db as DrizzleDB;
-				const userCourses = await tx.query.courses.findMany({
-					where: eq(schema.courses.userId, userId),
-					with: {
-						modules: {
-							with: {
-								lessons: true,
-							},
+	async findAllByUserId(
+		userId: string,
+		auth: AuthContext,
+	): Promise<Course[]> {
+		return this.dbContext.runAsUser(auth, async (db) => {
+			const tx = db as DrizzleDB;
+			const userCourses = await tx.query.courses.findMany({
+				where: eq(schema.courses.userId, userId),
+				with: {
+					modules: {
+						with: {
+							lessons: true,
 						},
 					},
-				});
-				return userCourses.map(CourseMapper.toDomain);
-			},
-		);
+				},
+			});
+			return userCourses.map(CourseMapper.toDomain);
+		});
 	}
 
 	async update(
@@ -113,51 +113,46 @@ export class DrizzleCourseRepository implements CourseRepositoryPort {
 
 	async saveCourseTree(
 		generatedCourse: GeneratedCourse,
-		userId: string,
+		auth: AuthContext,
 	): Promise<Course> {
-		return this.dbContext.runAsUser(
-			{ userId, role: 'authenticated' },
-			async (db) => {
-				const tx = db as DrizzleDB;
-				const [course] = await tx
-					.insert(schema.courses)
-					.values({
-						...generatedCourse.course,
-						userId,
-					})
-					.returning();
+		return this.dbContext.runAsUser(auth, async (db) => {
+			const tx = db as DrizzleDB;
+			const [course] = await tx
+				.insert(schema.courses)
+				.values({
+					...generatedCourse.course,
+					userId: auth.userId,
+				})
+				.returning();
 
-				const courseId = course.id;
+			const courseId = course.id;
 
-				const [module] = await tx
-					.insert(schema.modules)
-					.values({
-						id: uuidv4(),
-						courseId,
-						title: 'Módulo 1',
-					})
-					.returning();
+			const [module] = await tx
+				.insert(schema.modules)
+				.values({
+					id: uuidv4(),
+					courseId,
+					title: 'Módulo 1',
+				})
+				.returning();
 
-				const moduleId = module.id;
+			const moduleId = module.id;
 
-				const lessonsToInsert = generatedCourse.lessons.map(
-					(lesson) => ({
-						id: uuidv4(),
-						moduleId,
-						courseId,
-						lessonType: 'article',
-						title: lesson.title,
-						content: lesson.content,
-						orderIndex: lesson.order,
-					}),
-				);
+			const lessonsToInsert = generatedCourse.lessons.map((lesson) => ({
+				id: uuidv4(),
+				moduleId,
+				courseId,
+				lessonType: 'article',
+				title: lesson.title,
+				content: lesson.content,
+				orderIndex: lesson.order,
+			}));
 
-				if (lessonsToInsert.length > 0) {
-					await tx.insert(schema.lessons).values(lessonsToInsert);
-				}
+			if (lessonsToInsert.length > 0) {
+				await tx.insert(schema.lessons).values(lessonsToInsert);
+			}
 
-				return CourseMapper.toDomain(course);
-			},
-		);
+			return CourseMapper.toDomain(course);
+		});
 	}
 }

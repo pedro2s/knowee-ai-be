@@ -13,6 +13,9 @@ export class FetchCoursesUseCase {
 	) {}
 
 	execute(userId: string): Promise<Course[]> {
-		return this.courseRepository.findAllByUserId(userId);
+		return this.courseRepository.findAllByUserId(userId, {
+			userId,
+			role: 'authenticated',
+		});
 	}
 }

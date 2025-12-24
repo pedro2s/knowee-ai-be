@@ -19,6 +19,9 @@ export class CreateCourseUseCase {
 			input.model || 'openai',
 		);
 		const generated = await courseGen.generate(input);
-		return this.courseRepository.saveCourseTree(generated, input.userId);
+		return this.courseRepository.saveCourseTree(generated, {
+			userId: input.userId,
+			role: 'authenticated',
+		});
 	}
 }

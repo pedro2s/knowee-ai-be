@@ -7,12 +7,12 @@ export interface CourseRepositoryPort {
 	create(course: Course, auth: AuthContext): Promise<Course>;
 	save(course: Course, auth: AuthContext): Promise<Course>;
 	findById(id: string, auth: AuthContext): Promise<Course | null>;
-	findAllByUserId(userId: string): Promise<Course[]>;
+	findAllByUserId(userId: string, auth: AuthContext): Promise<Course[]>;
 	update(
 		id: string,
 		values: Partial<CreateCourseInput>,
 		auth: AuthContext,
 	): Promise<Course | null>;
 	delete(id: string, auth: AuthContext): Promise<void>;
-	saveCourseTree(course: GeneratedCourse, userId: string): Promise<Course>;
+	saveCourseTree(course: GeneratedCourse, auth: AuthContext): Promise<Course>;
 }
