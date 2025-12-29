@@ -5,7 +5,7 @@ import {
 } from 'src/modules/course-authoring/domain/entities/course.types';
 import { Course } from 'src/modules/course-authoring/domain/entities/course.entity';
 import { CourseRepositoryPort } from 'src/modules/course-authoring/domain/ports/course-repository.port';
-import { eq } from 'drizzle-orm';
+import { desc, eq } from 'drizzle-orm';
 import { v4 as uuidv4 } from 'uuid';
 import {
 	DB_CONTEXT,
@@ -83,6 +83,7 @@ export class DrizzleCourseRepository implements CourseRepositoryPort {
 						},
 					},
 				},
+				orderBy: (course) => [desc(course.createdAt)],
 			});
 			return userCourses.map(CourseMapper.toDomain);
 		});

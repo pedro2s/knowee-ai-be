@@ -8,6 +8,8 @@ import { CurrentUser } from 'src/shared/infrastructure/decorators';
 import type { UserPayload } from 'src/shared/types/user.types';
 import { CourseSummaryResponseDto } from '../../application/dtos/course-summary.response.dto';
 import { GetCourseUseCase } from '../../application/use-cases/get-course.usecase';
+import { ModuleResponseDto } from '../../application/dtos/module.response.dto';
+import { FetchModulesUseCase } from '../../application/use-cases/fetch-modules.usecase';
 
 @Controller('courses')
 @UseGuards(SupabaseAuthGuard)
@@ -16,7 +18,24 @@ export class CoursesController {
 		private readonly createCourse: CreateCourseUseCase,
 		private readonly fetchCourses: FetchCoursesUseCase,
 		private readonly getCourse: GetCourseUseCase,
+		private readonly fetchModules: FetchModulesUseCase,
 	) {}
+
+	@Post()
+	async create(
+		@Body() body: CreateCourseDto,
+		@CurrentUser() user: UserPayload,
+	): Promise<CourseResponseDto> {
+		// 1. Chama o Caso de Uso passando os dados validos
+		const courseEntity = await this.createCourse.execute({
+			...(body as any),
+			userId: user.id,
+			model: body.ai?.model,
+		});
+
+		// 2. Converte a Entidade de Domínio para o Contrato da API (Response DTO)
+		return CourseResponseDto.fromDomain(courseEntity);
+	}
 
 	@Get()
 	async findAll(
@@ -38,19 +57,12 @@ export class CoursesController {
 		return CourseResponseDto.fromDomain(course);
 	}
 
-	@Post()
-	async create(
-		@Body() body: CreateCourseDto,
+	@Get('/:id/modules')
+	async findModules(
+		@Param('id') id: string,
 		@CurrentUser() user: UserPayload,
-	): Promise<CourseResponseDto> {
-		// 1. Chama o Caso de Uso passando os dados validos
-		const courseEntity = await this.createCourse.execute({
-			...(body as any),
-			userId: user.id,
-			model: body.ai?.model,
-		});
-
-		// 2. Converte a Entidade de Domínio para o Contrato da API (Response DTO)
-		return CourseResponseDto.fromDomain(courseEntity);
+	): Promise<ModuleResponseDto[]> {
+		const modules = await this.fetchModules.execute(id, user.id);
+		return modules.map(ModuleResponseDto.fromDomain);
 	}
 }

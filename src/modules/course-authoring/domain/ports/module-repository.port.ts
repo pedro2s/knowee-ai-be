@@ -2,6 +2,8 @@ import { AuthContext } from 'src/shared/database/application/ports/db-context.po
 import { Module } from '../entities/module.entity';
 import { CreateModuleInput } from '../entities/module.types';
 
+export const MODULE_REPOSITORY = 'MODULE_REPOSITORY';
+
 export interface ModuleRepositoryPort {
 	create(module: Module, auth: AuthContext): Promise<Module>;
 	save(module: Module, auth: AuthContext): Promise<Module>;

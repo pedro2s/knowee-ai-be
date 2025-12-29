@@ -10,7 +10,7 @@ import {
 import { ModuleMapper } from './mappers/module.mapper';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import * as schema from 'src/shared/database/infrastructure/drizzle/schema';
-import { eq } from 'drizzle-orm';
+import { asc, eq } from 'drizzle-orm';
 
 type DrizzleDB = NodePgDatabase<typeof schema>;
 
@@ -73,7 +73,8 @@ export class DrizzleModuleRepository implements ModuleRepositoryPort {
 			const courseModules = await tx
 				.select()
 				.from(schema.modules)
-				.where(eq(schema.modules.courseId, courseId));
+				.where(eq(schema.modules.courseId, courseId))
+				.orderBy(asc(schema.modules.orderIndex));
 
 			// Schema Drizzle -> Mapper -> Domínio
 			return courseModules.map(ModuleMapper.toDomain);

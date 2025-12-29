@@ -20,6 +20,9 @@ import { OpenAIImageGeneratorAdapter } from './infrastructure/providers/openai/o
 import { ModulesController } from './infrastructure/controllers/modules.controller';
 import { FetchLessonsUseCase } from './application/use-cases/fetchLessons.usecase';
 import { GetLessonUseCase } from './application/use-cases/get-lesson.usecase';
+import { MODULE_REPOSITORY } from './domain/ports/module-repository.port';
+import { DrizzleModuleRepository } from './infrastructure/persistence/drizzle/drizzle-module.repository';
+import { FetchModulesUseCase } from './application/use-cases/fetch-modules.usecase';
 
 @Module({
 	controllers: [CoursesController, ModulesController, LessonsController],
@@ -27,9 +30,11 @@ import { GetLessonUseCase } from './application/use-cases/get-lesson.usecase';
 	providers: [
 		{ provide: COURSE_REPOSITORY, useClass: DrizzleCourseRepository },
 		{ provide: LESSON_REPOSITORY, useClass: DrizzleLessonRepository },
+		{ provide: MODULE_REPOSITORY, useClass: DrizzleModuleRepository },
 		GetCourseUseCase,
 		GetLessonUseCase,
 		FetchCoursesUseCase,
+		FetchModulesUseCase,
 		FetchLessonsUseCase,
 		CreateCourseUseCase,
 		GenerateLessonAudioUseCase,

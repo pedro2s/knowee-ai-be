@@ -10,12 +10,12 @@ import { SupabaseAuthGuard } from 'src/modules/auth/infrastructure/guards/supaba
 export class ModulesController {
 	constructor(private readonly fetchLessons: FetchLessonsUseCase) {}
 
-	@Get('/:moduleId/lessons')
+	@Get('/:id/lessons')
 	async findLessons(
-		@Param('moduleId') moduleId: string,
+		@Param('id') id: string,
 		@CurrentUser() user: UserPayload,
 	): Promise<LessonResponseDto[]> {
-		const lessons = await this.fetchLessons.execute(moduleId, user.id);
+		const lessons = await this.fetchLessons.execute(id, user.id);
 		return lessons.map(LessonResponseDto.fromDomain);
 	}
 }

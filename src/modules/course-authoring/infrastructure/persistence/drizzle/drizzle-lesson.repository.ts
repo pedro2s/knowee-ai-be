@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { eq } from 'drizzle-orm';
+import { asc, eq } from 'drizzle-orm';
 import { Lesson } from 'src/modules/course-authoring/domain/entities/lesson.entity';
 import { LessonRepositoryPort } from 'src/modules/course-authoring/domain/ports/lesson-repository.port';
 import { CreateLessonInput } from 'src/modules/course-authoring/domain/entities/lesson.types';
@@ -53,7 +53,8 @@ export class DrizzleLessonRepository implements LessonRepositoryPort {
 			const moduleLessons = await tx
 				.select()
 				.from(schema.lessons)
-				.where(eq(schema.lessons.moduleId, moduleId));
+				.where(eq(schema.lessons.moduleId, moduleId))
+				.orderBy(asc(schema.lessons.orderIndex));
 
 			// Schema Drizzle -> Mapper -> Domínio
 			return moduleLessons.map(LessonMapper.toDomain);
