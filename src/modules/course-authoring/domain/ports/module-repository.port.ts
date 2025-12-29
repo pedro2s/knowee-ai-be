@@ -14,5 +14,8 @@ export interface ModuleRepositoryPort {
 		values: Partial<CreateModuleInput>,
 		auth: AuthContext,
 	): Promise<Module | null>;
-	delete(id: string, auth: AuthContext): Promise<void>;
+	delete(
+		id: string,
+		auth: AuthContext,
+	): Promise<{ deletedModule: Module | null }>;
 }

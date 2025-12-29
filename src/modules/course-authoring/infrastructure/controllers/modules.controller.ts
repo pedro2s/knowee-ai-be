@@ -1,14 +1,48 @@
-import { Controller, Get, Param, UseGuards } from '@nestjs/common';
+import {
+	Body,
+	Controller,
+	Delete,
+	Get,
+	Param,
+	Post,
+	UseGuards,
+} from '@nestjs/common';
+import { CreateModuleUseCase } from '../../application/use-cases/create-module.usecase';
 import { FetchLessonsUseCase } from '../../application/use-cases/fetchLessons.usecase';
 import { CurrentUser } from 'src/shared/infrastructure/decorators';
 import type { UserPayload } from 'src/shared/types/user.types';
 import { LessonResponseDto } from '../../application/dtos/lesson.response.dto';
 import { SupabaseAuthGuard } from 'src/modules/auth/infrastructure/guards/supabase-auth.guard';
+import { ModuleResponseDto } from '../../application/dtos/module.response.dto';
+import { CreateModuleDto } from '../../application/dtos/create-module.dto';
+import { DeleteModuleUseCase } from '../../application/use-cases/delete-module.usecase';
 
 @Controller('modules')
 @UseGuards(SupabaseAuthGuard)
 export class ModulesController {
-	constructor(private readonly fetchLessons: FetchLessonsUseCase) {}
+	constructor(
+		private readonly createModule: CreateModuleUseCase,
+		private readonly deleteModule: DeleteModuleUseCase,
+		private readonly fetchLessons: FetchLessonsUseCase,
+	) {}
+
+	@Post()
+	async create(
+		@Body() data: CreateModuleDto,
+		@CurrentUser() user: UserPayload,
+	): Promise<ModuleResponseDto> {
+		const module = await this.createModule.execute(data, user.id);
+		return ModuleResponseDto.fromDomain(module);
+	}
+
+	@Delete('/:id')
+	async delete(
+		@Param('id') id: string,
+		@CurrentUser() user: UserPayload,
+	): Promise<{ deletedModule: ModuleResponseDto }> {
+		const { deletedModule } = await this.deleteModule.execute(id, user.id);
+		return { deletedModule: ModuleResponseDto.fromDomain(deletedModule) };
+	}
 
 	@Get('/:id/lessons')
 	async findLessons(

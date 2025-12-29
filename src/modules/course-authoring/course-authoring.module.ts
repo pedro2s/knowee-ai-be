@@ -23,6 +23,8 @@ import { GetLessonUseCase } from './application/use-cases/get-lesson.usecase';
 import { MODULE_REPOSITORY } from './domain/ports/module-repository.port';
 import { DrizzleModuleRepository } from './infrastructure/persistence/drizzle/drizzle-module.repository';
 import { FetchModulesUseCase } from './application/use-cases/fetch-modules.usecase';
+import { CreateModuleUseCase } from './application/use-cases/create-module.usecase';
+import { DeleteModuleUseCase } from './application/use-cases/delete-module.usecase';
 
 @Module({
 	controllers: [CoursesController, ModulesController, LessonsController],
@@ -31,12 +33,14 @@ import { FetchModulesUseCase } from './application/use-cases/fetch-modules.useca
 		{ provide: COURSE_REPOSITORY, useClass: DrizzleCourseRepository },
 		{ provide: LESSON_REPOSITORY, useClass: DrizzleLessonRepository },
 		{ provide: MODULE_REPOSITORY, useClass: DrizzleModuleRepository },
+		CreateCourseUseCase,
+		CreateModuleUseCase,
 		GetCourseUseCase,
 		GetLessonUseCase,
 		FetchCoursesUseCase,
 		FetchModulesUseCase,
 		FetchLessonsUseCase,
-		CreateCourseUseCase,
+		DeleteModuleUseCase,
 		GenerateLessonAudioUseCase,
 		GenerateLessonAudioUseCase,
 		ProviderRegistry,

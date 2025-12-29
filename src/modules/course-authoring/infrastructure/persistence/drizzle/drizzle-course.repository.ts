@@ -58,8 +58,13 @@ export class DrizzleCourseRepository implements CourseRepositoryPort {
 				where: eq(schema.courses.id, id),
 				with: {
 					modules: {
+						orderBy: (module, { asc }) => [asc(module.orderIndex)],
 						with: {
-							lessons: true, // Carrega as lições para cada módulo
+							lessons: {
+								orderBy: (lesson, { asc }) => [
+									asc(lesson.orderIndex),
+								],
+							}, // Carrega as lições para cada módulo
 						},
 					},
 				},

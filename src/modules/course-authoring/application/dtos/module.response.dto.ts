@@ -3,6 +3,7 @@ import { Module } from '../../domain/entities/module.entity';
 export class ModuleResponseDto {
 	// Definimos explicitamente o que é público
 	id: string;
+	courseId: string;
 	title: string;
 	description: string | null;
 	orderIndex: number;
@@ -30,6 +31,7 @@ export class ModuleResponseDto {
 
 		return new ModuleResponseDto({
 			id: primitives.id,
+			courseId: primitives.courseId,
 			title: primitives.title,
 			description: primitives.description,
 			orderIndex: primitives.orderIndex,
