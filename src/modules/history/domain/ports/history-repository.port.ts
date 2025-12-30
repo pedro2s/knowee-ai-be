@@ -14,11 +14,7 @@ export interface HistoryRepositoryPort {
 
 	countMessages(courseId: string, context: AuthContext): Promise<number>;
 
-	saveHistory(
-		courseId: string,
-		message: History,
-		context: AuthContext,
-	): Promise<void>;
+	saveHistory(history: History, context: AuthContext): Promise<void>;
 
 	deleteHistory(courseId: string, context: AuthContext): Promise<void>;
 }

@@ -8,7 +8,7 @@ export class History {
 	static create(input: CreateHistoryInput): History {
 		const { role, content } = input.message as {
 			role: 'user' | 'assistant' | 'system';
-			content: string;
+			content: string | Array<{ type: 'text'; text: string }>;
 		};
 		const messageVO = HistoryMessage.create(role, content);
 

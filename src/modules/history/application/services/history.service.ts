@@ -63,7 +63,7 @@ export class HistoryService {
 			courseId,
 			message: { role, content },
 		});
-		return this.historyRepository.saveHistory(courseId, history, context);
+		return this.historyRepository.saveHistory(history, context);
 	}
 
 	public async saveMessageAndSummarizeIfNecessary(

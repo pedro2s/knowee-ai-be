@@ -5,7 +5,6 @@ import {
 	type DbContext,
 } from 'src/shared/database/application/ports/db-context.port';
 import { and, eq, sql } from 'drizzle-orm';
-import { history } from 'src/shared/database/infrastructure/drizzle/schema';
 import { HistoryRepositoryPort } from 'src/modules/history/domain/ports/history-repository.port';
 import { History } from 'src/modules/history/domain/entities/history.entity';
 import { HistoryMapper } from './mappers/history.mapper';
@@ -26,8 +25,8 @@ export class DrizzleHistoryRepository implements HistoryRepositoryPort {
 
 			const result = await tx.query.history.findMany({
 				where: and(
-					eq(history.userId, context.userId),
-					eq(history.courseId, courseId),
+					eq(schema.history.userId, context.userId),
+					eq(schema.history.courseId, courseId),
 				),
 				orderBy: (history, { asc }) => [asc(history.createdAt)],
 			});
@@ -46,8 +45,8 @@ export class DrizzleHistoryRepository implements HistoryRepositoryPort {
 
 			const result = await tx.query.history.findMany({
 				where: and(
-					eq(history.userId, context.userId),
-					eq(history.courseId, courseId),
+					eq(schema.history.userId, context.userId),
+					eq(schema.history.courseId, courseId),
 				),
 				orderBy: (history, { desc }) => [desc(history.createdAt)],
 				limit: windowSize,
@@ -65,31 +64,27 @@ export class DrizzleHistoryRepository implements HistoryRepositoryPort {
 			const tx = db as DrizzleDB;
 			const result = await tx
 				.select({
-					count: sql<number>`cast(count(${history.id}) as int)`,
+					count: sql<number>`cast(count(${schema.history.id}) as int)`,
 				})
-				.from(history)
+				.from(schema.history)
 				.where(
 					and(
-						eq(history.userId, context.userId),
-						eq(history.courseId, courseId),
+						eq(schema.history.userId, context.userId),
+						eq(schema.history.courseId, courseId),
 					),
 				);
 			return result[0].count;
 		});
 	}
 
-	async saveHistory(
-		courseId: string,
-		message: History,
-		context: AuthContext,
-	): Promise<void> {
-		const persistence = HistoryMapper.toPersistence(message);
+	async saveHistory(history: History, context: AuthContext): Promise<void> {
+		const persistence = HistoryMapper.toPersistence(history);
 		await this.dbContext.runAsUser(context, async (db) => {
 			const tx = db as DrizzleDB;
 
-			await tx.insert(history).values({
+			await tx.insert(schema.history).values({
 				userId: context.userId,
-				courseId,
+				courseId: persistence.courseId,
 				message: persistence.message,
 			});
 		});
@@ -100,11 +95,11 @@ export class DrizzleHistoryRepository implements HistoryRepositoryPort {
 			const tx = db as DrizzleDB;
 
 			await tx
-				.delete(history)
+				.delete(schema.history)
 				.where(
 					and(
-						eq(history.userId, context.userId),
-						eq(history.courseId, courseId),
+						eq(schema.history.userId, context.userId),
+						eq(schema.history.courseId, courseId),
 					),
 				);
 		});
