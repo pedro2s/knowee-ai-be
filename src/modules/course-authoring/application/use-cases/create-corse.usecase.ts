@@ -3,8 +3,9 @@ import {
 	COURSE_REPOSITORY,
 	type CourseRepositoryPort,
 } from '../../domain/ports/course-repository.port';
-import { CreateCourseInput } from '../../domain/entities/course.types';
 import { ProviderRegistry } from '../../infrastructure/providers/provider.registry';
+import { CreateCourseDto } from '../dtos/create-course.dto';
+import { Course } from '../../domain/entities/course.entity';
 
 @Injectable()
 export class CreateCourseUseCase {
@@ -14,10 +15,16 @@ export class CreateCourseUseCase {
 		private readonly providerRegistry: ProviderRegistry,
 	) {}
 
-	async execute(input: CreateCourseInput) {
+	async execute(
+		input: CreateCourseDto & {
+			userId: string;
+			files: Express.Multer.File[];
+		},
+	): Promise<Course> {
 		const courseGen = this.providerRegistry.getCourseStrategy(
-			input.model || 'openai',
+			input.ai?.provider || 'openai',
 		);
+
 		const generated = await courseGen.generate(input);
 		return this.courseRepository.saveCourseTree(generated, {
 			userId: input.userId,

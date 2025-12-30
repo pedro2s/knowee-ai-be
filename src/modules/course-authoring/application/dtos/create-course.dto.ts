@@ -1,6 +1,16 @@
-import { IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
+import {
+	IsBoolean,
+	IsOptional,
+	IsString,
+	MaxLength,
+	MinLength,
+	ValidateNested,
+} from 'class-validator';
+import { AIProviderDto } from './ai-provider.dto';
+import { Type } from 'class-transformer';
 
 export class CreateCourseDto {
+	// Dados básicos do curso
 	@IsString({ message: 'O título deve ser uma string' })
 	@MinLength(5, { message: 'O título é muito curto (mínimo 5 caracteres)' })
 	@MaxLength(100, {
@@ -30,7 +40,68 @@ export class CreateCourseDto {
 
 	@IsOptional()
 	@IsString({ message: 'Os objetivos devem ser uma string' })
-	readonly ai?: {
-		model: string;
-	};
+	readonly objectives?: string;
+
+	// Dados personalizados baseados no nível
+	@IsOptional()
+	@IsString({ message: 'O objetivo principal deve ser uma string' })
+	readonly mainGoal?: string;
+
+	@IsOptional()
+	@IsString({ message: 'Os tópicos essenciais devem ser uma string' })
+	readonly essentialTopics?: string;
+
+	@IsOptional()
+	@IsString({ message: 'Os casos de exemplo devem ser uma string' })
+	readonly examplesCases?: string;
+
+	@IsOptional()
+	@IsString({ message: 'O tipo do curso deve ser uma string' })
+	readonly courseType?: string;
+
+	@IsOptional()
+	@IsBoolean({ message: 'includeAssessments deve ser um booleano' })
+	readonly includeAssessments: boolean;
+
+	@IsOptional()
+	@IsBoolean({ message: 'includeProjects deve ser um booleano' })
+	readonly includeProjects: boolean;
+
+	// perfil do instrutor
+	@IsString({ message: 'O nome do instrutor deve ser uma string' })
+	readonly instructorName: string;
+
+	@IsOptional()
+	@IsString({ message: 'O nível do instrutor deve ser uma string' })
+	readonly instructorLevel?: string;
+
+	@IsOptional()
+	@IsString({ message: 'A área do instrutor deve ser uma string' })
+	readonly instructorArea?: string;
+
+	@IsOptional()
+	@IsString({ message: 'A experiência do instrutor deve ser uma string' })
+	readonly teachingExperience?: string;
+
+	@IsOptional()
+	@IsString({ message: 'As conquistas do instrutor devem ser uma string' })
+	readonly instructorAchievements?: string;
+
+	@IsOptional()
+	@IsString({ message: 'O público típico deve ser uma string' })
+	readonly typicalAudience?: string;
+
+	@IsOptional()
+	@IsString({ message: 'A motivação do instrutor deve ser uma string' })
+	readonly instructorMotivation?: string;
+
+	@IsOptional()
+	@IsString({ message: 'Os formatos preferidos devem ser uma string' })
+	readonly preferredFormats?: string;
+
+	// Dados de IA
+	@IsOptional()
+	@Type(() => AIProviderDto)
+	@ValidateNested()
+	readonly ai?: AIProviderDto;
 }

@@ -1,4 +1,13 @@
-import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
+import {
+	Body,
+	Controller,
+	Get,
+	Param,
+	Post,
+	UploadedFiles,
+	UseGuards,
+	UseInterceptors,
+} from '@nestjs/common';
 import { CreateCourseUseCase } from '../../application/use-cases/create-corse.usecase';
 import { SupabaseAuthGuard } from 'src/modules/auth/infrastructure/guards/supabase-auth.guard';
 import { FetchCoursesUseCase } from '../../application/use-cases/fetch-courses.usecase';
@@ -10,6 +19,7 @@ import { CourseSummaryResponseDto } from '../../application/dtos/course-summary.
 import { GetCourseUseCase } from '../../application/use-cases/get-course.usecase';
 import { ModuleResponseDto } from '../../application/dtos/module.response.dto';
 import { FetchModulesUseCase } from '../../application/use-cases/fetch-modules.usecase';
+import { FilesInterceptor } from '@nestjs/platform-express';
 
 @Controller('courses')
 @UseGuards(SupabaseAuthGuard)
@@ -22,15 +32,17 @@ export class CoursesController {
 	) {}
 
 	@Post()
+	@UseInterceptors(FilesInterceptor('files'))
 	async create(
+		@UploadedFiles() files: Express.Multer.File[],
 		@Body() body: CreateCourseDto,
 		@CurrentUser() user: UserPayload,
 	): Promise<CourseResponseDto> {
 		// 1. Chama o Caso de Uso passando os dados validos
 		const courseEntity = await this.createCourse.execute({
-			...(body as any),
+			...body,
+			files,
 			userId: user.id,
-			model: body.ai?.model,
 		});
 
 		// 2. Converte a Entidade de Domínio para o Contrato da API (Response DTO)
