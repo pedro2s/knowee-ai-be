@@ -25,6 +25,7 @@ import { DrizzleModuleRepository } from './infrastructure/persistence/drizzle/dr
 import { FetchModulesUseCase } from './application/use-cases/fetch-modules.usecase';
 import { CreateModuleUseCase } from './application/use-cases/create-module.usecase';
 import { DeleteModuleUseCase } from './application/use-cases/delete-module.usecase';
+import { UpdateModuleUseCase } from './application/use-cases/update-module.usecase';
 
 @Module({
 	controllers: [CoursesController, ModulesController, LessonsController],
@@ -41,6 +42,7 @@ import { DeleteModuleUseCase } from './application/use-cases/delete-module.useca
 		FetchModulesUseCase,
 		FetchLessonsUseCase,
 		DeleteModuleUseCase,
+		UpdateModuleUseCase,
 		GenerateLessonAudioUseCase,
 		GenerateLessonAudioUseCase,
 		ProviderRegistry,

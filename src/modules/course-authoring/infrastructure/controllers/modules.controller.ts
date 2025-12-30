@@ -4,6 +4,7 @@ import {
 	Delete,
 	Get,
 	Param,
+	Patch,
 	Post,
 	UseGuards,
 } from '@nestjs/common';
@@ -16,6 +17,8 @@ import { SupabaseAuthGuard } from 'src/modules/auth/infrastructure/guards/supaba
 import { ModuleResponseDto } from '../../application/dtos/module.response.dto';
 import { CreateModuleDto } from '../../application/dtos/create-module.dto';
 import { DeleteModuleUseCase } from '../../application/use-cases/delete-module.usecase';
+import { UpdateModuleDto } from '../../application/dtos/update-module.dto';
+import { UpdateModuleUseCase } from '../../application/use-cases/update-module.usecase';
 
 @Controller('modules')
 @UseGuards(SupabaseAuthGuard)
@@ -23,6 +26,7 @@ export class ModulesController {
 	constructor(
 		private readonly createModule: CreateModuleUseCase,
 		private readonly deleteModule: DeleteModuleUseCase,
+		private readonly updateModule: UpdateModuleUseCase,
 		private readonly fetchLessons: FetchLessonsUseCase,
 	) {}
 
@@ -32,6 +36,16 @@ export class ModulesController {
 		@CurrentUser() user: UserPayload,
 	): Promise<ModuleResponseDto> {
 		const module = await this.createModule.execute(data, user.id);
+		return ModuleResponseDto.fromDomain(module);
+	}
+
+	@Patch('/:id')
+	async update(
+		@Param('id') id: string,
+		@Body() data: UpdateModuleDto,
+		@CurrentUser() user: UserPayload,
+	): Promise<ModuleResponseDto> {
+		const module = await this.updateModule.execute(id, data, user.id);
 		return ModuleResponseDto.fromDomain(module);
 	}
 

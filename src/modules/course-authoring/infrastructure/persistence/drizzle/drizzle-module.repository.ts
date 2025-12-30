@@ -99,19 +99,16 @@ export class DrizzleModuleRepository implements ModuleRepositoryPort {
 		});
 	}
 
-	delete(
-		id: string,
-		auth: AuthContext,
-	): Promise<{ deletedModule: Module | null }> {
+	delete(id: string, auth: AuthContext): Promise<Module | null> {
 		return this.dbContext.runAsUser(auth, async (db) => {
 			const tx = db as DrizzleDB;
 			const [deletedModule] = await tx
 				.delete(schema.modules)
 				.where(eq(schema.modules.id, id))
 				.returning();
-			return deletedModule
-				? { deletedModule: ModuleMapper.toDomain(deletedModule) }
-				: { deletedModule: null };
+
+			// Schema Drizzle -> Mapper -> Domínio
+			return deletedModule ? ModuleMapper.toDomain(deletedModule) : null;
 		});
 	}
 }

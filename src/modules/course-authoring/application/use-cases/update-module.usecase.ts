@@ -1,18 +1,14 @@
-import {
-	Inject,
-	Injectable,
-	InternalServerErrorException,
-	NotFoundException,
-} from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import {
 	MODULE_REPOSITORY,
 	type ModuleRepositoryPort,
 } from '../../domain/ports/module-repository.port';
 import { Module } from '../../domain/entities/module.entity';
 import { AuthContext } from 'src/shared/database/application/ports/db-context.port';
+import { UpdateModuleDto } from '../dtos/update-module.dto';
 
 @Injectable()
-export class DeleteModuleUseCase {
+export class UpdateModuleUseCase {
 	constructor(
 		@Inject(MODULE_REPOSITORY)
 		private readonly moduleRepository: ModuleRepositoryPort,
@@ -20,16 +16,21 @@ export class DeleteModuleUseCase {
 
 	async execute(
 		moduleId: string,
+		updateData: UpdateModuleDto,
 		userId: string,
-	): Promise<{ deletedModule: Module }> {
-		const deletedModule = await this.moduleRepository.delete(moduleId, {
-			userId,
-			role: 'authenticated',
-		});
+	): Promise<Module> {
+		const updatedModule = await this.moduleRepository.update(
+			moduleId,
+			updateData,
+			{
+				userId,
+				role: 'authenticated',
+			},
+		);
 
-		if (!deletedModule)
+		if (!updatedModule)
 			throw new NotFoundException('Módulo não encontrado');
 
-		return { deletedModule };
+		return updatedModule;
 	}
 }
