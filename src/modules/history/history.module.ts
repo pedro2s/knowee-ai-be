@@ -22,6 +22,6 @@ import { HISTORY_SUMMARY_REPOSITORY } from './domain/ports/history-summary-repos
 		},
 		OpenAISummarizeHistoryAdapter,
 	],
-	exports: [HistoryService],
+	exports: [HistoryService, HISTORY_REPOSITORY, HISTORY_SUMMARY_REPOSITORY],
 })
 export class HistoryModule {}

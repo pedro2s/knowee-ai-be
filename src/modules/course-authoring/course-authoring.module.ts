@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { GenerateLessonAudioUseCase } from './application/use-cases/generate-lesson-audio.usecase';
 import { DrizzleCourseRepository } from './infrastructure/persistence/drizzle/drizzle-course.repository';
-import { CreateCourseUseCase } from './application/use-cases/create-corse.usecase';
+import { CreateCourseUseCase } from './application/use-cases/create-course.usecase';
 import { AIModule } from '../../shared/ai/ai.module';
 import { DrizzleLessonRepository } from './infrastructure/persistence/drizzle/drizzle-lesson.repository';
 import { MediaModule } from 'src/shared/media/media.module';
@@ -26,10 +26,11 @@ import { FetchModulesUseCase } from './application/use-cases/fetch-modules.useca
 import { CreateModuleUseCase } from './application/use-cases/create-module.usecase';
 import { DeleteModuleUseCase } from './application/use-cases/delete-module.usecase';
 import { UpdateModuleUseCase } from './application/use-cases/update-module.usecase';
+import { HistoryModule } from '../history/history.module';
 
 @Module({
 	controllers: [CoursesController, ModulesController, LessonsController],
-	imports: [DatabaseModule, AIModule, MediaModule],
+	imports: [DatabaseModule, AIModule, MediaModule, HistoryModule],
 	providers: [
 		{ provide: COURSE_REPOSITORY, useClass: DrizzleCourseRepository },
 		{ provide: LESSON_REPOSITORY, useClass: DrizzleLessonRepository },

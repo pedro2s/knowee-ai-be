@@ -1,25 +1,23 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
-import OpenAI from 'openai';
-import { toSql } from 'pgvector/drizzle';
+import { toSql } from 'pgvector';
 import { DrizzleService } from '../database/infrastructure/drizzle/drizzle.service';
 import { documents } from '../database/infrastructure/drizzle/schema';
-import { sql } from 'drizzle-orm';
+import { l2Distance, desc, eq } from 'drizzle-orm';
 import { TokenUsageService } from '../token-usage/token-usage.service';
+import { OPENAI_CLIENT } from '../ai/ai.constants';
+import OpenAI from 'openai';
 
 @Injectable()
 export class EmbeddingService {
-	private readonly openai: OpenAI;
 	private readonly logger = new Logger(EmbeddingService.name);
 
 	constructor(
+		@Inject(OPENAI_CLIENT)
+		private readonly openai: OpenAI,
 		private readonly drizzle: DrizzleService,
 		@Inject(TokenUsageService)
 		private readonly tokenUsageService: TokenUsageService,
-	) {
-		this.openai = new OpenAI({
-			apiKey: process.env.OPENAI_API_KEY,
-		});
-	}
+	) {}
 
 	/**
 	 * Inserts content and its embedding into the database.
@@ -49,15 +47,16 @@ export class EmbeddingService {
 		const embedding = await this._embedText(userId, query);
 
 		this.logger.log(`Querying similar documents for user ${userId}`);
-		const result = await this.drizzle.db.execute(sql`
-			SELECT content FROM documents 
-			WHERE user_id = ${userId} 
-			ORDER BY embedding <-> ${toSql(embedding)}
-			LIMIT 5
-		`);
+
+		const similarDocs = await this.drizzle.db
+			.select({ content: documents.content })
+			.from(documents)
+			.where(eq(documents.userId, userId))
+			.orderBy(desc(l2Distance(documents.embedding, toSql(embedding))))
+			.limit(5);
 
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		return result.rows.map((row: any) => row.content as string);
+		return similarDocs.map((doc) => doc.content as string);
 	}
 
 	/**

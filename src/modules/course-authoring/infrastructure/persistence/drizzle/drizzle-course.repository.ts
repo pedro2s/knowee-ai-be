@@ -121,41 +121,48 @@ export class DrizzleCourseRepository implements CourseRepositoryPort {
 		generatedCourse: GeneratedCourse,
 		auth: AuthContext,
 	): Promise<Course> {
+		const { modules, ...courseData } = generatedCourse;
+
 		return this.dbContext.runAsUser(auth, async (db) => {
 			const tx = db as DrizzleDB;
 			const [course] = await tx
 				.insert(schema.courses)
 				.values({
-					...generatedCourse.course,
+					...courseData,
 					userId: auth.userId,
 				})
 				.returning();
 
 			const courseId = course.id;
 
-			const [module] = await tx
-				.insert(schema.modules)
-				.values({
-					id: uuidv4(),
-					courseId,
-					title: 'Módulo 1',
-				})
-				.returning();
+			for (const moduleToInsert of modules) {
+				const [module] = await tx
+					.insert(schema.modules)
+					.values({
+						title: moduleToInsert.title,
+						orderIndex: moduleToInsert.order_index,
+						description: moduleToInsert.description,
+						courseId,
+					})
+					.returning();
 
-			const moduleId = module.id;
+				const moduleId = module.id;
 
-			const lessonsToInsert = generatedCourse.lessons.map((lesson) => ({
-				id: uuidv4(),
-				moduleId,
-				courseId,
-				lessonType: 'article',
-				title: lesson.title,
-				content: lesson.content,
-				orderIndex: lesson.order,
-			}));
+				const lessonsToInsert = moduleToInsert.lessons.map(
+					(lesson) => ({
+						moduleId,
+						courseId,
+						lessonType: 'article',
+						title: lesson.title,
+						content: lesson.content,
+						orderIndex: lesson.order_index,
+						description: lesson.description,
+					}),
+				);
 
-			if (lessonsToInsert.length > 0) {
-				await tx.insert(schema.lessons).values(lessonsToInsert);
+				if (lessonsToInsert.length > 0) {
+					await tx.insert(schema.lessons).values(lessonsToInsert);
+				}
 			}
 
 			return CourseMapper.toDomain(course);

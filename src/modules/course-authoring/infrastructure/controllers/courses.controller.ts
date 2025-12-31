@@ -8,7 +8,7 @@ import {
 	UseGuards,
 	UseInterceptors,
 } from '@nestjs/common';
-import { CreateCourseUseCase } from '../../application/use-cases/create-corse.usecase';
+import { CreateCourseUseCase } from '../../application/use-cases/create-course.usecase';
 import { SupabaseAuthGuard } from 'src/modules/auth/infrastructure/guards/supabase-auth.guard';
 import { FetchCoursesUseCase } from '../../application/use-cases/fetch-courses.usecase';
 import { CourseResponseDto } from '../../application/dtos/course.response.dto';

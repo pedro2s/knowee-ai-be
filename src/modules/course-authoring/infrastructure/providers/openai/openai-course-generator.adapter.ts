@@ -1,4 +1,9 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import {
+	Inject,
+	Injectable,
+	Logger,
+	PreconditionFailedException,
+} from '@nestjs/common';
 import { CourseGeneratorPort } from 'src/modules/course-authoring/domain/ports/course-generator.port';
 import {
 	CreateCourseInput,
@@ -8,7 +13,7 @@ import {
 import { buildCoursePrompt, courseStructure } from './openai.prompts';
 import OpenAI from 'openai';
 import * as path from 'path';
-import * as pdfParse from 'pdf-parse';
+import { PDFParse } from 'pdf-parse';
 import * as mammoth from 'mammoth';
 import { EmbeddingService } from 'src/shared/embeddings/embedding.service';
 import { TokenUsageService } from 'src/shared/token-usage/token-usage.service';
@@ -30,13 +35,17 @@ export class OpenAICourseGeneratorAdapter implements CourseGeneratorPort {
 	}
 
 	async generate(input: CreateCourseInput): Promise<CourseGenerationResult> {
-		this.logger.log(`Starting course generation for title: "${input.title}"`);
+		this.logger.log(
+			`Iniciando a geração do curso para o título: "${input.title}"`,
+		);
 
 		const extractedText = await this._extractTextFromFiles(input.files);
 
 		let filesAnalysis = '';
 		if (extractedText) {
-			this.logger.log('Extracted text from files. Handling embeddings...');
+			this.logger.log(
+				'Extração de texto de arquivos. Manipulação de embeddings...',
+			);
 			await this.embeddingService.insertEmbedding(
 				input.userId,
 				extractedText,
@@ -46,12 +55,14 @@ export class OpenAICourseGeneratorAdapter implements CourseGeneratorPort {
 				input.title,
 			);
 			filesAnalysis = contextDocs.join('\n\n');
-			this.logger.log('File analysis from similar documents is ready.');
+			this.logger.log(
+				'A análise de arquivos a partir de documentos semelhantes está pronta.',
+			);
 		}
 
 		const messages = buildCoursePrompt(input, filesAnalysis);
 
-		this.logger.log('Sending request to OpenAI...');
+		this.logger.log('Enviando solicitação para a OpenAI...');
 		const model = input.ai?.model ?? 'gpt-4o';
 		const completion = await this.openai.chat.completions.create({
 			model,
@@ -63,7 +74,7 @@ export class OpenAICourseGeneratorAdapter implements CourseGeneratorPort {
 			presence_penalty: 0,
 		});
 
-		this.logger.log('Received response from OpenAI.');
+		this.logger.log('Resposta recebida da OpenAI.');
 
 		if (completion.usage?.total_tokens) {
 			await this.tokenUsageService.save(
@@ -75,8 +86,10 @@ export class OpenAICourseGeneratorAdapter implements CourseGeneratorPort {
 
 		const content = completion.choices[0].message.content;
 		if (!content) {
-			this.logger.error('OpenAI API did not return any content.');
-			throw new Error('OpenAI API did not return any content.');
+			this.logger.error('A API da OpenAI não retornou nenhum conteúdo.');
+			throw new PreconditionFailedException(
+				'A API da OpenAI não retornou nenhum conteúdo.',
+			);
 		}
 
 		messages.push(completion.choices[0].message);
@@ -91,7 +104,7 @@ export class OpenAICourseGeneratorAdapter implements CourseGeneratorPort {
 			return '';
 		}
 
-		this.logger.log(`Extracting text from ${files.length} file(s)...`);
+		this.logger.log(`Extraindo texto de ${files.length} arquivo(s)...`);
 		const texts: string[] = [];
 
 		for (const file of files) {
@@ -100,7 +113,8 @@ export class OpenAICourseGeneratorAdapter implements CourseGeneratorPort {
 
 			try {
 				if (ext === '.pdf') {
-					const data = await pdfParse(buffer);
+					const parse = new PDFParse({ data: buffer });
+					const data = await parse.getText();
 					texts.push(data.text);
 				} else if (ext === '.docx') {
 					const { value } = await mammoth.extractRawText({ buffer });
@@ -108,11 +122,13 @@ export class OpenAICourseGeneratorAdapter implements CourseGeneratorPort {
 				} else if (ext === '.txt') {
 					texts.push(buffer.toString('utf-8'));
 				} else {
-					this.logger.warn(`Unsupported file format: ${ext}. Skipping file.`);
+					this.logger.warn(
+						`Formato de arquivo não suportado: ${ext}. Arquivo ignorado.`,
+					);
 				}
 			} catch (error) {
 				this.logger.error(
-					`Error processing file ${file.originalname}:`,
+					`Erro ao processar o arquivo ${file.originalname}:`,
 					error,
 				);
 			}
