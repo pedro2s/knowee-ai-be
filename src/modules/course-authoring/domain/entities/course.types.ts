@@ -55,7 +55,7 @@ export interface CreateCourseInput {
 	instructorAchievements?: string;
 	typicalAudience?: string;
 	instructorMotivation?: string;
-	preferredFormats?: string;
+	preferredFormats?: string[];
 
 	// Dados de IA
 	ai?: {

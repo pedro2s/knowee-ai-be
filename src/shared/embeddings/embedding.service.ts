@@ -32,7 +32,7 @@ export class EmbeddingService {
 		await this.drizzle.db.insert(documents).values({
 			userId,
 			content,
-			embedding: toSql(embedding),
+			embedding: embedding,
 		});
 	}
 
