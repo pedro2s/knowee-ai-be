@@ -208,5 +208,3 @@ Use todos os dados fornecidos para criar uma experiência verdadeiramente person
 		},
 	];
 }
-
-export const courseStructure = { type: 'json_object' } as const;

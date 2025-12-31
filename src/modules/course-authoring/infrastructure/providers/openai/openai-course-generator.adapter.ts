@@ -10,13 +10,14 @@ import {
 	type CourseGenerationResult,
 	type InputFile,
 } from 'src/modules/course-authoring/domain/entities/course.types';
-import { buildCoursePrompt, courseStructure } from './openai.prompts';
+import { buildCoursePrompt } from './openai.prompts';
 import OpenAI from 'openai';
 import * as path from 'path';
 import { PDFParse } from 'pdf-parse';
 import * as mammoth from 'mammoth';
 import { EmbeddingService } from 'src/shared/embeddings/embedding.service';
 import { TokenUsageService } from 'src/shared/token-usage/token-usage.service';
+import { courseStructure } from './schemas/course-structure.schema';
 
 @Injectable()
 export class OpenAICourseGeneratorAdapter implements CourseGeneratorPort {
