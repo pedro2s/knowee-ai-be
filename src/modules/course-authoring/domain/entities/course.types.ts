@@ -93,4 +93,8 @@ export interface GeneratedCourse {
 export interface CourseGenerationResult {
 	course: GeneratedCourse;
 	history: any[]; // O ideal é usar o tipo do OpenAI, mas `any` evita dependência de infra no domínio
+	tokenUsage?: {
+		totalTokens: number;
+		model: string;
+	};
 }

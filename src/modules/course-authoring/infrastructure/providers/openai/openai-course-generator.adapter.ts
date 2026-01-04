@@ -11,17 +11,15 @@ import {
 import { type CourseGenerationResult } from 'src/modules/course-authoring/domain/entities/course.types';
 import { buildCoursePrompt } from './openai.prompts';
 import OpenAI from 'openai';
-import { TokenUsageService } from 'src/shared/token-usage/token-usage.service';
 import { courseStructure } from './schemas/course-structure.schema';
 import { OPENAI_CLIENT } from 'src/shared/ai/ai.constants';
+import { ChatModel } from 'openai/resources';
 
 @Injectable()
 export class OpenAICourseGeneratorAdapter implements CourseGeneratorPort {
 	private readonly logger = new Logger(OpenAICourseGeneratorAdapter.name);
 
 	constructor(
-		@Inject(TokenUsageService)
-		private readonly tokenUsageService: TokenUsageService,
 		@Inject(OPENAI_CLIENT)
 		private readonly openai: OpenAI,
 	) {}
@@ -37,7 +35,7 @@ export class OpenAICourseGeneratorAdapter implements CourseGeneratorPort {
 		const messages = buildCoursePrompt(courseDetails, filesAnalysis);
 
 		this.logger.log('Enviando solicitação para a OpenAI...');
-		const model = courseDetails.ai?.model ?? 'gpt-4o';
+		const model = courseDetails.ai?.model ?? ('gpt-4.1' as ChatModel);
 		const completion = await this.openai.chat.completions.create({
 			model,
 			messages,
@@ -49,14 +47,6 @@ export class OpenAICourseGeneratorAdapter implements CourseGeneratorPort {
 		});
 
 		this.logger.log('Resposta recebida da OpenAI.');
-
-		if (completion.usage?.total_tokens) {
-			await this.tokenUsageService.save(
-				courseDetails.userId,
-				completion.usage.total_tokens,
-				model,
-			);
-		}
 
 		const content = completion.choices[0].message.content;
 		if (!content) {
@@ -70,6 +60,13 @@ export class OpenAICourseGeneratorAdapter implements CourseGeneratorPort {
 
 		const course = JSON.parse(content);
 
-		return { course, history: messages };
+		const tokenUsage = completion.usage?.total_tokens
+			? {
+					totalTokens: completion.usage.total_tokens,
+					model,
+				}
+			: undefined;
+
+		return { course, history: messages, tokenUsage };
 	}
 }

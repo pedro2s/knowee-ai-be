@@ -14,6 +14,7 @@ import { History } from 'src/modules/history/domain/entities/history.entity';
 import type { InputFile } from '../../domain/entities/course.types';
 import { FileProcessingService } from 'src/shared/file-processing/file-processing.service';
 import { EmbeddingService } from 'src/shared/embeddings/embedding.service';
+import { TokenUsageService } from 'src/shared/token-usage/token-usage.service';
 
 @Injectable()
 export class CreateCourseUseCase {
@@ -27,6 +28,7 @@ export class CreateCourseUseCase {
 		private readonly providerRegistry: ProviderRegistry,
 		private readonly fileProcessingService: FileProcessingService,
 		private readonly embeddingService: EmbeddingService,
+		private readonly tokenUsageService: TokenUsageService,
 	) {}
 
 	async execute(
@@ -63,10 +65,22 @@ export class CreateCourseUseCase {
 			input.ai?.provider || 'openai',
 		);
 
-		const { course: generatedCourse, history } = await courseGen.generate({
+		const {
+			course: generatedCourse,
+			history,
+			tokenUsage,
+		} = await courseGen.generate({
 			courseDetails: input,
 			filesAnalysis,
 		});
+
+		if (tokenUsage) {
+			this.tokenUsageService.save(
+				input.userId,
+				tokenUsage.totalTokens,
+				tokenUsage.model,
+			);
+		}
 
 		const savedCourse = await this.courseRepository.saveCourseTree(
 			generatedCourse,
