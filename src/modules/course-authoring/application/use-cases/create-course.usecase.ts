@@ -47,29 +47,21 @@ export class CreateCourseUseCase {
 		let filesAnalysis = '';
 		if (extractedText) {
 			this.logger.log(
-				'Texto extraído. Iniciando manipulação de embeddings...',
+				'Texto extraído. Usando o conteúdo do arquivo como contexto.',
 			);
-			await this.embeddingService.insertEmbedding(
-				input.userId,
-				extractedText,
-			);
-			const contextDocs = await this.embeddingService.querySimilar(
-				input.userId,
-				input.title,
-			);
-			filesAnalysis = contextDocs.join('\n\n');
+			// Use the extracted text directly as context for course generation
+			filesAnalysis = extractedText;
+
+			// Persist the knowledge for future use (e.g., chatbot), but don't use the query result for generation
+			this.embeddingService.insertEmbedding(input.userId, extractedText);
 			this.logger.log(
-				'A análise de arquivos a partir de documentos semelhantes está pronta.',
+				'Embeddings dos arquivos foram salvos para referência futura.',
 			);
 		}
-
-		console.log('Files analysis:', filesAnalysis);
 
 		const courseGen = this.providerRegistry.getCourseStrategy(
 			input.ai?.provider || 'openai',
 		);
-
-		console.log(input.preferredFormats);
 
 		const { course: generatedCourse, history } = await courseGen.generate({
 			courseDetails: input,
