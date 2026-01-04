@@ -2,7 +2,7 @@ import {
 	HISTORY_REPOSITORY,
 	type HistoryRepositoryPort,
 } from 'src/modules/history/domain/ports/history-repository.port';
-import { AuthContext } from 'src/shared/database/application/ports/db-context.port';
+import { AuthContext } from 'src/shared/application/ports/db-context.port';
 import { Inject, Injectable } from '@nestjs/common';
 import { History } from 'src/modules/history/domain/entities/history.entity';
 import { HistoryMessage } from '../../domain/value-objects/history-message.vo';

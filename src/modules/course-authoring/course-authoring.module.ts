@@ -2,12 +2,12 @@ import { Module } from '@nestjs/common';
 import { GenerateLessonAudioUseCase } from './application/use-cases/generate-lesson-audio.usecase';
 import { DrizzleCourseRepository } from './infrastructure/persistence/drizzle/drizzle-course.repository';
 import { CreateCourseUseCase } from './application/use-cases/create-course.usecase';
-import { AIModule } from '../../shared/ai/ai.module';
+import { AIModule } from 'src/shared/infrastructure/ai/ai.module';
 import { DrizzleLessonRepository } from './infrastructure/persistence/drizzle/drizzle-lesson.repository';
-import { MediaModule } from 'src/shared/media/media.module';
+import { MediaModule } from 'src/shared/infrastructure/media/media.module';
 import { LESSON_REPOSITORY } from './domain/ports/lesson-repository.port';
 import { COURSE_REPOSITORY } from './domain/ports/course-repository.port';
-import { DatabaseModule } from 'src/shared/database/database.module';
+import { DatabaseModule } from 'src/shared/infrastructure/database/database.module';
 import { CoursesController } from './infrastructure/controllers/courses.controller';
 import { LessonsController } from './infrastructure/controllers/lessons.controller';
 import { FetchCoursesUseCase } from './application/use-cases/fetch-courses.usecase';
@@ -27,9 +27,9 @@ import { CreateModuleUseCase } from './application/use-cases/create-module.useca
 import { DeleteModuleUseCase } from './application/use-cases/delete-module.usecase';
 import { UpdateModuleUseCase } from './application/use-cases/update-module.usecase';
 import { HistoryModule } from '../history/history.module';
-import { FileProcessingModule } from 'src/shared/file-processing/file-processing.module';
-import { EmbeddingModule } from 'src/shared/embeddings/embedding.module';
-import { TokenUsageModule } from 'src/shared/token-usage/token-usage.module';
+import { FileProcessingModule } from 'src/shared/infrastructure/file-processing/file-processing.module';
+import { EmbeddingModule } from 'src/shared/infrastructure/embeddings/embedding.module';
+import { TokenUsageModule } from 'src/shared/infrastructure/token-usage/token-usage.module';
 
 @Module({
 	controllers: [CoursesController, ModulesController, LessonsController],

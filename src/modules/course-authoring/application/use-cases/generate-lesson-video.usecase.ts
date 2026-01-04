@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { MediaService } from 'src/shared/media/media.service';
+import { MediaService } from 'src/shared/infrastructure/media/media.service';
 import type { ScriptRepositoryPort } from '../../domain/ports/script-repository.port';
 import { ProviderRegistry } from '../../infrastructure/providers/provider.registry';
 

@@ -12,7 +12,7 @@ import { type CourseGenerationResult } from 'src/modules/course-authoring/domain
 import { buildCoursePrompt } from './openai.prompts';
 import OpenAI from 'openai';
 import { courseStructure } from './schemas/course-structure.schema';
-import { OPENAI_CLIENT } from 'src/shared/ai/ai.constants';
+import { OPENAI_CLIENT } from 'src/shared/infrastructure/ai/ai.constants';
 import { ChatModel } from 'openai/resources';
 
 @Injectable()

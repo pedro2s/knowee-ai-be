@@ -4,7 +4,7 @@ import {
 	type ModuleRepositoryPort,
 } from '../../domain/ports/module-repository.port';
 import { Module } from '../../domain/entities/module.entity';
-import { AuthContext } from 'src/shared/database/application/ports/db-context.port';
+import { AuthContext } from 'src/shared/application/ports/db-context.port';
 import { UpdateModuleDto } from '../dtos/update-module.dto';
 
 @Injectable()

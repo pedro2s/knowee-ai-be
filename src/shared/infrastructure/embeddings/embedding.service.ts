@@ -1,7 +1,7 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { toSql } from 'pgvector';
-import { DrizzleService } from '../database/infrastructure/drizzle/drizzle.service';
-import { documents } from '../database/infrastructure/drizzle/schema';
+import { DrizzleService } from '../database/drizzle/drizzle.service';
+import { documents } from '../database/drizzle/schema';
 import { l2Distance, desc, eq } from 'drizzle-orm';
 import { TokenUsageService } from '../token-usage/token-usage.service';
 import { OPENAI_CLIENT } from '../ai/ai.constants';
@@ -28,7 +28,9 @@ export class EmbeddingService {
 	 * @param content - The text content to embed and store.
 	 */
 	async insertEmbedding(userId: string, content: string): Promise<void> {
-		this.logger.log(`Dividindo o conteúdo em blocos para o usuário ${userId}`);
+		this.logger.log(
+			`Dividindo o conteúdo em blocos para o usuário ${userId}`,
+		);
 		const chunks = this._splitText(
 			content,
 			this.CHUNK_SIZE,
@@ -64,10 +66,14 @@ export class EmbeddingService {
 	 * @returns An array of similar content strings.
 	 */
 	async querySimilar(userId: string, query: string): Promise<string[]> {
-		this.logger.log(`Gerando embedding para a consulta do usuário ${userId}`);
+		this.logger.log(
+			`Gerando embedding para a consulta do usuário ${userId}`,
+		);
 		const embedding = await this._embedText(userId, query);
 
-		this.logger.log(`Consultando documentos semelhantes para o usuário ${userId}`);
+		this.logger.log(
+			`Consultando documentos semelhantes para o usuário ${userId}`,
+		);
 
 		const similarDocs = await this.drizzle.db
 			.select({ content: documents.content })

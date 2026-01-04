@@ -2,12 +2,8 @@ import { Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import OpenAI from 'openai';
 import { OPENAI_CLIENT } from './ai.constants';
-import { EmbeddingService } from '../embeddings/embedding.service';
-import { DatabaseModule } from '../database/database.module';
-import { TokenUsageService } from '../token-usage/token-usage.service';
 
 @Module({
-	imports: [DatabaseModule],
 	providers: [
 		{
 			provide: OPENAI_CLIENT,

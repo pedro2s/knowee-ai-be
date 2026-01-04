@@ -1,9 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { DrizzleService } from '../database/infrastructure/drizzle/drizzle.service';
-import {
-	subscribers,
-	tokenUsage,
-} from '../database/infrastructure/drizzle/schema';
+import { DrizzleService } from '../database/drizzle/drizzle.service';
+import { subscribers, tokenUsage } from '../database/drizzle/schema';
 import { and, eq } from 'drizzle-orm';
 
 @Injectable()
@@ -24,18 +21,21 @@ export class TokenUsageService {
 		model: string,
 	): Promise<void> {
 		try {
-			this.logger.log(`Registrando uso de tokens para o usuário: ${userId}`);
+			this.logger.log(
+				`Registrando uso de tokens para o usuário: ${userId}`,
+			);
 
 			// Find the user's active subscription
-			const subscription = await this.drizzle.db.query.subscribers.findFirst({
-				where: and(
-					eq(subscribers.userId, userId),
-					eq(subscribers.subscribed, true),
-				),
-				columns: {
-					id: true,
-				},
-			});
+			const subscription =
+				await this.drizzle.db.query.subscribers.findFirst({
+					where: and(
+						eq(subscribers.userId, userId),
+						eq(subscribers.subscribed, true),
+					),
+					columns: {
+						id: true,
+					},
+				});
 
 			if (!subscription) {
 				this.logger.warn(

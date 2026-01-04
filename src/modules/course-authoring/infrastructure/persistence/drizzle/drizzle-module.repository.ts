@@ -6,10 +6,10 @@ import {
 	AuthContext,
 	DB_CONTEXT,
 	type DbContext,
-} from 'src/shared/database/application/ports/db-context.port';
+} from 'src/shared/application/ports/db-context.port';
 import { ModuleMapper } from './mappers/module.mapper';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import * as schema from 'src/shared/database/infrastructure/drizzle/schema';
+import * as schema from 'src/shared/infrastructure/database/drizzle/schema';
 import { asc, eq } from 'drizzle-orm';
 
 type DrizzleDB = NodePgDatabase<typeof schema>;

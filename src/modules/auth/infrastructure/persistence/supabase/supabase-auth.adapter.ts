@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { AuthServicePort } from '../../../domain/ports/auth.service.port';
-import { SupabaseService } from 'src/shared/supabase/supabase.service';
+import { SupabaseService } from 'src/shared/infrastructure/supabase/supabase.service';
 import { SignInDto } from '../../../application/dtos/sign-in.dto';
 import { SignUpDto } from '../../../application/dtos/sign-up.dto';
 import { User, AuthError } from '@supabase/supabase-js';

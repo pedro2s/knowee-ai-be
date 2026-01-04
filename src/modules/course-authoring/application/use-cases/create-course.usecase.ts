@@ -12,9 +12,9 @@ import {
 } from 'src/modules/history/domain/ports/history-repository.port';
 import { History } from 'src/modules/history/domain/entities/history.entity';
 import type { InputFile } from '../../domain/entities/course.types';
-import { FileProcessingService } from 'src/shared/file-processing/file-processing.service';
-import { EmbeddingService } from 'src/shared/embeddings/embedding.service';
-import { TokenUsageService } from 'src/shared/token-usage/token-usage.service';
+import { FileProcessingService } from 'src/shared/infrastructure/file-processing/file-processing.service';
+import { EmbeddingService } from 'src/shared/infrastructure/embeddings/embedding.service';
+import { TokenUsageService } from 'src/shared/infrastructure/token-usage/token-usage.service';
 
 @Injectable()
 export class CreateCourseUseCase {

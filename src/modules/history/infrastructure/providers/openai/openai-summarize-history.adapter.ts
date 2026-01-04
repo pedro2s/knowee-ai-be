@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { SummarizeHistoryPort } from 'src/modules/history/domain/ports/summarize-history.port';
 import OpenAI from 'openai';
-import { OPENAI_CLIENT } from 'src/shared/ai/ai.constants';
+import { OPENAI_CLIENT } from 'src/shared/infrastructure/ai/ai.constants';
 
 @Injectable()
 export class OpenAISummarizeHistoryAdapter implements SummarizeHistoryPort {

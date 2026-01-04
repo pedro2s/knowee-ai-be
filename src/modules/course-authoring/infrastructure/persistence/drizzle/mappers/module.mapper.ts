@@ -2,7 +2,7 @@ import { Module } from 'src/modules/course-authoring/domain/entities/module.enti
 import {
 	SelectLesson,
 	SelectModule,
-} from 'src/shared/database/infrastructure/drizzle/schema';
+} from 'src/shared/infrastructure/database/drizzle/schema';
 import { LessonMapper } from './lesson.mapper';
 
 // Tipo para o dado bruto do Drizzle quando inclui lições

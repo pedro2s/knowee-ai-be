@@ -4,7 +4,7 @@ import {
 	SelectCourse,
 	SelectLesson,
 	SelectModule,
-} from 'src/shared/database/infrastructure/drizzle/schema';
+} from 'src/shared/infrastructure/database/drizzle/schema';
 import { ModuleMapper } from './module.mapper';
 
 // Tipo para o módulo bruto do Drizzle quando inclui lições

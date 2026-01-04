@@ -3,7 +3,7 @@ import {
 	LESSON_REPOSITORY,
 	type LessonRepositoryPort,
 } from '../../domain/ports/lesson-repository.port';
-import { MediaService } from 'src/shared/media/media.service';
+import { MediaService } from 'src/shared/infrastructure/media/media.service';
 import { ProviderRegistry } from '../../infrastructure/providers/provider.registry';
 
 @Injectable()
