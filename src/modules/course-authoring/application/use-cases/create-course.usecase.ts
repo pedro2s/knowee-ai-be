@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import {
 	COURSE_REPOSITORY,
 	type CourseRepositoryPort,
@@ -12,15 +12,21 @@ import {
 } from 'src/modules/history/domain/ports/history-repository.port';
 import { History } from 'src/modules/history/domain/entities/history.entity';
 import type { InputFile } from '../../domain/entities/course.types';
+import { FileProcessingService } from 'src/shared/file-processing/file-processing.service';
+import { EmbeddingService } from 'src/shared/embeddings/embedding.service';
 
 @Injectable()
 export class CreateCourseUseCase {
+	private readonly logger = new Logger(CreateCourseUseCase.name);
+
 	constructor(
 		@Inject(COURSE_REPOSITORY)
 		private readonly courseRepository: CourseRepositoryPort,
 		@Inject(HISTORY_REPOSITORY)
 		private readonly historyRepository: HistoryRepositoryPort,
 		private readonly providerRegistry: ProviderRegistry,
+		private readonly fileProcessingService: FileProcessingService,
+		private readonly embeddingService: EmbeddingService,
 	) {}
 
 	async execute(
@@ -29,19 +35,41 @@ export class CreateCourseUseCase {
 			files: Express.Multer.File[];
 		},
 	): Promise<Course> {
-		const courseGen = this.providerRegistry.getCourseStrategy(
-			input.ai?.provider || 'openai',
-		);
-
 		// Map Express files to domain InputFile to keep domain clean
 		const domainFiles: InputFile[] = input.files.map((file) => ({
 			originalname: file.originalname,
 			buffer: file.buffer,
 		}));
 
+		const extractedText =
+			await this.fileProcessingService.extractTextFromFiles(domainFiles);
+
+		let filesAnalysis = '';
+		if (extractedText) {
+			this.logger.log(
+				'Texto extraído. Iniciando manipulação de embeddings...',
+			);
+			await this.embeddingService.insertEmbedding(
+				input.userId,
+				extractedText,
+			);
+			const contextDocs = await this.embeddingService.querySimilar(
+				input.userId,
+				input.title,
+			);
+			filesAnalysis = contextDocs.join('\n\n');
+			this.logger.log(
+				'A análise de arquivos a partir de documentos semelhantes está pronta.',
+			);
+		}
+
+		const courseGen = this.providerRegistry.getCourseStrategy(
+			input.ai?.provider || 'openai',
+		);
+
 		const { course: generatedCourse, history } = await courseGen.generate({
-			...input,
-			files: domainFiles,
+			courseDetails: input,
+			filesAnalysis,
 		});
 
 		const savedCourse = await this.courseRepository.saveCourseTree(

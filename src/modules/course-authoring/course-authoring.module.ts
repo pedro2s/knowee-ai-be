@@ -27,10 +27,17 @@ import { CreateModuleUseCase } from './application/use-cases/create-module.useca
 import { DeleteModuleUseCase } from './application/use-cases/delete-module.usecase';
 import { UpdateModuleUseCase } from './application/use-cases/update-module.usecase';
 import { HistoryModule } from '../history/history.module';
+import { FileProcessingModule } from 'src/shared/file-processing/file-processing.module';
 
 @Module({
 	controllers: [CoursesController, ModulesController, LessonsController],
-	imports: [DatabaseModule, AIModule, MediaModule, HistoryModule],
+	imports: [
+		DatabaseModule,
+		AIModule,
+		MediaModule,
+		HistoryModule,
+		FileProcessingModule,
+	],
 	providers: [
 		{ provide: COURSE_REPOSITORY, useClass: DrizzleCourseRepository },
 		{ provide: LESSON_REPOSITORY, useClass: DrizzleLessonRepository },
