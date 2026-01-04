@@ -2,9 +2,10 @@ import { Injectable, Logger } from '@nestjs/common';
 import { DrizzleService } from '../database/drizzle/drizzle.service';
 import { subscribers, tokenUsage } from '../database/drizzle/schema';
 import { and, eq } from 'drizzle-orm';
+import { TokenUsagePort } from '../../application/ports/token-usage.port';
 
 @Injectable()
-export class TokenUsageService {
+export class TokenUsageService implements TokenUsagePort {
 	private readonly logger = new Logger(TokenUsageService.name);
 
 	constructor(private readonly drizzle: DrizzleService) {}

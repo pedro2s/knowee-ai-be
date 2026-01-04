@@ -1,9 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { spawn } from 'child_process';
 import ffmpegPath from 'ffmpeg-static';
+import { MediaPort } from '../../application/ports/media.port';
 
 @Injectable()
-export class MediaService {
+export class MediaService implements MediaPort {
 	private readonly logger = new Logger(MediaService.name);
 
 	private runFFmpeg(args: string[]): Promise<void> {

@@ -30,6 +30,7 @@ import { HistoryModule } from '../history/history.module';
 import { FileProcessingModule } from 'src/shared/infrastructure/file-processing/file-processing.module';
 import { EmbeddingModule } from 'src/shared/infrastructure/embeddings/embedding.module';
 import { TokenUsageModule } from 'src/shared/infrastructure/token-usage/token-usage.module';
+import { GeneratorLessonVideoUseCase } from './application/use-cases/generate-lesson-video.usecase';
 
 @Module({
 	controllers: [CoursesController, ModulesController, LessonsController],
@@ -56,7 +57,7 @@ import { TokenUsageModule } from 'src/shared/infrastructure/token-usage/token-us
 		DeleteModuleUseCase,
 		UpdateModuleUseCase,
 		GenerateLessonAudioUseCase,
-		GenerateLessonAudioUseCase,
+		GeneratorLessonVideoUseCase,
 		ProviderRegistry,
 		OpenAICourseGeneratorAdapter,
 		OpenAIScriptGeneratorAdapter,

@@ -1,27 +1,42 @@
-import { Injectable } from '@nestjs/common';
-import { MediaService } from 'src/shared/infrastructure/media/media.service';
-import type { ScriptRepositoryPort } from '../../domain/ports/script-repository.port';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import {
+	MEDIA_SERVICE,
+	type MediaPort,
+} from 'src/shared/application/ports/media.port';
 import { ProviderRegistry } from '../../infrastructure/providers/provider.registry';
+import {
+	LESSON_REPOSITORY,
+	type LessonRepositoryPort,
+} from '../../domain/ports/lesson-repository.port';
 
 @Injectable()
 export class GeneratorLessonVideoUseCase {
 	constructor(
-		private readonly scripts: ScriptRepositoryPort,
+		@Inject(LESSON_REPOSITORY)
+		private readonly lessonRepository: LessonRepositoryPort,
 		private readonly registry: ProviderRegistry,
-		private readonly media: MediaService,
+		@Inject(MEDIA_SERVICE) private readonly media: MediaPort,
 	) {}
 
 	async execute(input: {
 		lessonId: string;
 		imageProvider: string;
 		audioProvider: string;
+		userId: string;
 	}) {
-		const sections = await this.scripts.getScriptSections(input.lessonId);
+		const lesson = await this.lessonRepository.findById(input.lessonId, {
+			userId: input.userId,
+			role: 'authenticated',
+		});
+
+		if (!lesson) {
+			throw new NotFoundException('Aula não encontrada');
+		}
 
 		const imageGen = this.registry.getImageStrategy(input.imageProvider);
 		const audioGen = this.registry.getAudioStrategy(input.audioProvider);
 
-		for (const section of sections) {
+		for (const section of (lesson.content as any).scriptSection) {
 			const image = await imageGen.generate({
 				prompt: section.content,
 				size: '1920x1080',

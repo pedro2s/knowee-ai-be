@@ -10,11 +10,20 @@ import {
 	HISTORY_REPOSITORY,
 	type HistoryRepositoryPort,
 } from 'src/modules/history/domain/ports/history-repository.port';
-import { History } from 'src/modules/history/domain/entities/history.entity';
 import type { InputFile } from '../../domain/entities/course.types';
-import { FileProcessingService } from 'src/shared/infrastructure/file-processing/file-processing.service';
-import { EmbeddingService } from 'src/shared/infrastructure/embeddings/embedding.service';
-import { TokenUsageService } from 'src/shared/infrastructure/token-usage/token-usage.service';
+import {
+	FILE_PROCESSING_SERVICE,
+	type FileProcessingPort,
+} from 'src/shared/application/ports/file-processing.port';
+import {
+	EMBEDDING_SERVICE,
+	type EmbeddingPort,
+} from 'src/shared/application/ports/embedding.port';
+import {
+	TOKEN_USAGE_SERVICE,
+	type TokenUsagePort,
+} from 'src/shared/application/ports/token-usage.port';
+import { History } from 'src/modules/history/domain/entities/history.entity';
 
 @Injectable()
 export class CreateCourseUseCase {
@@ -26,9 +35,12 @@ export class CreateCourseUseCase {
 		@Inject(HISTORY_REPOSITORY)
 		private readonly historyRepository: HistoryRepositoryPort,
 		private readonly providerRegistry: ProviderRegistry,
-		private readonly fileProcessingService: FileProcessingService,
-		private readonly embeddingService: EmbeddingService,
-		private readonly tokenUsageService: TokenUsageService,
+		@Inject(FILE_PROCESSING_SERVICE)
+		private readonly fileProcessingService: FileProcessingPort,
+		@Inject(EMBEDDING_SERVICE)
+		private readonly embeddingService: EmbeddingPort,
+		@Inject(TOKEN_USAGE_SERVICE)
+		private readonly tokenUsageService: TokenUsagePort,
 	) {}
 
 	async execute(

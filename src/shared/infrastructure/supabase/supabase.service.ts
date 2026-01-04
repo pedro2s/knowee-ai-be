@@ -1,9 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SupabaseClient, createClient } from '@supabase/supabase-js';
+import { SupabasePort } from '../../application/ports/supabase.port';
 
 @Injectable()
-export class SupabaseService {
+export class SupabaseService implements SupabasePort {
 	private supabase: SupabaseClient;
 
 	constructor(private readonly configService: ConfigService) {

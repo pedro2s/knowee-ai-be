@@ -3,7 +3,10 @@ import {
 	LESSON_REPOSITORY,
 	type LessonRepositoryPort,
 } from '../../domain/ports/lesson-repository.port';
-import { MediaService } from 'src/shared/infrastructure/media/media.service';
+import {
+	MEDIA_SERVICE,
+	type MediaPort,
+} from 'src/shared/application/ports/media.port';
 import { ProviderRegistry } from '../../infrastructure/providers/provider.registry';
 
 @Injectable()
@@ -13,7 +16,7 @@ export class GenerateLessonAudioUseCase {
 		@Inject(LESSON_REPOSITORY)
 		private readonly lessonRepository: LessonRepositoryPort,
 		private readonly registry: ProviderRegistry,
-		private readonly mediaService: MediaService,
+		@Inject(MEDIA_SERVICE) private readonly mediaService: MediaPort,
 	) {}
 
 	async execute(input: {

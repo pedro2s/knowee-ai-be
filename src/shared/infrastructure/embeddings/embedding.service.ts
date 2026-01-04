@@ -3,12 +3,16 @@ import { toSql } from 'pgvector';
 import { DrizzleService } from '../database/drizzle/drizzle.service';
 import { documents } from '../database/drizzle/schema';
 import { l2Distance, desc, eq } from 'drizzle-orm';
-import { TokenUsageService } from '../token-usage/token-usage.service';
+import {
+	TOKEN_USAGE_SERVICE,
+	type TokenUsagePort,
+} from '../../application/ports/token-usage.port';
 import { OPENAI_CLIENT } from '../ai/ai.constants';
 import OpenAI from 'openai';
+import { EmbeddingPort } from '../../application/ports/embedding.port';
 
 @Injectable()
-export class EmbeddingService {
+export class EmbeddingService implements EmbeddingPort {
 	private readonly logger = new Logger(EmbeddingService.name);
 	private readonly CHUNK_SIZE = 1000;
 	private readonly CHUNK_OVERLAP = 200;
@@ -17,8 +21,8 @@ export class EmbeddingService {
 		@Inject(OPENAI_CLIENT)
 		private readonly openai: OpenAI,
 		private readonly drizzle: DrizzleService,
-		@Inject(TokenUsageService)
-		private readonly tokenUsageService: TokenUsageService,
+		@Inject(TOKEN_USAGE_SERVICE)
+		private readonly tokenUsageService: TokenUsagePort,
 	) {}
 
 	/**

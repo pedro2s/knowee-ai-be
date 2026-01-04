@@ -1,13 +1,19 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { AuthServicePort } from '../../../domain/ports/auth.service.port';
-import { SupabaseService } from 'src/shared/infrastructure/supabase/supabase.service';
+import {
+	SUPABASE_SERVICE,
+	type SupabasePort,
+} from 'src/shared/application/ports/supabase.port';
 import { SignInDto } from '../../../application/dtos/sign-in.dto';
 import { SignUpDto } from '../../../application/dtos/sign-up.dto';
 import { User, AuthError } from '@supabase/supabase-js';
 
 @Injectable()
 export class SupabaseAuthAdapter extends AuthServicePort {
-	constructor(private readonly supabaseService: SupabaseService) {
+	constructor(
+		@Inject(SUPABASE_SERVICE)
+		private readonly supabaseService: SupabasePort,
+	) {
 		super();
 	}
 

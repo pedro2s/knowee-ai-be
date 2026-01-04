@@ -1,14 +1,18 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { Request } from 'express';
 import { ExtractJwt, Strategy } from 'passport-jwt';
-import { SupabaseService } from 'src/shared/infrastructure/supabase/supabase.service';
+import {
+	SUPABASE_SERVICE,
+	type SupabasePort,
+} from 'src/shared/application/ports/supabase.port';
 
 @Injectable()
 export class SupabaseStrategy extends PassportStrategy(Strategy, 'supabase') {
 	constructor(
-		private readonly supabaseService: SupabaseService,
+		@Inject(SUPABASE_SERVICE)
+		private readonly supabaseService: SupabasePort,
 		private readonly configService: ConfigService,
 	) {
 		const secret = configService.get<string>('SUPABASE_JWT_SECRET');

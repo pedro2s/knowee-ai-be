@@ -3,9 +3,10 @@ import * as path from 'path';
 import { PDFParse } from 'pdf-parse';
 import * as mammoth from 'mammoth';
 import { InputFile } from 'src/modules/course-authoring/domain/entities/course.types';
+import { FileProcessingPort } from '../../application/ports/file-processing.port';
 
 @Injectable()
-export class FileProcessingService {
+export class FileProcessingService implements FileProcessingPort {
 	private readonly logger = new Logger(FileProcessingService.name);
 
 	async extractTextFromFiles(files: InputFile[]): Promise<string> {
