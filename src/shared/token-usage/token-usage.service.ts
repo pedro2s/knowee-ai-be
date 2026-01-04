@@ -24,7 +24,7 @@ export class TokenUsageService {
 		model: string,
 	): Promise<void> {
 		try {
-			this.logger.log(`Recording token usage for user: ${userId}`);
+			this.logger.log(`Registrando uso de tokens para o usuário: ${userId}`);
 
 			// Find the user's active subscription
 			const subscription = await this.drizzle.db.query.subscribers.findFirst({
@@ -39,7 +39,7 @@ export class TokenUsageService {
 
 			if (!subscription) {
 				this.logger.warn(
-					`No active subscription found for user ${userId}. Token usage will not be recorded.`,
+					`Nenhuma assinatura ativa encontrada para o usuário ${userId}. O uso de tokens não será registrado.`,
 				);
 				return;
 			}
@@ -53,10 +53,10 @@ export class TokenUsageService {
 			});
 
 			this.logger.log(
-				`Successfully recorded ${totalTokens} tokens for user ${userId}`,
+				`Uso de ${totalTokens} tokens registrado com sucesso para o usuário ${userId}`,
 			);
 		} catch (error) {
-			this.logger.error('Error recording token usage:', error);
+			this.logger.error('Erro ao registrar uso de tokens:', error);
 		}
 	}
 }

@@ -28,20 +28,20 @@ export class EmbeddingService {
 	 * @param content - The text content to embed and store.
 	 */
 	async insertEmbedding(userId: string, content: string): Promise<void> {
-		this.logger.log(`Splitting content into chunks for user ${userId}`);
+		this.logger.log(`Dividindo o conteúdo em blocos para o usuário ${userId}`);
 		const chunks = this._splitText(
 			content,
 			this.CHUNK_SIZE,
 			this.CHUNK_OVERLAP,
 		);
-		this.logger.log(`Generated ${chunks.length} chunks.`);
+		this.logger.log(`Gerados ${chunks.length} blocos.`);
 
 		if (chunks.length === 0) {
-			this.logger.log('No content to insert.');
+			this.logger.log('Nenhum conteúdo para inserir.');
 			return;
 		}
 
-		this.logger.log('Generating embeddings for all chunks...');
+		this.logger.log('Gerando embeddings para todos os blocos...');
 		const embeddings = await this._embedBatch(userId, chunks);
 
 		const documentsToInsert = chunks.map((chunk, i) => ({
@@ -51,10 +51,10 @@ export class EmbeddingService {
 		}));
 
 		this.logger.log(
-			`Inserting ${documentsToInsert.length} documents for user ${userId}`,
+			`Inserindo ${documentsToInsert.length} documentos para o usuário ${userId}`,
 		);
 		await this.drizzle.db.insert(documents).values(documentsToInsert);
-		this.logger.log('Successfully inserted all chunks.');
+		this.logger.log('Todos os blocos inseridos com sucesso.');
 	}
 
 	/**
@@ -64,10 +64,10 @@ export class EmbeddingService {
 	 * @returns An array of similar content strings.
 	 */
 	async querySimilar(userId: string, query: string): Promise<string[]> {
-		this.logger.log(`Generating embedding for query for user ${userId}`);
+		this.logger.log(`Gerando embedding para a consulta do usuário ${userId}`);
 		const embedding = await this._embedText(userId, query);
 
-		this.logger.log(`Querying similar documents for user ${userId}`);
+		this.logger.log(`Consultando documentos semelhantes para o usuário ${userId}`);
 
 		const similarDocs = await this.drizzle.db
 			.select({ content: documents.content })
