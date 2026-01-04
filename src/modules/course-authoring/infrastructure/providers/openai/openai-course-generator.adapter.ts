@@ -13,20 +13,18 @@ import { buildCoursePrompt } from './openai.prompts';
 import OpenAI from 'openai';
 import { TokenUsageService } from 'src/shared/token-usage/token-usage.service';
 import { courseStructure } from './schemas/course-structure.schema';
+import { OPENAI_CLIENT } from 'src/shared/ai/ai.constants';
 
 @Injectable()
 export class OpenAICourseGeneratorAdapter implements CourseGeneratorPort {
-	private readonly openai: OpenAI;
 	private readonly logger = new Logger(OpenAICourseGeneratorAdapter.name);
 
 	constructor(
 		@Inject(TokenUsageService)
 		private readonly tokenUsageService: TokenUsageService,
-	) {
-		this.openai = new OpenAI({
-			apiKey: process.env.OPENAI_API_KEY,
-		});
-	}
+		@Inject(OPENAI_CLIENT)
+		private readonly openai: OpenAI,
+	) {}
 
 	async generate({
 		courseDetails,
