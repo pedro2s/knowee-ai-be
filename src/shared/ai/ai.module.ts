@@ -18,9 +18,7 @@ import { TokenUsageService } from '../token-usage/token-usage.service';
 			},
 			inject: [ConfigService],
 		},
-		EmbeddingService,
-		TokenUsageService,
 	],
-	exports: [OPENAI_CLIENT, EmbeddingService, TokenUsageService],
+	exports: [OPENAI_CLIENT],
 })
 export class AIModule {}

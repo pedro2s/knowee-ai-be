@@ -28,6 +28,8 @@ import { DeleteModuleUseCase } from './application/use-cases/delete-module.useca
 import { UpdateModuleUseCase } from './application/use-cases/update-module.usecase';
 import { HistoryModule } from '../history/history.module';
 import { FileProcessingModule } from 'src/shared/file-processing/file-processing.module';
+import { EmbeddingModule } from 'src/shared/embeddings/embedding.module';
+import { TokenUsageModule } from 'src/shared/token-usage/token-usage.module';
 
 @Module({
 	controllers: [CoursesController, ModulesController, LessonsController],
@@ -36,7 +38,9 @@ import { FileProcessingModule } from 'src/shared/file-processing/file-processing
 		AIModule,
 		MediaModule,
 		HistoryModule,
+		EmbeddingModule,
 		FileProcessingModule,
+		TokenUsageModule,
 	],
 	providers: [
 		{ provide: COURSE_REPOSITORY, useClass: DrizzleCourseRepository },
