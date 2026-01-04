@@ -6,7 +6,6 @@ import {
 import { Course } from 'src/modules/course-authoring/domain/entities/course.entity';
 import { CourseRepositoryPort } from 'src/modules/course-authoring/domain/ports/course-repository.port';
 import { desc, eq } from 'drizzle-orm';
-import { v4 as uuidv4 } from 'uuid';
 import {
 	DB_CONTEXT,
 	type AuthContext,
@@ -140,7 +139,7 @@ export class DrizzleCourseRepository implements CourseRepositoryPort {
 					.insert(schema.modules)
 					.values({
 						title: moduleToInsert.title,
-						orderIndex: moduleToInsert.order_index,
+						orderIndex: moduleToInsert.orderIndex,
 						description: moduleToInsert.description,
 						courseId,
 					})
@@ -155,7 +154,7 @@ export class DrizzleCourseRepository implements CourseRepositoryPort {
 						lessonType: 'article',
 						title: lesson.title,
 						content: lesson.content,
-						orderIndex: lesson.order_index,
+						orderIndex: lesson.orderIndex,
 						description: lesson.description,
 					}),
 				);

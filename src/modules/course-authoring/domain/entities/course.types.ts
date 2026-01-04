@@ -67,15 +67,15 @@ export interface CreateCourseInput {
 export interface GeneratedLesson {
 	title: string;
 	description: string;
-	lesson_type: string;
-	order_index: number;
+	lessonType: string;
+	orderIndex: number;
 	content: Record<string, unknown>;
 }
 
 export interface GeneratedModule {
 	title: string;
 	description: string;
-	order_index: number;
+	orderIndex: number;
 	lessons: GeneratedLesson[];
 }
 
@@ -85,7 +85,7 @@ export interface GeneratedCourse {
 	category: string;
 	level: string;
 	duration: string;
-	target_audience: string;
+	targetAudience: string;
 	objectives: string;
 	modules: GeneratedModule[];
 }

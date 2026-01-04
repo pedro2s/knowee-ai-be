@@ -95,10 +95,10 @@ Para Instrutor Avançado:
 					type: 'text',
 					text: `Configurações Adicionais
 
-Tipo de Curso: ${courseType} (teórico/prático/misto)
+Tipo de Curso (teórico/prático/misto): ${courseType}
 Incluir Avaliações: ${includeAssessments}
 Incluir Projetos Práticos: ${includeProjects}
-Materiais de Referência: ${filesAnalysis} (análise dos arquivos enviados)`,
+Materiais de Referência (análise dos arquivos enviados): ${filesAnalysis}`,
 				},
 				{
 					type: 'text',
@@ -155,7 +155,7 @@ Se materiais foram fornecidos:
 - Transforme informações densas em conteúdo digestível
 
 4. FORMATOS E METODOLOGIA
-Baseado nas preferências indicadas (${preferredFormats}):
+Baseado nas preferências indicadas (${preferredFormats?.join(', ')}):
 
 - Vídeos: Roteiros detalhados com timing e recursos visuais
 - Texto/PDF: Conteúdo bem estruturado com recursos visuais
@@ -182,21 +182,21 @@ Conecte com situações reais da área do instrutor
 6. CONSIDERAÇÕES ESPECIAIS
 Público-Alvo:
 
-Adapte linguagem ao nível do público (${targetAudience})
-Inclua exemplos relevantes ao contexto dos alunos
-Considere conhecimentos prévios esperados
+- Adapte linguagem ao nível do público (${targetAudience})
+- Inclua exemplos relevantes ao contexto dos alunos
+- Considere conhecimentos prévios esperados
 
 Duração (${duration}):
 
-Distribua conteúdo apropriadamente no tempo disponível
-Inclua pausas e momentos de consolidação
-Balance densidade informacional com assimilação
+- Distribua conteúdo apropriadamente no tempo disponível
+- Inclua pausas e momentos de consolidação
+- Balance densidade informacional com assimilação
 
 Motivação do Instrutor (${instructorMotivation}):
 
-Reflita a motivação na estrutura e abordagem do curso
-Alinhe metodologia com os objetivos pessoais do instrutor
-Inclua elementos que satisfaçam as expectativas declaradas
+- Reflita a motivação na estrutura e abordagem do curso
+- Alinhe metodologia com os objetivos pessoais do instrutor
+- Inclua elementos que satisfaçam as expectativas declaradas
 `,
 				},
 				{

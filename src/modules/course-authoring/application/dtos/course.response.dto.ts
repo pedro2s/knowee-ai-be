@@ -10,6 +10,7 @@ export class CourseResponseDto {
 	level: string | null;
 	duration: string | null;
 	targetAudience: string | null;
+	objectives: string | null;
 	createdAt: string; // Datas geralmente viram strings ISO no front
 	updatedAt: string;
 
@@ -50,6 +51,7 @@ export class CourseResponseDto {
 			level: primitives.level,
 			duration: primitives.duration,
 			targetAudience: primitives.targetAudience,
+			objectives: primitives.objectives,
 			createdAt: primitives.createdAt.toISOString(),
 			updatedAt: primitives.updatedAt.toISOString(),
 			modules: primitives.modules?.map((module) => ({

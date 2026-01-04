@@ -27,7 +27,7 @@ export const courseStructureSchemaAsObject = {
 				'The expected duration of the course (1-3h, 4-8h, 1-2semanas, 1mes, 3meses, 6meses).',
 			enum: ['1-3h', '4-8h', '1-2semanas', '1mes', '3meses', '6meses'],
 		},
-		target_audience: {
+		targetAudience: {
 			type: 'string',
 			description: 'The intended audience for the course.',
 		},
@@ -49,7 +49,7 @@ export const courseStructureSchemaAsObject = {
 						type: 'string',
 						description: 'A brief description of the module.',
 					},
-					order_index: {
+					orderIndex: {
 						type: 'integer',
 						description:
 							'Index representing the order of this module.',
@@ -69,12 +69,12 @@ export const courseStructureSchemaAsObject = {
 									description:
 										'A brief description of the lesson.',
 								},
-								order_index: {
+								orderIndex: {
 									type: 'integer',
 									description:
 										'Index representing the order of this lesson.',
 								},
-								lesson_type: {
+								lessonType: {
 									type: 'string',
 									description:
 										'The type of lesson (video, audio, quiz, pdf, external, article).',
@@ -91,14 +91,14 @@ export const courseStructureSchemaAsObject = {
 							required: [
 								'title',
 								'description',
-								'order_index',
-								'lesson_type',
+								'orderIndex',
+								'lessonType',
 							],
 							additionalProperties: false,
 						},
 					},
 				},
-				required: ['title', 'description', 'order_index', 'lessons'],
+				required: ['title', 'description', 'orderIndex', 'lessons'],
 				additionalProperties: false,
 			},
 		},
@@ -109,7 +109,7 @@ export const courseStructureSchemaAsObject = {
 		'category',
 		'level',
 		'duration',
-		'target_audience',
+		'targetAudience',
 		'objectives',
 		'modules',
 	],
