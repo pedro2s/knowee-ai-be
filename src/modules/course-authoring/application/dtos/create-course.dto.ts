@@ -1,4 +1,5 @@
 import {
+	IsArray,
 	IsBoolean,
 	IsOptional,
 	IsString,
@@ -112,8 +113,11 @@ export class CreateCourseDto {
 	readonly instructorMotivation?: string;
 
 	@IsOptional()
-	@IsString({ message: 'Os formatos preferidos devem ser uma string' })
+	@IsArray({
+		message: 'Os formatos preferidos devem ser um array de strings',
+	})
 	@Expose({ name: 'preferred_formats' })
+	@Transform(({ value }) => JSON.parse(value))
 	readonly preferredFormats?: string[];
 
 	// Dados de IA

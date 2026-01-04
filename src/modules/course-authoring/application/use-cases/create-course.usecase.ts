@@ -63,9 +63,13 @@ export class CreateCourseUseCase {
 			);
 		}
 
+		console.log('Files analysis:', filesAnalysis);
+
 		const courseGen = this.providerRegistry.getCourseStrategy(
 			input.ai?.provider || 'openai',
 		);
+
+		console.log(input.preferredFormats);
 
 		const { course: generatedCourse, history } = await courseGen.generate({
 			courseDetails: input,
