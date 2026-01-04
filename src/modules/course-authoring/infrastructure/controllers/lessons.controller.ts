@@ -10,7 +10,7 @@ import {
 import { GenerateLessonAudioUseCase } from '../../application/use-cases/generate-lesson-audio.usecase';
 import { GetLessonUseCase } from '../../application/use-cases/get-lesson.usecase';
 import { CurrentUser } from 'src/shared/infrastructure/decorators';
-import type { UserPayload } from 'src/shared/types/user.types';
+import type { UserPayload } from 'src/shared/domain/types/user.types';
 import { LessonResponseDto } from '../../application/dtos/lesson.response.dto';
 import { SupabaseAuthGuard } from 'src/modules/auth/infrastructure/guards/supabase-auth.guard';
 

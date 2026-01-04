@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
 import { GetChatHistoryUseCase } from '../../application/use-cases/get-chat-history.usecase';
 import { CurrentUser } from 'src/shared/infrastructure/decorators';
-import type { UserPayload } from 'src/shared/types/user.types';
+import type { UserPayload } from 'src/shared/domain/types/user.types';
 import { ChatHistoryResponseDto } from '../../application/dtos/chat-history.response.dto';
 import { SupabaseAuthGuard } from 'src/modules/auth/infrastructure/guards/supabase-auth.guard';
 import { SubmitQuestionUseCase } from '../../application/use-cases/submit-question.usecase';
