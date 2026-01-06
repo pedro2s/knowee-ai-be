@@ -3,9 +3,8 @@ import {
 	type HistoryRepositoryPort,
 } from 'src/modules/history/domain/ports/history-repository.port';
 import { AuthContext } from 'src/shared/application/ports/db-context.port';
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { History } from 'src/modules/history/domain/entities/history.entity';
-import { HistoryMessage } from '../../domain/value-objects/history-message.vo';
 import {
 	HISTORY_SUMMARY_REPOSITORY,
 	type HistorySummaryRepositoryPort,
@@ -18,6 +17,8 @@ const MAX_WINDOW_MESSAGES = 10;
 
 @Injectable()
 export class HistoryService implements HistoryServicePort {
+	private readonly logger = new Logger(HistoryService.name);
+
 	constructor(
 		@Inject(HISTORY_REPOSITORY)
 		private readonly historyRepository: HistoryRepositoryPort,
@@ -96,8 +97,8 @@ export class HistoryService implements HistoryServicePort {
 		);
 
 		if (history.length === 0) {
-			console.log(
-				`[SummarizeHistoryUseCase] No history found to summarize.`,
+			this.logger.log(
+				`[SummarizeHistoryUseCase] Nenhum histórico encontrado para resumir.`,
 			);
 			return;
 		}
@@ -122,9 +123,9 @@ export class HistoryService implements HistoryServicePort {
 			summary,
 			context,
 		);
-		console.log(`[SummarizeHistoryUseCase] Summary upserted.`);
+		this.logger.log(`[SummarizeHistoryUseCase] Resumo atualizado.`);
 
 		await this.historyRepository.deleteHistory(courseId, context);
-		console.log(`[SummarizeHistoryUseCase] History deleted.`);
+		this.logger.log(`[SummarizeHistoryUseCase] Histórico deletado.`);
 	}
 }
