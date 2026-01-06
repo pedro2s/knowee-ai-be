@@ -1,7 +1,5 @@
-import {
-	CreateCourseInput,
-	type CourseGenerationResult,
-} from '../entities/course.types';
+import { InteractionResult } from 'src/shared/domain/types/interaction-result';
+import { CreateCourseInput, GeneratedCourse } from '../entities/course.types';
 
 export const COURSE_GENERATOR = 'CourseGenerator';
 
@@ -11,5 +9,7 @@ export interface GenerateCoursePortInput {
 }
 
 export interface CourseGeneratorPort {
-	generate(input: GenerateCoursePortInput): Promise<CourseGenerationResult>;
+	generate(
+		input: GenerateCoursePortInput,
+	): Promise<InteractionResult<GeneratedCourse>>;
 }

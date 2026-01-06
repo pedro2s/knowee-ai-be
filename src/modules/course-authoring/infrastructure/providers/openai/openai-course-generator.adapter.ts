@@ -8,12 +8,14 @@ import {
 	CourseGeneratorPort,
 	GenerateCoursePortInput,
 } from 'src/modules/course-authoring/domain/ports/course-generator.port';
-import { type CourseGenerationResult } from 'src/modules/course-authoring/domain/entities/course.types';
 import { buildCoursePrompt } from './openai.prompts';
 import OpenAI from 'openai';
 import { courseStructure } from './schemas/course-structure.schema';
 import { OPENAI_CLIENT } from 'src/shared/infrastructure/ai/ai.constants';
 import { ChatModel } from 'openai/resources';
+import { InteractionResult } from 'src/shared/domain/types/interaction-result';
+import { GeneratedCourse } from 'src/modules/course-authoring/domain/entities/course.types';
+import { HistoryMessage } from 'src/modules/history/domain/value-objects/history-message.vo';
 
 @Injectable()
 export class OpenAICourseGeneratorAdapter implements CourseGeneratorPort {
@@ -27,7 +29,7 @@ export class OpenAICourseGeneratorAdapter implements CourseGeneratorPort {
 	async generate({
 		courseDetails,
 		filesAnalysis,
-	}: GenerateCoursePortInput): Promise<CourseGenerationResult> {
+	}: GenerateCoursePortInput): Promise<InteractionResult<GeneratedCourse>> {
 		this.logger.log(
 			`Iniciando a geração do curso para o título: "${courseDetails.title}"`,
 		);
@@ -67,6 +69,19 @@ export class OpenAICourseGeneratorAdapter implements CourseGeneratorPort {
 				}
 			: undefined;
 
-		return { course, history: messages, tokenUsage };
+		return {
+			content: course,
+			history: messages.map((m) => {
+				if (typeof m.content === 'string') {
+					return HistoryMessage.create(m.role, m.content);
+				}
+
+				return HistoryMessage.create(
+					m.role,
+					m.content?.map((c) => c.text).join('\n') as string,
+				);
+			}),
+			tokenUsage,
+		};
 	}
 }

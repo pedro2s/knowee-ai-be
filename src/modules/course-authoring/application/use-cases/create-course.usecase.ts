@@ -6,10 +6,6 @@ import {
 import { ProviderRegistry } from '../../infrastructure/providers/provider.registry';
 import { CreateCourseDto } from '../dtos/create-course.dto';
 import { Course } from '../../domain/entities/course.entity';
-import {
-	HISTORY_REPOSITORY,
-	type HistoryRepositoryPort,
-} from 'src/modules/history/domain/ports/history-repository.port';
 import type { InputFile } from '../../domain/entities/course.types';
 import {
 	FILE_PROCESSING_SERVICE,
@@ -23,7 +19,11 @@ import {
 	TOKEN_USAGE_SERVICE,
 	type TokenUsagePort,
 } from 'src/shared/application/ports/token-usage.port';
-import { History } from 'src/modules/history/domain/entities/history.entity';
+import {
+	HISTORY_SERVICE,
+	type HistoryServicePort,
+} from 'src/modules/history/application/ports/history-service.port';
+import { AuthContext } from 'src/shared/application/ports/db-context.port';
 
 @Injectable()
 export class CreateCourseUseCase {
@@ -32,8 +32,6 @@ export class CreateCourseUseCase {
 	constructor(
 		@Inject(COURSE_REPOSITORY)
 		private readonly courseRepository: CourseRepositoryPort,
-		@Inject(HISTORY_REPOSITORY)
-		private readonly historyRepository: HistoryRepositoryPort,
 		private readonly providerRegistry: ProviderRegistry,
 		@Inject(FILE_PROCESSING_SERVICE)
 		private readonly fileProcessingService: FileProcessingPort,
@@ -41,6 +39,8 @@ export class CreateCourseUseCase {
 		private readonly embeddingService: EmbeddingPort,
 		@Inject(TOKEN_USAGE_SERVICE)
 		private readonly tokenUsageService: TokenUsagePort,
+		@Inject(HISTORY_SERVICE)
+		private readonly historyService: HistoryServicePort,
 	) {}
 
 	async execute(
@@ -78,7 +78,7 @@ export class CreateCourseUseCase {
 		);
 
 		const {
-			course: generatedCourse,
+			content: generatedCourse,
 			history,
 			tokenUsage,
 		} = await courseGen.generate({
@@ -94,24 +94,23 @@ export class CreateCourseUseCase {
 			);
 		}
 
+		const auth: AuthContext = {
+			userId: input.userId,
+			role: 'authenticated',
+		};
+
 		const savedCourse = await this.courseRepository.saveCourseTree(
 			generatedCourse,
-			{
-				userId: input.userId,
-				role: 'authenticated',
-			},
+			auth,
 		);
 
 		for (const message of history) {
-			const historyEntry = History.create({
-				userId: input.userId,
-				courseId: savedCourse.id,
-				message,
-			});
-			await this.historyRepository.saveHistory(historyEntry, {
-				userId: input.userId,
-				role: 'authenticated',
-			});
+			await this.historyService.saveMessageAndSummarizeIfNecessary(
+				auth,
+				savedCourse.id,
+				message.value.role as any,
+				message.value.content,
+			);
 		}
 
 		return savedCourse;

@@ -41,11 +41,9 @@ export class SubmitQuestionUseCase {
 		);
 
 		const answer = await aiAssistant.ask({
-			question: question,
-			context: {
-				summary: summary || null,
-				recentHistory: window,
-			},
+			input: { question },
+			summary: summary || null,
+			recentHistory: window,
 		});
 
 		await this.historyService.saveMessage(auth, courseId, 'user', question);

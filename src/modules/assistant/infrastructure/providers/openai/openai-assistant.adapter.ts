@@ -7,13 +7,16 @@ import {
 import { QuestionAnswered } from 'src/modules/assistant/domain/entities/question-answer.types';
 import { ChatCompletionMessageParam } from 'openai/resources';
 import { OPENAI_CLIENT } from 'src/shared/infrastructure/ai/ai.constants';
+import { InteractionContext } from 'src/shared/domain/types/interaction-context';
 
 @Injectable()
 export class OpenAIAssistantAdapter implements AIAssistantPort {
 	constructor(@Inject(OPENAI_CLIENT) private readonly openai: OpenAI) {}
 
-	async ask(input: AskQuestionInput): Promise<QuestionAnswered> {
-		const { question, context } = input;
+	async ask(
+		context: InteractionContext<AskQuestionInput>,
+	): Promise<QuestionAnswered> {
+		const { input } = context;
 
 		const messages: ChatCompletionMessageParam[] = [];
 
@@ -44,7 +47,7 @@ Caso contrário, devolva respostas sem formatação markdown.`,
 		// Adiciona a pergunta atual do usuário
 		messages.push({
 			role: 'user',
-			content: `Pergunta do usuário:\n${question}`,
+			content: `Pergunta do usuário:\n${input.question}`,
 		});
 
 		const completion = await this.openai.chat.completions.create({

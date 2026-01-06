@@ -38,11 +38,11 @@ export class GenerateTextUseCase {
 		);
 
 		const generatedText = await textGenerator.generate({
-			prompt,
-			context: {
-				summary: summary || null,
-				recentHistory: window,
+			input: {
+				prompt,
 			},
+			summary: summary || null,
+			recentHistory: window,
 		});
 
 		await this.historyService.saveMessage(auth, courseId, 'user', prompt);

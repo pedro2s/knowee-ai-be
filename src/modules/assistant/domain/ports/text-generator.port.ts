@@ -1,9 +1,11 @@
-import { ConversationContext } from 'src/shared/domain/types/conversation-context';
+import { InteractionContext } from 'src/shared/domain/types/interaction-context';
 import {
 	GeneratedTextOutput,
 	GenerateTextInput,
 } from '../entities/generate-text.types';
 
 export interface TextGeneratorPort {
-	generate(input: GenerateTextInput): Promise<GeneratedTextOutput>;
+	generate(
+		context: InteractionContext<GenerateTextInput>,
+	): Promise<GeneratedTextOutput>;
 }

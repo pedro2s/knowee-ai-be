@@ -1,4 +1,10 @@
-type MessageRole = 'user' | 'assistant' | 'system';
+type MessageRole =
+	| 'function'
+	| 'user'
+	| 'assistant'
+	| 'system'
+	| 'developer'
+	| 'tool';
 type MessageContent = Array<{
 	type: 'text';
 	text: string;

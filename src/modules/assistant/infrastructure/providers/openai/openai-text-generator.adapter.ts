@@ -5,14 +5,17 @@ import {
 	GeneratedTextOutput,
 } from 'src/modules/assistant/domain/entities/generate-text.types';
 import { TextGeneratorPort } from 'src/modules/assistant/domain/ports/text-generator.port';
+import { InteractionContext } from 'src/shared/domain/types/interaction-context';
 import { OPENAI_CLIENT } from 'src/shared/infrastructure/ai/ai.constants';
 
 @Injectable()
 export class OpenAITextGeneratorAdapter implements TextGeneratorPort {
 	constructor(@Inject(OPENAI_CLIENT) private readonly openai: OpenAI) {}
 
-	async generate(input: GenerateTextInput): Promise<GeneratedTextOutput> {
-		const { prompt, context } = input;
+	async generate(
+		context: InteractionContext<GenerateTextInput>,
+	): Promise<GeneratedTextOutput> {
+		const { input } = context;
 
 		const messages: OpenAI.Chat.Completions.ChatCompletionMessageParam[] =
 			[];
@@ -42,7 +45,7 @@ Certifique-se de responder de forma clara e concisa. Devolva apenas a resposta s
 		// Adiciona a pergunta atual do usuário
 		messages.push({
 			role: 'user',
-			content: `${prompt}`,
+			content: `${input.prompt}`,
 		});
 
 		const completion = await this.openai.chat.completions.create({
