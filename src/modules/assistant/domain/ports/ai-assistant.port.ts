@@ -1,10 +1,5 @@
-import { History } from 'src/modules/history/domain/entities/history.entity';
 import { QuestionAnswered } from '../entities/question-answer.types';
-
-export interface ConversationContext {
-	summary: string | null;
-	recentHistory: History[];
-}
+import { ConversationContext } from 'src/shared/domain/types/conversation-context';
 
 export interface AskQuestionInput {
 	question: string;

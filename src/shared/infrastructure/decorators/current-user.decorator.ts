@@ -1,5 +1,5 @@
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
-import { UserPayload } from 'src/shared/domain/types/user.types';
+import { UserPayload } from 'src/shared/domain/types/user-payload';
 
 /**
  * Decorator para injetar o usuário logado no método do controller.

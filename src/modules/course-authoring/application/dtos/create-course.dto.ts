@@ -7,7 +7,7 @@ import {
 	MinLength,
 	ValidateNested,
 } from 'class-validator';
-import { AIProviderDto } from './ai-provider.dto';
+import { AIProviderDto } from '../../../../shared/application/dtos/ai-provider.dto';
 import { Expose, Transform, Type } from 'class-transformer';
 
 export class CreateCourseDto {

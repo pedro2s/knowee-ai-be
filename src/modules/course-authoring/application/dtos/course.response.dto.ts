@@ -33,7 +33,7 @@ export class CourseResponseDto {
 		}>;
 	}>;
 
-	constructor(props: CourseResponseDto) {
+	private constructor(props: CourseResponseDto) {
 		Object.assign(this, props);
 	}
 

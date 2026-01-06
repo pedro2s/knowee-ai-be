@@ -14,7 +14,7 @@ import { FetchCoursesUseCase } from '../../application/use-cases/fetch-courses.u
 import { CourseResponseDto } from '../../application/dtos/course.response.dto';
 import { CreateCourseDto } from '../../application/dtos/create-course.dto';
 import { CurrentUser } from 'src/shared/infrastructure/decorators';
-import type { UserPayload } from 'src/shared/domain/types/user.types';
+import type { UserPayload } from 'src/shared/domain/types/user-payload';
 import { CourseSummaryResponseDto } from '../../application/dtos/course-summary.response.dto';
 import { GetCourseUseCase } from '../../application/use-cases/get-course.usecase';
 import { ModuleResponseDto } from '../../application/dtos/module.response.dto';

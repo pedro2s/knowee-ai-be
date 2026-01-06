@@ -9,6 +9,8 @@ import { HistoryModule } from 'src/modules/history/history.module';
 import { AIModule } from 'src/shared/infrastructure/ai/ai.module';
 import { ProviderRegistry } from './infrastructure/providers/provider.registry';
 import { OpenAIAssistantAdapter } from './infrastructure/providers/openai/openai-assistant.adapter';
+import { GenerateTextUseCase } from './application/use-cases/generate-text.usecase';
+import { OpenAITextGeneratorAdapter } from './infrastructure/providers/openai/openai-text-generator.adapter';
 
 @Module({
 	controllers: [AssistantController],
@@ -20,8 +22,10 @@ import { OpenAIAssistantAdapter } from './infrastructure/providers/openai/openai
 		},
 		GetChatHistoryUseCase,
 		SubmitQuestionUseCase,
+		GenerateTextUseCase,
 		ProviderRegistry,
 		OpenAIAssistantAdapter,
+		OpenAITextGeneratorAdapter,
 	],
 })
 export class AssistantModule {}

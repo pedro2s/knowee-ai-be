@@ -11,7 +11,7 @@ import {
 import { CreateModuleUseCase } from '../../application/use-cases/create-module.usecase';
 import { FetchLessonsUseCase } from '../../application/use-cases/fetchLessons.usecase';
 import { CurrentUser } from 'src/shared/infrastructure/decorators';
-import type { UserPayload } from 'src/shared/domain/types/user.types';
+import type { UserPayload } from 'src/shared/domain/types/user-payload';
 import { LessonResponseDto } from '../../application/dtos/lesson.response.dto';
 import { SupabaseAuthGuard } from 'src/modules/auth/infrastructure/guards/supabase-auth.guard';
 import { ModuleResponseDto } from '../../application/dtos/module.response.dto';
