@@ -3,11 +3,14 @@ import {
 	QUESTION_ANSWER_REPOSITORY,
 	type QuestionAnswerRepositoryPort,
 } from '../../domain/ports/question-anwer-repository.port';
-import { HistoryService } from 'src/modules/history/application/services/history.service';
 import { SubmitQuestionDto } from '../dtos/submit-question.dto';
 import { AuthContext } from 'src/shared/application/ports/db-context.port';
 import { QuestionAnswer } from 'src/modules/assistant/domain/entities/question-answer.entity';
 import { ProviderRegistry } from '../../infrastructure/providers/provider.registry';
+import {
+	HISTORY_SERVICE,
+	type HistoryServicePort,
+} from 'src/modules/history/application/ports/history-service.port';
 
 @Injectable()
 export class SubmitQuestionUseCase {
@@ -15,7 +18,8 @@ export class SubmitQuestionUseCase {
 		private readonly providerRegistry: ProviderRegistry,
 		@Inject(QUESTION_ANSWER_REPOSITORY)
 		private readonly questionAnswerRepository: QuestionAnswerRepositoryPort,
-		private readonly historyService: HistoryService,
+		@Inject(HISTORY_SERVICE)
+		private readonly historyService: HistoryServicePort,
 	) {}
 
 	async execute(input: SubmitQuestionDto, userId: string) {

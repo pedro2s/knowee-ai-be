@@ -10,13 +10,14 @@ import {
 	HISTORY_SUMMARY_REPOSITORY,
 	type HistorySummaryRepositoryPort,
 } from '../../domain/ports/history-summary-repository.port';
-import { OpenAISummarizeHistoryAdapter } from '../../infrastructure/providers/openai/openai-summarize-history.adapter';
+import { OpenAISummarizeHistoryAdapter } from '../providers/openai/openai-summarize-history.adapter';
 import { HistorySummary } from '../../domain/entities/history-summary.entity';
+import { HistoryServicePort } from '../../application/ports/history-service.port';
 
 const MAX_WINDOW_MESSAGES = 10;
 
 @Injectable()
-export class HistoryService {
+export class HistoryService implements HistoryServicePort {
 	constructor(
 		@Inject(HISTORY_REPOSITORY)
 		private readonly historyRepository: HistoryRepositoryPort,
