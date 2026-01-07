@@ -1,4 +1,4 @@
-import { InteractionContext } from 'src/shared/domain/types/interaction-context';
+import { InteractionContext } from 'src/shared/domain/types/interaction';
 import {
 	GeneratedTextOutput,
 	GenerateTextInput,

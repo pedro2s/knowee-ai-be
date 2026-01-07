@@ -5,7 +5,7 @@ import {
 	GeneratedTextOutput,
 } from 'src/modules/assistant/domain/entities/generate-text.types';
 import { TextGeneratorPort } from 'src/modules/assistant/domain/ports/text-generator.port';
-import { InteractionContext } from 'src/shared/domain/types/interaction-context';
+import { InteractionContext } from 'src/shared/domain/types/interaction';
 import { OPENAI_CLIENT } from 'src/shared/infrastructure/ai/ai.constants';
 
 @Injectable()

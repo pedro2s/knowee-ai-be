@@ -7,7 +7,7 @@ import {
 import { QuestionAnswered } from 'src/modules/assistant/domain/entities/question-answer.types';
 import { ChatCompletionMessageParam } from 'openai/resources';
 import { OPENAI_CLIENT } from 'src/shared/infrastructure/ai/ai.constants';
-import { InteractionContext } from 'src/shared/domain/types/interaction-context';
+import { InteractionContext } from 'src/shared/domain/types/interaction';
 
 @Injectable()
 export class OpenAIAssistantAdapter implements AIAssistantPort {

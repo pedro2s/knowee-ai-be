@@ -1,5 +1,5 @@
 import { QuestionAnswered } from '../entities/question-answer.types';
-import { InteractionContext } from 'src/shared/domain/types/interaction-context';
+import { InteractionContext } from 'src/shared/domain/types/interaction';
 
 export interface AskQuestionInput {
 	question: string;

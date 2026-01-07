@@ -13,7 +13,7 @@ import OpenAI from 'openai';
 import { courseStructure } from './schemas/course-structure.schema';
 import { OPENAI_CLIENT } from 'src/shared/infrastructure/ai/ai.constants';
 import { ChatModel } from 'openai/resources';
-import { InteractionResult } from 'src/shared/domain/types/interaction-result';
+import { InteractionResult } from 'src/shared/domain/types/interaction';
 import { GeneratedCourse } from 'src/modules/course-authoring/domain/entities/course.types';
 import { HistoryMessage } from 'src/modules/history/domain/value-objects/history-message.vo';
 

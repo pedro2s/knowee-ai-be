@@ -1,5 +1,5 @@
-import { InteractionResult } from 'src/shared/domain/types/interaction-result';
 import { GeneratedCourse } from '../entities/course.types';
+import { InteractionResult } from 'src/shared/domain/types/interaction';
 
 export const COURSE_GENERATOR = 'CourseGenerator';
 
