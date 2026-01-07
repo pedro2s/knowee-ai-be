@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import {
 	CourseGeneratorPort,
-	GenerateCoursePortInput,
+	GenerateCourseInput,
 } from 'src/modules/course-authoring/domain/ports/course-generator.port';
 import { buildCoursePrompt } from './openai.prompts';
 import OpenAI from 'openai';
@@ -29,7 +29,7 @@ export class OpenAICourseGeneratorAdapter implements CourseGeneratorPort {
 	async generate({
 		courseDetails,
 		filesAnalysis,
-	}: GenerateCoursePortInput): Promise<InteractionResult<GeneratedCourse>> {
+	}: GenerateCourseInput): Promise<InteractionResult<GeneratedCourse>> {
 		this.logger.log(
 			`Iniciando a geração do curso para o título: "${courseDetails.title}"`,
 		);
@@ -37,7 +37,7 @@ export class OpenAICourseGeneratorAdapter implements CourseGeneratorPort {
 		const messages = buildCoursePrompt(courseDetails, filesAnalysis);
 
 		this.logger.log('Enviando solicitação para a OpenAI...');
-		const model = courseDetails.ai?.model ?? ('gpt-4.1' as ChatModel);
+		const model: ChatModel = 'gpt-4.1';
 		const completion = await this.openai.chat.completions.create({
 			model,
 			messages,

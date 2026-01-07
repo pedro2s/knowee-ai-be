@@ -1,8 +1,8 @@
 import type { OpenAI } from 'openai';
-import { CreateCourseInput } from 'src/modules/course-authoring/domain/entities/course.types';
+import { CourseDetails } from 'src/modules/course-authoring/domain/ports/course-generator.port';
 
 export function buildCoursePrompt(
-	input: CreateCourseInput,
+	courseDetails: CourseDetails,
 	filesAnalysis: string,
 ): OpenAI.Chat.Completions.ChatCompletionMessageParam[] {
 	const {
@@ -30,7 +30,7 @@ export function buildCoursePrompt(
 		typicalAudience,
 		instructorMotivation,
 		preferredFormats,
-	} = input;
+	} = courseDetails;
 
 	return [
 		{

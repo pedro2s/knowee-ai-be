@@ -56,12 +56,6 @@ export interface CreateCourseInput {
 	typicalAudience?: string;
 	instructorMotivation?: string;
 	preferredFormats?: string[];
-
-	// Dados de IA
-	ai?: {
-		provider?: string;
-		model?: string;
-	};
 }
 
 export interface GeneratedLesson {
