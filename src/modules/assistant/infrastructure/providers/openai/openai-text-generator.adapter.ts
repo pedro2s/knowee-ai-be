@@ -1,11 +1,15 @@
 import { Inject, Injectable } from '@nestjs/common';
 import OpenAI from 'openai';
+import { ChatModel } from 'openai/resources';
 import {
 	GenerateTextInput,
 	GeneratedTextOutput,
 } from 'src/modules/assistant/domain/entities/generate-text.types';
 import { TextGeneratorPort } from 'src/modules/assistant/domain/ports/text-generator.port';
-import { InteractionContext } from 'src/shared/domain/types/interaction';
+import {
+	InteractionContext,
+	InteractionResult,
+} from 'src/shared/domain/types/interaction';
 import { OPENAI_CLIENT } from 'src/shared/infrastructure/ai/ai.constants';
 
 @Injectable()
@@ -14,7 +18,7 @@ export class OpenAITextGeneratorAdapter implements TextGeneratorPort {
 
 	async generate(
 		context: InteractionContext<GenerateTextInput>,
-	): Promise<GeneratedTextOutput> {
+	): Promise<InteractionResult<GeneratedTextOutput>> {
 		const { input } = context;
 
 		const messages: OpenAI.Chat.Completions.ChatCompletionMessageParam[] =
@@ -48,15 +52,25 @@ Certifique-se de responder de forma clara e concisa. Devolva apenas a resposta s
 			content: `${input.prompt}`,
 		});
 
+		const model: ChatModel = 'gpt-4o-mini';
+
 		const completion = await this.openai.chat.completions.create({
-			model: 'gpt-4o-mini',
+			model: model,
 			messages: messages,
 		});
 
 		const content = completion.choices[0].message.content || '';
 
+		const tokenUsage = completion.usage?.total_tokens
+			? {
+					totalTokens: completion.usage.total_tokens,
+					model,
+				}
+			: undefined;
+
 		return {
-			text: content,
+			content: { text: content },
+			tokenUsage,
 		};
 	}
 }

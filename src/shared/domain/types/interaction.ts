@@ -9,7 +9,6 @@ export interface InteractionContext<T> {
 
 export interface InteractionResult<T> {
 	content: T;
-	history: HistoryMessage[];
 	tokenUsage?: {
 		totalTokens: number;
 		model: string;

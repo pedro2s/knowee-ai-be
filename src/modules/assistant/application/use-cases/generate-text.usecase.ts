@@ -7,6 +7,10 @@ import {
 	HISTORY_SERVICE,
 	type HistoryServicePort,
 } from 'src/modules/history/application/ports/history-service.port';
+import {
+	TOKEN_USAGE_SERVICE,
+	type TokenUsagePort,
+} from 'src/shared/application/ports/token-usage.port';
 
 @Injectable()
 export class GenerateTextUseCase {
@@ -14,6 +18,8 @@ export class GenerateTextUseCase {
 		private readonly providerRegistry: ProviderRegistry,
 		@Inject(HISTORY_SERVICE)
 		private readonly historyService: HistoryServicePort,
+		@Inject(TOKEN_USAGE_SERVICE)
+		private readonly tokenUsageService: TokenUsagePort,
 	) {}
 
 	async execute(
@@ -37,13 +43,22 @@ export class GenerateTextUseCase {
 			courseId,
 		);
 
-		const generatedText = await textGenerator.generate({
-			input: {
-				prompt,
-			},
-			summary: summary || null,
-			recentHistory: window,
-		});
+		const { content: generatedText, tokenUsage } =
+			await textGenerator.generate({
+				input: {
+					prompt,
+				},
+				summary: summary || null,
+				recentHistory: window,
+			});
+
+		if (tokenUsage) {
+			this.tokenUsageService.save(
+				auth.userId,
+				tokenUsage.totalTokens,
+				tokenUsage.model,
+			);
+		}
 
 		await this.historyService.saveMessage(auth, courseId, 'user', prompt);
 		await this.historyService.saveMessageAndSummarizeIfNecessary(

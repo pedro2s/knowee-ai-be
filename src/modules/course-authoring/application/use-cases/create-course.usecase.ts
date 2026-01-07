@@ -77,14 +77,11 @@ export class CreateCourseUseCase {
 			input.ai?.provider || 'openai',
 		);
 
-		const {
-			content: generatedCourse,
-			history,
-			tokenUsage,
-		} = await courseGen.generate({
-			courseDetails: input,
-			filesAnalysis,
-		});
+		const { content: generatedCourse, tokenUsage } =
+			await courseGen.generate({
+				courseDetails: input,
+				filesAnalysis,
+			});
 
 		if (tokenUsage) {
 			this.tokenUsageService.save(
@@ -104,14 +101,23 @@ export class CreateCourseUseCase {
 			auth,
 		);
 
-		for (const message of history) {
-			await this.historyService.saveMessageAndSummarizeIfNecessary(
-				auth,
-				savedCourse.id,
-				message.value.role as any,
-				message.value.content,
-			);
-		}
+		// input stringify sem o files
+		const userMessage = JSON.stringify({
+			...input,
+			files: 'omitted',
+		});
+		await this.historyService.saveMessage(
+			auth,
+			savedCourse.id,
+			'user',
+			userMessage,
+		);
+		await this.historyService.saveMessage(
+			auth,
+			savedCourse.id,
+			'assistant',
+			JSON.stringify(generatedCourse),
+		);
 
 		return savedCourse;
 	}

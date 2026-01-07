@@ -37,9 +37,12 @@ export class AssistantController {
 		@Body() body: SubmitQuestionDto,
 		@CurrentUser() user: UserPayload,
 	): Promise<QuestionAnsweredResponseDto> {
-		const answer = await this.submitQuestion.execute(body, user.id);
+		const questionAnswered = await this.submitQuestion.execute(
+			body,
+			user.id,
+		);
 
-		return { answer: answer.content };
+		return { answer: questionAnswered.answer };
 	}
 
 	@Post('/generate-text')

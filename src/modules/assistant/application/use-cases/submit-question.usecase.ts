@@ -40,28 +40,30 @@ export class SubmitQuestionUseCase {
 			input.provider || 'openai',
 		);
 
-		const answer = await aiAssistant.ask({
-			input: { question },
-			summary: summary || null,
-			recentHistory: window,
-		});
+		const { content: questionAnswered, tokenUsage } = await aiAssistant.ask(
+			{
+				input: { question },
+				summary: summary || null,
+				recentHistory: window,
+			},
+		);
 
 		await this.historyService.saveMessage(auth, courseId, 'user', question);
 		await this.historyService.saveMessageAndSummarizeIfNecessary(
 			auth,
 			courseId,
 			'assistant',
-			answer.content,
+			questionAnswered.answer,
 		);
 
 		const qaEntity = QuestionAnswer.create({
 			userId: auth.userId,
 			courseId: courseId,
 			question: question,
-			answer: answer.content,
+			answer: questionAnswered.answer,
 		});
 		await this.questionAnswerRepository.create(qaEntity, auth);
 
-		return answer;
+		return questionAnswered;
 	}
 }

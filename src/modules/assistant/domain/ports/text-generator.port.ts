@@ -1,4 +1,7 @@
-import { InteractionContext } from 'src/shared/domain/types/interaction';
+import {
+	InteractionContext,
+	InteractionResult,
+} from 'src/shared/domain/types/interaction';
 import {
 	GeneratedTextOutput,
 	GenerateTextInput,
@@ -7,5 +10,5 @@ import {
 export interface TextGeneratorPort {
 	generate(
 		context: InteractionContext<GenerateTextInput>,
-	): Promise<GeneratedTextOutput>;
+	): Promise<InteractionResult<GeneratedTextOutput>>;
 }

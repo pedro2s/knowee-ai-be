@@ -11,10 +11,11 @@ import { ProviderRegistry } from './infrastructure/providers/provider.registry';
 import { OpenAIAssistantAdapter } from './infrastructure/providers/openai/openai-assistant.adapter';
 import { GenerateTextUseCase } from './application/use-cases/generate-text.usecase';
 import { OpenAITextGeneratorAdapter } from './infrastructure/providers/openai/openai-text-generator.adapter';
+import { TokenUsageModule } from 'src/shared/infrastructure/token-usage/token-usage.module';
 
 @Module({
 	controllers: [AssistantController],
-	imports: [DatabaseModule, HistoryModule, AIModule],
+	imports: [DatabaseModule, HistoryModule, AIModule, TokenUsageModule],
 	providers: [
 		{
 			provide: QUESTION_ANSWER_REPOSITORY,

@@ -5,9 +5,12 @@ import {
 	AskQuestionInput,
 } from 'src/modules/assistant/domain/ports/ai-assistant.port';
 import { QuestionAnswered } from 'src/modules/assistant/domain/entities/question-answer.types';
-import { ChatCompletionMessageParam } from 'openai/resources';
+import { ChatCompletionMessageParam, ChatModel } from 'openai/resources';
 import { OPENAI_CLIENT } from 'src/shared/infrastructure/ai/ai.constants';
-import { InteractionContext } from 'src/shared/domain/types/interaction';
+import {
+	InteractionContext,
+	InteractionResult,
+} from 'src/shared/domain/types/interaction';
 
 @Injectable()
 export class OpenAIAssistantAdapter implements AIAssistantPort {
@@ -15,7 +18,7 @@ export class OpenAIAssistantAdapter implements AIAssistantPort {
 
 	async ask(
 		context: InteractionContext<AskQuestionInput>,
-	): Promise<QuestionAnswered> {
+	): Promise<InteractionResult<QuestionAnswered>> {
 		const { input } = context;
 
 		const messages: ChatCompletionMessageParam[] = [];
@@ -50,15 +53,25 @@ Caso contrário, devolva respostas sem formatação markdown.`,
 			content: `Pergunta do usuário:\n${input.question}`,
 		});
 
+		const model: ChatModel = 'gpt-4o-mini';
+
 		const completion = await this.openai.chat.completions.create({
-			model: 'gpt-4o-mini',
+			model: model,
 			messages: messages,
 		});
 
 		const answer = completion.choices[0].message.content || '';
 
+		const tokenUsage = completion.usage?.total_tokens
+			? {
+					totalTokens: completion.usage.total_tokens,
+					model,
+				}
+			: undefined;
+
 		return {
-			content: answer,
+			content: { answer: answer },
+			tokenUsage,
 		};
 	}
 }
