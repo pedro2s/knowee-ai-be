@@ -11,7 +11,7 @@ export class ProviderRegistry implements OnModuleInit {
 
 	constructor(
 		private readonly openAIAssistant: OpenAIAssistantAdapter,
-		private readonly textGenerator: OpenAITextGeneratorAdapter,
+		private readonly textGenerator: OpenAITextGeneratorAdapter
 	) {}
 
 	onModuleInit() {
@@ -29,8 +29,7 @@ export class ProviderRegistry implements OnModuleInit {
 
 	getTextGeneratorStrategy(providerName: string): TextGeneratorPort {
 		const strategy = this.textGeneratorProviders.get(providerName);
-		if (!strategy)
-			throw new Error(`Provider ${providerName} não registrado`);
+		if (!strategy) throw new Error(`Provider ${providerName} não registrado`);
 		return strategy;
 	}
 }

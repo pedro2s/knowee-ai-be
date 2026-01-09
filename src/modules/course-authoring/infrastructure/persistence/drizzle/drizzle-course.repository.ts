@@ -60,9 +60,7 @@ export class DrizzleCourseRepository implements CourseRepositoryPort {
 						orderBy: (module, { asc }) => [asc(module.orderIndex)],
 						with: {
 							lessons: {
-								orderBy: (lesson, { asc }) => [
-									asc(lesson.orderIndex),
-								],
+								orderBy: (lesson, { asc }) => [asc(lesson.orderIndex)],
 							}, // Carrega as lições para cada módulo
 						},
 					},
@@ -72,10 +70,7 @@ export class DrizzleCourseRepository implements CourseRepositoryPort {
 		});
 	}
 
-	async findAllByUserId(
-		userId: string,
-		auth: AuthContext,
-	): Promise<Course[]> {
+	async findAllByUserId(userId: string, auth: AuthContext): Promise<Course[]> {
 		return this.dbContext.runAsUser(auth, async (db) => {
 			const tx = db as DrizzleDB;
 			const userCourses = await tx.query.courses.findMany({
@@ -96,7 +91,7 @@ export class DrizzleCourseRepository implements CourseRepositoryPort {
 	async update(
 		id: string,
 		values: Partial<CreateCourseInput>,
-		auth: AuthContext,
+		auth: AuthContext
 	): Promise<Course | null> {
 		return this.dbContext.runAsUser(auth, async (db) => {
 			const tx = db as DrizzleDB;
@@ -118,7 +113,7 @@ export class DrizzleCourseRepository implements CourseRepositoryPort {
 
 	async saveCourseTree(
 		generatedCourse: GeneratedCourse,
-		auth: AuthContext,
+		auth: AuthContext
 	): Promise<Course> {
 		const { modules, ...courseData } = generatedCourse;
 
@@ -147,17 +142,15 @@ export class DrizzleCourseRepository implements CourseRepositoryPort {
 
 				const moduleId = module.id;
 
-				const lessonsToInsert = moduleToInsert.lessons.map(
-					(lesson) => ({
-						moduleId,
-						courseId,
-						lessonType: 'article',
-						title: lesson.title,
-						content: lesson.content,
-						orderIndex: lesson.orderIndex,
-						description: lesson.description,
-					}),
-				);
+				const lessonsToInsert = moduleToInsert.lessons.map((lesson) => ({
+					moduleId,
+					courseId,
+					lessonType: 'article',
+					title: lesson.title,
+					content: lesson.content,
+					orderIndex: lesson.orderIndex,
+					description: lesson.description,
+				}));
 
 				if (lessonsToInsert.length > 0) {
 					await tx.insert(schema.lessons).values(lessonsToInsert);

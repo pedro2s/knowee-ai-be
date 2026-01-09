@@ -22,7 +22,7 @@ export class EmbeddingService implements EmbeddingPort {
 		private readonly openai: OpenAI,
 		private readonly drizzle: DrizzleService,
 		@Inject(TOKEN_USAGE_SERVICE)
-		private readonly tokenUsageService: TokenUsagePort,
+		private readonly tokenUsageService: TokenUsagePort
 	) {}
 
 	/**
@@ -32,13 +32,11 @@ export class EmbeddingService implements EmbeddingPort {
 	 * @param content - The text content to embed and store.
 	 */
 	async insertEmbedding(userId: string, content: string): Promise<void> {
-		this.logger.log(
-			`Dividindo o conteúdo em blocos para o usuário ${userId}`,
-		);
+		this.logger.log(`Dividindo o conteúdo em blocos para o usuário ${userId}`);
 		const chunks = this._splitText(
 			content,
 			this.CHUNK_SIZE,
-			this.CHUNK_OVERLAP,
+			this.CHUNK_OVERLAP
 		);
 		this.logger.log(`Gerados ${chunks.length} blocos.`);
 
@@ -57,7 +55,7 @@ export class EmbeddingService implements EmbeddingPort {
 		}));
 
 		this.logger.log(
-			`Inserindo ${documentsToInsert.length} documentos para o usuário ${userId}`,
+			`Inserindo ${documentsToInsert.length} documentos para o usuário ${userId}`
 		);
 		await this.drizzle.db.insert(documents).values(documentsToInsert);
 		this.logger.log('Todos os blocos inseridos com sucesso.');
@@ -70,13 +68,11 @@ export class EmbeddingService implements EmbeddingPort {
 	 * @returns An array of similar content strings.
 	 */
 	async querySimilar(userId: string, query: string): Promise<string[]> {
-		this.logger.log(
-			`Gerando embedding para a consulta do usuário ${userId}`,
-		);
+		this.logger.log(`Gerando embedding para a consulta do usuário ${userId}`);
 		const embedding = await this._embedText(userId, query);
 
 		this.logger.log(
-			`Consultando documentos semelhantes para o usuário ${userId}`,
+			`Consultando documentos semelhantes para o usuário ${userId}`
 		);
 
 		const similarDocs = await this.drizzle.db
@@ -86,7 +82,6 @@ export class EmbeddingService implements EmbeddingPort {
 			.orderBy(desc(l2Distance(documents.embedding, toSql(embedding))))
 			.limit(5);
 
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		return similarDocs.map((doc) => doc.content as string);
 	}
 
@@ -100,7 +95,7 @@ export class EmbeddingService implements EmbeddingPort {
 	private _splitText(
 		text: string,
 		chunkSize: number,
-		chunkOverlap: number,
+		chunkOverlap: number
 	): string[] {
 		if (text.length <= chunkSize) {
 			return [text];
@@ -133,7 +128,7 @@ export class EmbeddingService implements EmbeddingPort {
 	 */
 	private async _embedBatch(
 		userId: string,
-		texts: string[],
+		texts: string[]
 	): Promise<number[][]> {
 		const cleanTexts = texts.map((text) => text.replace(/\n/g, ' '));
 
@@ -147,7 +142,7 @@ export class EmbeddingService implements EmbeddingPort {
 			await this.tokenUsageService.save(
 				userId,
 				tokens,
-				'text-embedding-3-small',
+				'text-embedding-3-small'
 			);
 		}
 

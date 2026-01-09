@@ -8,7 +8,7 @@ export class GeneratedTextResponseDto {
 	}
 
 	static fromDomain(
-		generatedText: GeneratedTextOutput,
+		generatedText: GeneratedTextOutput
 	): GeneratedTextResponseDto {
 		return new GeneratedTextResponseDto({
 			generatedText: generatedText.text,

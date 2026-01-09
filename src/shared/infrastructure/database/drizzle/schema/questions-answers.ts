@@ -47,7 +47,7 @@ export const questionsAnswers = pgTable(
 			for: 'insert',
 			to: ['public'],
 		}),
-	],
+	]
 );
 
 export type SelectQuestionAnswer = typeof questionsAnswers.$inferSelect;

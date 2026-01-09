@@ -27,13 +27,13 @@ export class ModulesController {
 		private readonly createModule: CreateModuleUseCase,
 		private readonly deleteModule: DeleteModuleUseCase,
 		private readonly updateModule: UpdateModuleUseCase,
-		private readonly fetchLessons: FetchLessonsUseCase,
+		private readonly fetchLessons: FetchLessonsUseCase
 	) {}
 
 	@Post()
 	async create(
 		@Body() data: CreateModuleDto,
-		@CurrentUser() user: UserPayload,
+		@CurrentUser() user: UserPayload
 	): Promise<ModuleResponseDto> {
 		const module = await this.createModule.execute(data, user.id);
 		return ModuleResponseDto.fromDomain(module);
@@ -43,7 +43,7 @@ export class ModulesController {
 	async update(
 		@Param('id') id: string,
 		@Body() data: UpdateModuleDto,
-		@CurrentUser() user: UserPayload,
+		@CurrentUser() user: UserPayload
 	): Promise<ModuleResponseDto> {
 		const module = await this.updateModule.execute(id, data, user.id);
 		return ModuleResponseDto.fromDomain(module);
@@ -52,7 +52,7 @@ export class ModulesController {
 	@Delete('/:id')
 	async delete(
 		@Param('id') id: string,
-		@CurrentUser() user: UserPayload,
+		@CurrentUser() user: UserPayload
 	): Promise<{ deletedModule: ModuleResponseDto }> {
 		const { deletedModule } = await this.deleteModule.execute(id, user.id);
 		return { deletedModule: ModuleResponseDto.fromDomain(deletedModule) };
@@ -61,7 +61,7 @@ export class ModulesController {
 	@Get('/:id/lessons')
 	async findLessons(
 		@Param('id') id: string,
-		@CurrentUser() user: UserPayload,
+		@CurrentUser() user: UserPayload
 	): Promise<LessonResponseDto[]> {
 		const lessons = await this.fetchLessons.execute(id, user.id);
 		return lessons.map(LessonResponseDto.fromDomain);

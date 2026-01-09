@@ -22,7 +22,7 @@ export class OpenAICourseGeneratorAdapter implements CourseGeneratorPort {
 
 	constructor(
 		@Inject(OPENAI_CLIENT)
-		private readonly openai: OpenAI,
+		private readonly openai: OpenAI
 	) {}
 
 	async generate({
@@ -30,7 +30,7 @@ export class OpenAICourseGeneratorAdapter implements CourseGeneratorPort {
 		filesAnalysis,
 	}: GenerateCourseInput): Promise<InteractionResult<GeneratedCourse>> {
 		this.logger.log(
-			`Iniciando a geração do curso para o título: "${courseDetails.title}"`,
+			`Iniciando a geração do curso para o título: "${courseDetails.title}"`
 		);
 
 		const messages = buildCoursePrompt(courseDetails, filesAnalysis);
@@ -53,7 +53,7 @@ export class OpenAICourseGeneratorAdapter implements CourseGeneratorPort {
 		if (!content) {
 			this.logger.error('A API da OpenAI não retornou nenhum conteúdo.');
 			throw new PreconditionFailedException(
-				'A API da OpenAI não retornou nenhum conteúdo.',
+				'A API da OpenAI não retornou nenhum conteúdo.'
 			);
 		}
 

@@ -18,7 +18,7 @@ export class DrizzleHistoryRepository implements HistoryRepositoryPort {
 
 	async findHistory(
 		courseId: string,
-		context: AuthContext,
+		context: AuthContext
 	): Promise<History[]> {
 		return this.dbContext.runAsUser(context, async (db) => {
 			const tx = db as DrizzleDB;
@@ -26,7 +26,7 @@ export class DrizzleHistoryRepository implements HistoryRepositoryPort {
 			const result = await tx.query.history.findMany({
 				where: and(
 					eq(schema.history.userId, context.userId),
-					eq(schema.history.courseId, courseId),
+					eq(schema.history.courseId, courseId)
 				),
 				orderBy: (history, { asc }) => [asc(history.createdAt)],
 			});
@@ -38,7 +38,7 @@ export class DrizzleHistoryRepository implements HistoryRepositoryPort {
 	async findWindowHistory(
 		courseId: string,
 		windowSize: number,
-		context: AuthContext,
+		context: AuthContext
 	): Promise<History[]> {
 		return this.dbContext.runAsUser(context, async (db) => {
 			const tx = db as DrizzleDB;
@@ -46,7 +46,7 @@ export class DrizzleHistoryRepository implements HistoryRepositoryPort {
 			const result = await tx.query.history.findMany({
 				where: and(
 					eq(schema.history.userId, context.userId),
-					eq(schema.history.courseId, courseId),
+					eq(schema.history.courseId, courseId)
 				),
 				orderBy: (history, { desc }) => [desc(history.createdAt)],
 				limit: windowSize,
@@ -56,10 +56,7 @@ export class DrizzleHistoryRepository implements HistoryRepositoryPort {
 		});
 	}
 
-	async countMessages(
-		courseId: string,
-		context: AuthContext,
-	): Promise<number> {
+	async countMessages(courseId: string, context: AuthContext): Promise<number> {
 		return this.dbContext.runAsUser(context, async (db) => {
 			const tx = db as DrizzleDB;
 			const result = await tx
@@ -70,8 +67,8 @@ export class DrizzleHistoryRepository implements HistoryRepositoryPort {
 				.where(
 					and(
 						eq(schema.history.userId, context.userId),
-						eq(schema.history.courseId, courseId),
-					),
+						eq(schema.history.courseId, courseId)
+					)
 				);
 			return result[0].count;
 		});
@@ -99,8 +96,8 @@ export class DrizzleHistoryRepository implements HistoryRepositoryPort {
 				.where(
 					and(
 						eq(schema.history.userId, context.userId),
-						eq(schema.history.courseId, courseId),
-					),
+						eq(schema.history.courseId, courseId)
+					)
 				);
 		});
 	}

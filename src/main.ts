@@ -10,7 +10,7 @@ async function bootstrap() {
 			whitelist: true, // Remove propriedades que não estão no DTO (Segurança!)
 			forbidNonWhitelisted: true, // Retorna erro se enviarem campos extras
 			transform: true, // Transforma o payload em instância da classe DTO
-		}),
+		})
 	);
 	app.setGlobalPrefix('api');
 	app.enableVersioning({

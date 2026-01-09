@@ -12,13 +12,13 @@ import { User, AuthError } from '@supabase/supabase-js';
 export class SupabaseAuthAdapter extends AuthServicePort {
 	constructor(
 		@Inject(SUPABASE_SERVICE)
-		private readonly supabaseService: SupabasePort,
+		private readonly supabaseService: SupabasePort
 	) {
 		super();
 	}
 
 	async signIn(
-		dto: SignInDto,
+		dto: SignInDto
 	): Promise<{ access_token: string; refresh_token: string }> {
 		const { email, password } = dto;
 		const {
@@ -51,9 +51,7 @@ export class SupabaseAuthAdapter extends AuthServicePort {
 			data,
 			error,
 		}: { data: { user: User | null }; error: AuthError | null } =
-			await this.supabaseService
-				.getClient()
-				.auth.signUp({ email, password });
+			await this.supabaseService.getClient().auth.signUp({ email, password });
 
 		if (error) {
 			throw error;

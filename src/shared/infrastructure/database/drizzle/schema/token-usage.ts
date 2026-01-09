@@ -36,5 +36,5 @@ export const tokenUsage = pgTable(
 			foreignColumns: [users.id],
 			name: 'token_usage_user_id_fkey',
 		}),
-	],
+	]
 );

@@ -63,7 +63,7 @@ export const courses = pgTable(
 			for: 'delete',
 			to: ['public'],
 		}),
-	],
+	]
 );
 
 // Tipo inferido pelo Drizzle (Basicamente o que o SELECT retorna)

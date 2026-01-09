@@ -19,9 +19,7 @@ export class MediaService implements MediaPort {
 				if (code === 0) {
 					resolve();
 				} else {
-					reject(
-						new Error(`FFmpeg process exited with code ${code}`),
-					);
+					reject(new Error(`FFmpeg process exited with code ${code}`));
 				}
 			});
 		});
@@ -37,12 +35,7 @@ export class MediaService implements MediaPort {
 		]);
 	}
 
-	addBackgroundMusic(
-		voice: string,
-		music: string,
-		output: string,
-		vol = 0.15,
-	) {
+	addBackgroundMusic(voice: string, music: string, output: string, vol = 0.15) {
 		return this.runFFmpeg([
 			'-y',
 			'-i',

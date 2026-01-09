@@ -43,7 +43,7 @@ export const historySummary = pgTable(
 			columns: [table.userId, table.courseId],
 			name: 'history_summary_pkey',
 		}),
-	],
+	]
 );
 
 export type SelectHistorySummary = typeof historySummary.$inferSelect;

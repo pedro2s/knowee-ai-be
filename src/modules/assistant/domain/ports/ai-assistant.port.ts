@@ -10,6 +10,6 @@ export interface AskQuestionInput {
 
 export interface AIAssistantPort {
 	ask(
-		context: InteractionContext<AskQuestionInput>,
+		context: InteractionContext<AskQuestionInput>
 	): Promise<InteractionResult<QuestionAnswered>>;
 }

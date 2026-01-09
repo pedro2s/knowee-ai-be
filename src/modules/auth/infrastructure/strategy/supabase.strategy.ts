@@ -13,7 +13,7 @@ export class SupabaseStrategy extends PassportStrategy(Strategy, 'supabase') {
 	constructor(
 		@Inject(SUPABASE_SERVICE)
 		private readonly supabaseService: SupabasePort,
-		private readonly configService: ConfigService,
+		private readonly configService: ConfigService
 	) {
 		const secret = configService.get<string>('SUPABASE_JWT_SECRET');
 		if (!secret) {

@@ -9,7 +9,7 @@ import {
 export class GetChatHistoryUseCase {
 	constructor(
 		@Inject(QUESTION_ANSWER_REPOSITORY)
-		private readonly questionAnswerRepository: QuestionAnswerRepositoryPort,
+		private readonly questionAnswerRepository: QuestionAnswerRepositoryPort
 	) {}
 
 	execute({

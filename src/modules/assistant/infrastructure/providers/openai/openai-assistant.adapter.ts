@@ -17,7 +17,7 @@ export class OpenAIAssistantAdapter implements AIAssistantPort {
 	constructor(@Inject(OPENAI_CLIENT) private readonly openai: OpenAI) {}
 
 	async ask(
-		context: InteractionContext<AskQuestionInput>,
+		context: InteractionContext<AskQuestionInput>
 	): Promise<InteractionResult<QuestionAnswered>> {
 		const { input } = context;
 

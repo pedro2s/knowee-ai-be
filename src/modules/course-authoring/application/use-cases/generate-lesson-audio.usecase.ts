@@ -16,7 +16,7 @@ export class GenerateLessonAudioUseCase {
 		@Inject(LESSON_REPOSITORY)
 		private readonly lessonRepository: LessonRepositoryPort,
 		private readonly registry: ProviderRegistry,
-		@Inject(MEDIA_SERVICE) private readonly mediaService: MediaPort,
+		@Inject(MEDIA_SERVICE) private readonly mediaService: MediaPort
 	) {}
 
 	async execute(input: {
@@ -34,8 +34,7 @@ export class GenerateLessonAudioUseCase {
 
 		const audioGen = this.registry.getAudioStrategy(input.audioProvider);
 
-		const sections = (lesson.content as { scriptSection: any[] })
-			.scriptSection;
+		const sections = (lesson.content as { scriptSection: any[] }).scriptSection;
 
 		for (const section of sections) {
 			const audio = await audioGen.generate({

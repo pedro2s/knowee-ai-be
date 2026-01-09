@@ -8,14 +8,10 @@ export class CourseTitle {
 	/** Factory Method: O único jeito de criar um título é passando pela validação */
 	public static create(title: string): CourseTitle {
 		if (!title || title.trim().length < 5) {
-			throw new Error(
-				'O título do curso deve ter no mínimo 5 caracteres.',
-			);
+			throw new Error('O título do curso deve ter no mínimo 5 caracteres.');
 		}
 		if (title.length > 100) {
-			throw new Error(
-				'O título do curso deve ter no máximo 100 caracteres.',
-			);
+			throw new Error('O título do curso deve ter no máximo 100 caracteres.');
 		}
 		// Aqui poderia adicionar regex para sanitização, etc.
 

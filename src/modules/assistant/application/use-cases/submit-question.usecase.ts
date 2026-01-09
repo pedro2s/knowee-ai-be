@@ -19,7 +19,7 @@ export class SubmitQuestionUseCase {
 		@Inject(QUESTION_ANSWER_REPOSITORY)
 		private readonly questionAnswerRepository: QuestionAnswerRepositoryPort,
 		@Inject(HISTORY_SERVICE)
-		private readonly historyService: HistoryServicePort,
+		private readonly historyService: HistoryServicePort
 	) {}
 
 	async execute(input: SubmitQuestionDto, userId: string) {
@@ -31,29 +31,24 @@ export class SubmitQuestionUseCase {
 		};
 
 		const summary = await this.historyService.getSummary(auth, courseId);
-		const window = await this.historyService.getWindowMessages(
-			auth,
-			courseId,
-		);
+		const window = await this.historyService.getWindowMessages(auth, courseId);
 
 		const aiAssistant = this.providerRegistry.getAIAssistantStrategy(
-			input.provider || 'openai',
+			input.provider || 'openai'
 		);
 
-		const { content: questionAnswered, tokenUsage } = await aiAssistant.ask(
-			{
-				input: { question },
-				summary: summary || null,
-				recentHistory: window,
-			},
-		);
+		const { content: questionAnswered, tokenUsage } = await aiAssistant.ask({
+			input: { question },
+			summary: summary || null,
+			recentHistory: window,
+		});
 
 		await this.historyService.saveMessage(auth, courseId, 'user', question);
 		await this.historyService.saveMessageAndSummarizeIfNecessary(
 			auth,
 			courseId,
 			'assistant',
-			questionAnswered.answer,
+			questionAnswered.answer
 		);
 
 		const qaEntity = QuestionAnswer.create({

@@ -15,7 +15,7 @@ export class ProviderRegistry implements OnModuleInit {
 	constructor(
 		private openAIAudioGeneratorAdapter: OpenAIAudioGeneratorAdapter,
 		private openAIImageGeneratorAdapter: OpenAIImageGeneratorAdapter,
-		private OpenAICourseGeneratorAdapter: OpenAICourseGeneratorAdapter,
+		private OpenAICourseGeneratorAdapter: OpenAICourseGeneratorAdapter
 	) {}
 
 	onModuleInit() {

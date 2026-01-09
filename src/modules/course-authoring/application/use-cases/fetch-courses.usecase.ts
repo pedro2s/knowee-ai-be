@@ -9,7 +9,7 @@ import {
 export class FetchCoursesUseCase {
 	constructor(
 		@Inject(COURSE_REPOSITORY)
-		private readonly courseRepository: CourseRepositoryPort,
+		private readonly courseRepository: CourseRepositoryPort
 	) {}
 
 	execute(userId: string): Promise<Course[]> {

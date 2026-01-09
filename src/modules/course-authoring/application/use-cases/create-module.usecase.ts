@@ -14,7 +14,7 @@ import { Module } from '../../domain/entities/module.entity';
 export class CreateModuleUseCase {
 	constructor(
 		@Inject(MODULE_REPOSITORY)
-		private readonly moduleRepository: ModuleRepositoryPort,
+		private readonly moduleRepository: ModuleRepositoryPort
 	) {}
 
 	async execute(input: CreateModuleDto, userId: string): Promise<Module> {
@@ -32,7 +32,7 @@ export class CreateModuleUseCase {
 			});
 		} catch (error) {
 			throw new InternalServerErrorException(
-				'Não foi possível criar o módulo.',
+				'Não foi possível criar o módulo.'
 			);
 		}
 

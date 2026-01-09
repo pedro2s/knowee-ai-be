@@ -9,6 +9,6 @@ import {
 
 export interface TextGeneratorPort {
 	generate(
-		context: InteractionContext<GenerateTextInput>,
+		context: InteractionContext<GenerateTextInput>
 	): Promise<InteractionResult<GeneratedTextOutput>>;
 }

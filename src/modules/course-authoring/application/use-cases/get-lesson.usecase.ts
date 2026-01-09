@@ -9,7 +9,7 @@ import { Lesson } from '../../domain/entities/lesson.entity';
 export class GetLessonUseCase {
 	constructor(
 		@Inject(LESSON_REPOSITORY)
-		private readonly lessonRepository: LessonRepositoryPort,
+		private readonly lessonRepository: LessonRepositoryPort
 	) {}
 
 	async execute(lessonId: string, userId: string): Promise<Lesson> {

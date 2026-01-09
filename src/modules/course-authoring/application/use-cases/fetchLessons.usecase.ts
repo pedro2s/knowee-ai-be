@@ -9,7 +9,7 @@ import {
 export class FetchLessonsUseCase {
 	constructor(
 		@Inject(LESSON_REPOSITORY)
-		private readonly lessonRepository: LessonRepositoryPort,
+		private readonly lessonRepository: LessonRepositoryPort
 	) {}
 
 	execute(moduleId: string, userId: string): Promise<Lesson[]> {

@@ -66,5 +66,5 @@ export const subscribers = pgTable(
 			for: 'insert',
 			to: ['public'],
 		}),
-	],
+	]
 );

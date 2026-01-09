@@ -9,7 +9,7 @@ import {
 export class GetCourseUseCase {
 	constructor(
 		@Inject(COURSE_REPOSITORY)
-		private readonly courseRepository: CourseRepositoryPort,
+		private readonly courseRepository: CourseRepositoryPort
 	) {}
 
 	async execute({

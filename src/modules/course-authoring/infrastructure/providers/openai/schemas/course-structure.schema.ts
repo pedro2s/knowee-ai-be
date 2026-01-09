@@ -51,8 +51,7 @@ export const courseStructureSchemaAsObject = {
 					},
 					orderIndex: {
 						type: 'integer',
-						description:
-							'Index representing the order of this module.',
+						description: 'Index representing the order of this module.',
 					},
 					lessons: {
 						type: 'array',
@@ -66,13 +65,11 @@ export const courseStructureSchemaAsObject = {
 								},
 								description: {
 									type: 'string',
-									description:
-										'A brief description of the lesson.',
+									description: 'A brief description of the lesson.',
 								},
 								orderIndex: {
 									type: 'integer',
-									description:
-										'Index representing the order of this lesson.',
+									description: 'Index representing the order of this lesson.',
 								},
 								lessonType: {
 									type: 'string',
@@ -88,12 +85,7 @@ export const courseStructureSchemaAsObject = {
 									],
 								},
 							},
-							required: [
-								'title',
-								'description',
-								'orderIndex',
-								'lessonType',
-							],
+							required: ['title', 'description', 'orderIndex', 'lessonType'],
 							additionalProperties: false,
 						},
 					},

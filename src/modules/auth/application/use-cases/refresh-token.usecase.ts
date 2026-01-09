@@ -6,11 +6,11 @@ import { RefreshTokenDto } from '../dtos/refresh-token.dto';
 export class RefreshTokenUseCase {
 	constructor(
 		@Inject(AuthServicePort)
-		private readonly authService: AuthServicePort,
+		private readonly authService: AuthServicePort
 	) {}
 
 	async execute(
-		dto: RefreshTokenDto,
+		dto: RefreshTokenDto
 	): Promise<{ access_token: string; refresh_token: string }> {
 		return this.authService.refreshSession(dto.refreshToken);
 	}

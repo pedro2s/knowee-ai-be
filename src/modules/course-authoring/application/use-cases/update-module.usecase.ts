@@ -11,13 +11,13 @@ import { UpdateModuleDto } from '../dtos/update-module.dto';
 export class UpdateModuleUseCase {
 	constructor(
 		@Inject(MODULE_REPOSITORY)
-		private readonly moduleRepository: ModuleRepositoryPort,
+		private readonly moduleRepository: ModuleRepositoryPort
 	) {}
 
 	async execute(
 		moduleId: string,
 		updateData: UpdateModuleDto,
-		userId: string,
+		userId: string
 	): Promise<Module> {
 		const updatedModule = await this.moduleRepository.update(
 			moduleId,
@@ -25,11 +25,10 @@ export class UpdateModuleUseCase {
 			{
 				userId,
 				role: 'authenticated',
-			},
+			}
 		);
 
-		if (!updatedModule)
-			throw new NotFoundException('Módulo não encontrado');
+		if (!updatedModule) throw new NotFoundException('Módulo não encontrado');
 
 		return updatedModule;
 	}

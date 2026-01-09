@@ -6,10 +6,7 @@ export interface AuthContext {
 export const DB_CONTEXT = 'DbContext';
 
 export interface DbContext {
-	runAsUser<T>(
-		auth: AuthContext,
-		fn: (db: unknown) => Promise<T>,
-	): Promise<T>;
+	runAsUser<T>(auth: AuthContext, fn: (db: unknown) => Promise<T>): Promise<T>;
 
 	runAsService<T>(fn: (db: unknown) => Promise<T>): Promise<T>;
 }

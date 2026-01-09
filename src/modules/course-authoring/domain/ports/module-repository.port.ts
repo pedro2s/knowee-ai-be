@@ -12,7 +12,7 @@ export interface ModuleRepositoryPort {
 	update(
 		id: string,
 		values: Partial<CreateModuleInput>,
-		auth: AuthContext,
+		auth: AuthContext
 	): Promise<Module | null>;
 	delete(id: string, auth: AuthContext): Promise<Module | null>;
 }

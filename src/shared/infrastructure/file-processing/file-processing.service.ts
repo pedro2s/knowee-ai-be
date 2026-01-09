@@ -33,13 +33,13 @@ export class FileProcessingService implements FileProcessingPort {
 					texts.push(buffer.toString('utf-8'));
 				} else {
 					this.logger.warn(
-						`Formato de arquivo não suportado: ${ext}. Arquivo ignorado.`, 
+						`Formato de arquivo não suportado: ${ext}. Arquivo ignorado.`
 					);
 				}
 			} catch (error) {
 				this.logger.error(
 					`Erro ao processar o arquivo ${file.originalname}:`,
-					error,
+					error
 				);
 			}
 		}

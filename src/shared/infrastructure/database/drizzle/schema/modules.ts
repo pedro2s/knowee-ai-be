@@ -35,12 +35,12 @@ export const modules = pgTable(
 	(table) => [
 		index('idx_modules_course_id').using(
 			'btree',
-			table.courseId.asc().nullsLast().op('uuid_ops'),
+			table.courseId.asc().nullsLast().op('uuid_ops')
 		),
 		index('idx_modules_order').using(
 			'btree',
 			table.courseId.asc().nullsLast().op('int4_ops'),
-			table.orderIndex.asc().nullsLast().op('int4_ops'),
+			table.orderIndex.asc().nullsLast().op('int4_ops')
 		),
 		foreignKey({
 			columns: [table.courseId],
@@ -70,7 +70,7 @@ export const modules = pgTable(
 			for: 'delete',
 			to: ['public'],
 		}),
-	],
+	]
 );
 
 export type SelectModule = typeof modules.$inferSelect;

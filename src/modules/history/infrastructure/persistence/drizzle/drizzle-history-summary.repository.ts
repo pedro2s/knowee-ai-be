@@ -19,7 +19,7 @@ export class DrizzleHistorySummaryRepository implements HistorySummaryRepository
 
 	findHistorySummary(
 		courseId: string,
-		context: AuthContext,
+		context: AuthContext
 	): Promise<HistorySummary | null> {
 		return this.dbContext.runAsUser(context, async (db) => {
 			const tx = db as DrizzleDB;
@@ -29,8 +29,8 @@ export class DrizzleHistorySummaryRepository implements HistorySummaryRepository
 				.where(
 					and(
 						eq(schema.historySummary.userId, context.userId),
-						eq(schema.historySummary.courseId, courseId),
-					),
+						eq(schema.historySummary.courseId, courseId)
+					)
 				);
 
 			return historySummary
@@ -41,7 +41,7 @@ export class DrizzleHistorySummaryRepository implements HistorySummaryRepository
 
 	async saveHistorySummary(
 		historySummary: HistorySummary,
-		context: AuthContext,
+		context: AuthContext
 	): Promise<void> {
 		const data = HistorySummaryMapper.toPersistence(historySummary);
 

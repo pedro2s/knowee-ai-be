@@ -17,13 +17,13 @@ export class AssistantController {
 	constructor(
 		private readonly getChatHistory: GetChatHistoryUseCase,
 		private readonly submitQuestion: SubmitQuestionUseCase,
-		private readonly generateTextUseCase: GenerateTextUseCase,
+		private readonly generateTextUseCase: GenerateTextUseCase
 	) {}
 
 	@Get('chat/:courseId')
 	async getChatHistoryByCourseId(
 		@Param('courseId') courseId: string,
-		@CurrentUser() user: UserPayload,
+		@CurrentUser() user: UserPayload
 	): Promise<ChatHistoryResponseDto[]> {
 		const chatHistory = await this.getChatHistory.execute({
 			courseId,
@@ -35,12 +35,9 @@ export class AssistantController {
 	@Post('chat')
 	async question(
 		@Body() body: SubmitQuestionDto,
-		@CurrentUser() user: UserPayload,
+		@CurrentUser() user: UserPayload
 	): Promise<QuestionAnsweredResponseDto> {
-		const questionAnswered = await this.submitQuestion.execute(
-			body,
-			user.id,
-		);
+		const questionAnswered = await this.submitQuestion.execute(body, user.id);
 
 		return { answer: questionAnswered.answer };
 	}
@@ -48,12 +45,9 @@ export class AssistantController {
 	@Post('/generate-text')
 	async generateText(
 		@Body() data: GenerateTextDto,
-		@CurrentUser() user: UserPayload,
+		@CurrentUser() user: UserPayload
 	): Promise<GeneratedTextResponseDto> {
-		const generatedText = await this.generateTextUseCase.execute(
-			data,
-			user.id,
-		);
+		const generatedText = await this.generateTextUseCase.execute(data, user.id);
 		return GeneratedTextResponseDto.fromDomain(generatedText);
 	}
 }

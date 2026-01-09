@@ -19,7 +19,7 @@ export class DrizzleQuestionAnswerRepository implements QuestionAnswerRepository
 
 	create(
 		questionAnswer: QuestionAnswer,
-		auth: AuthContext,
+		auth: AuthContext
 	): Promise<QuestionAnswer> {
 		const data = QuestionAnswerMapper.toPersistence(questionAnswer);
 
@@ -37,7 +37,7 @@ export class DrizzleQuestionAnswerRepository implements QuestionAnswerRepository
 
 	findAllByCourseId(
 		courseId: string,
-		auth: AuthContext,
+		auth: AuthContext
 	): Promise<QuestionAnswer[]> {
 		return this.dbContext.runAsUser(auth, async (db) => {
 			const tx = db as DrizzleDB;

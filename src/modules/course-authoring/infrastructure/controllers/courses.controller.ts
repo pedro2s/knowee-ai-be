@@ -28,7 +28,7 @@ export class CoursesController {
 		private readonly createCourse: CreateCourseUseCase,
 		private readonly fetchCourses: FetchCoursesUseCase,
 		private readonly getCourse: GetCourseUseCase,
-		private readonly fetchModules: FetchModulesUseCase,
+		private readonly fetchModules: FetchModulesUseCase
 	) {}
 
 	@Post()
@@ -36,7 +36,7 @@ export class CoursesController {
 	async create(
 		@UploadedFiles() files: Express.Multer.File[],
 		@Body() body: CreateCourseDto,
-		@CurrentUser() user: UserPayload,
+		@CurrentUser() user: UserPayload
 	): Promise<CourseResponseDto> {
 		// 1. Chama o Caso de Uso passando os dados validos
 		const courseEntity = await this.createCourse.execute({
@@ -51,7 +51,7 @@ export class CoursesController {
 
 	@Get()
 	async findAll(
-		@CurrentUser() user: UserPayload,
+		@CurrentUser() user: UserPayload
 	): Promise<CourseSummaryResponseDto[]> {
 		const courses = await this.fetchCourses.execute(user.id);
 		return courses.map(CourseSummaryResponseDto.fromDomain);
@@ -60,7 +60,7 @@ export class CoursesController {
 	@Get('/:id')
 	async findOne(
 		@Param('id') id: string,
-		@CurrentUser() user: UserPayload,
+		@CurrentUser() user: UserPayload
 	): Promise<CourseResponseDto> {
 		const course = await this.getCourse.execute({
 			id,
@@ -72,7 +72,7 @@ export class CoursesController {
 	@Get('/:id/modules')
 	async findModules(
 		@Param('id') id: string,
-		@CurrentUser() user: UserPayload,
+		@CurrentUser() user: UserPayload
 	): Promise<ModuleResponseDto[]> {
 		const modules = await this.fetchModules.execute(id, user.id);
 		return modules.map(ModuleResponseDto.fromDomain);

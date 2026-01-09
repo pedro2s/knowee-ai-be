@@ -84,7 +84,7 @@ export class DrizzleModuleRepository implements ModuleRepositoryPort {
 	update(
 		id: string,
 		values: Partial<CreateModuleInput>,
-		auth: AuthContext,
+		auth: AuthContext
 	): Promise<Module | null> {
 		return this.dbContext.runAsUser(auth, async (db) => {
 			const tx = db as DrizzleDB;

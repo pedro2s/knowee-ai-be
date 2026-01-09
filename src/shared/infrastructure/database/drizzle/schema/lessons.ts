@@ -45,17 +45,17 @@ export const lessons = pgTable(
 	(table) => [
 		index('idx_lessons_course_id').using(
 			'btree',
-			table.courseId.asc().nullsLast().op('uuid_ops'),
+			table.courseId.asc().nullsLast().op('uuid_ops')
 		),
 		index('idx_lessons_module_id').using(
 			'btree',
-			table.moduleId.asc().nullsLast().op('uuid_ops'),
+			table.moduleId.asc().nullsLast().op('uuid_ops')
 		),
 		index('idx_lessons_order').using(
 			'btree',
 			table.courseId.asc().nullsLast().op('int4_ops'),
 			table.moduleId.asc().nullsLast().op('uuid_ops'),
-			table.orderIndex.asc().nullsLast().op('uuid_ops'),
+			table.orderIndex.asc().nullsLast().op('uuid_ops')
 		),
 		foreignKey({
 			columns: [table.courseId],
@@ -92,9 +92,9 @@ export const lessons = pgTable(
 		}),
 		check(
 			'lessons_lesson_type_check',
-			sql`lesson_type = ANY (ARRAY['video'::text, 'audio'::text, 'quiz'::text, 'pdf'::text, 'external'::text, 'article'::text])`,
+			sql`lesson_type = ANY (ARRAY['video'::text, 'audio'::text, 'quiz'::text, 'pdf'::text, 'external'::text, 'article'::text])`
 		),
-	],
+	]
 );
 
 export type SelectLesson = typeof lessons.$inferSelect;

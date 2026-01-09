@@ -21,9 +21,7 @@ export class OpenAIImageGeneratorAdapter implements ImageGeneratorPort {
 		});
 
 		if (!res.data || res.data.length === 0 || !res.data[0].b64_json) {
-			throw new Error(
-				'Failed to generate image: No image data returned.',
-			);
+			throw new Error('Failed to generate image: No image data returned.');
 		}
 
 		return Buffer.from(res.data[0].b64_json, 'base64');

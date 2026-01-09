@@ -15,7 +15,7 @@ export class GeneratorLessonVideoUseCase {
 		@Inject(LESSON_REPOSITORY)
 		private readonly lessonRepository: LessonRepositoryPort,
 		private readonly registry: ProviderRegistry,
-		@Inject(MEDIA_SERVICE) private readonly media: MediaPort,
+		@Inject(MEDIA_SERVICE) private readonly media: MediaPort
 	) {}
 
 	async execute(input: {

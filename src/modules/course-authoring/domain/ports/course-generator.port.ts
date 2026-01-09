@@ -38,6 +38,6 @@ export interface GenerateCourseInput {
 
 export interface CourseGeneratorPort {
 	generate(
-		input: GenerateCourseInput,
+		input: GenerateCourseInput
 	): Promise<InteractionResult<GeneratedCourse>>;
 }

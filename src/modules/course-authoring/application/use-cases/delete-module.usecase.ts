@@ -15,20 +15,19 @@ import { AuthContext } from 'src/shared/application/ports/db-context.port';
 export class DeleteModuleUseCase {
 	constructor(
 		@Inject(MODULE_REPOSITORY)
-		private readonly moduleRepository: ModuleRepositoryPort,
+		private readonly moduleRepository: ModuleRepositoryPort
 	) {}
 
 	async execute(
 		moduleId: string,
-		userId: string,
+		userId: string
 	): Promise<{ deletedModule: Module }> {
 		const deletedModule = await this.moduleRepository.delete(moduleId, {
 			userId,
 			role: 'authenticated',
 		});
 
-		if (!deletedModule)
-			throw new NotFoundException('Módulo não encontrado');
+		if (!deletedModule) throw new NotFoundException('Módulo não encontrado');
 
 		return { deletedModule };
 	}

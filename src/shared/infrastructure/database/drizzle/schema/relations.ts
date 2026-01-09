@@ -102,7 +102,7 @@ export const subscriptionTierRelations = relations(
 	subscriptionTier,
 	({ many }) => ({
 		subscribers: many(subscribers),
-	}),
+	})
 );
 
 export const tokenUsageRelations = relations(tokenUsage, ({ one }) => ({

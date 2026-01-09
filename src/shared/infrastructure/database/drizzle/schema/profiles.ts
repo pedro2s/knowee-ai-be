@@ -54,5 +54,5 @@ export const profiles = pgTable(
 			for: 'insert',
 			to: ['public'],
 		}),
-	],
+	]
 );

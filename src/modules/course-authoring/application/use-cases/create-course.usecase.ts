@@ -40,14 +40,14 @@ export class CreateCourseUseCase {
 		@Inject(TOKEN_USAGE_SERVICE)
 		private readonly tokenUsageService: TokenUsagePort,
 		@Inject(HISTORY_SERVICE)
-		private readonly historyService: HistoryServicePort,
+		private readonly historyService: HistoryServicePort
 	) {}
 
 	async execute(
 		input: CreateCourseDto & {
 			userId: string;
 			files: Express.Multer.File[];
-		},
+		}
 	): Promise<Course> {
 		// Map Express files to domain InputFile to keep domain clean
 		const domainFiles: InputFile[] = input.files.map((file) => ({
@@ -61,7 +61,7 @@ export class CreateCourseUseCase {
 		let filesAnalysis = '';
 		if (extractedText) {
 			this.logger.log(
-				'Texto extraído. Usando o conteúdo do arquivo como contexto.',
+				'Texto extraído. Usando o conteúdo do arquivo como contexto.'
 			);
 			// Use the extracted text directly as context for course generation
 			filesAnalysis = extractedText;
@@ -69,25 +69,24 @@ export class CreateCourseUseCase {
 			// Persist the knowledge for future use (e.g., chatbot), but don't use the query result for generation
 			this.embeddingService.insertEmbedding(input.userId, extractedText);
 			this.logger.log(
-				'Embeddings dos arquivos foram salvos para referência futura.',
+				'Embeddings dos arquivos foram salvos para referência futura.'
 			);
 		}
 
 		const courseGen = this.providerRegistry.getCourseStrategy(
-			input.ai?.provider || 'openai',
+			input.ai?.provider || 'openai'
 		);
 
-		const { content: generatedCourse, tokenUsage } =
-			await courseGen.generate({
-				courseDetails: input,
-				filesAnalysis,
-			});
+		const { content: generatedCourse, tokenUsage } = await courseGen.generate({
+			courseDetails: input,
+			filesAnalysis,
+		});
 
 		if (tokenUsage) {
 			this.tokenUsageService.save(
 				input.userId,
 				tokenUsage.totalTokens,
-				tokenUsage.model,
+				tokenUsage.model
 			);
 		}
 
@@ -98,7 +97,7 @@ export class CreateCourseUseCase {
 
 		const savedCourse = await this.courseRepository.saveCourseTree(
 			generatedCourse,
-			auth,
+			auth
 		);
 
 		// input stringify sem o files
@@ -110,13 +109,13 @@ export class CreateCourseUseCase {
 			auth,
 			savedCourse.id,
 			'user',
-			userMessage,
+			userMessage
 		);
 		await this.historyService.saveMessage(
 			auth,
 			savedCourse.id,
 			'assistant',
-			JSON.stringify(generatedCourse),
+			JSON.stringify(generatedCourse)
 		);
 
 		return savedCourse;

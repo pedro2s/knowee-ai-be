@@ -11,7 +11,7 @@ export interface CourseRepositoryPort {
 	update(
 		id: string,
 		values: Partial<CreateCourseInput>,
-		auth: AuthContext,
+		auth: AuthContext
 	): Promise<Course | null>;
 	delete(id: string, auth: AuthContext): Promise<void>;
 	saveCourseTree(course: GeneratedCourse, auth: AuthContext): Promise<Course>;

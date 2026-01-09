@@ -64,7 +64,7 @@ export class DrizzleLessonRepository implements LessonRepositoryPort {
 	update(
 		id: string,
 		lesson: Partial<CreateLessonInput>,
-		auth: AuthContext,
+		auth: AuthContext
 	): Promise<Lesson | null> {
 		return this.dbContext.runAsUser(auth, async (db) => {
 			const tx = db as DrizzleDB;

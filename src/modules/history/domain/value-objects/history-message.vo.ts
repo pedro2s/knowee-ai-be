@@ -21,7 +21,7 @@ export class HistoryMessage {
 
 	public static create(
 		role: MessageRole,
-		content: string | MessageContent,
+		content: string | MessageContent
 	): HistoryMessage {
 		if (
 			!content ||

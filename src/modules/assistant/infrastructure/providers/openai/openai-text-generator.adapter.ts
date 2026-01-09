@@ -17,12 +17,11 @@ export class OpenAITextGeneratorAdapter implements TextGeneratorPort {
 	constructor(@Inject(OPENAI_CLIENT) private readonly openai: OpenAI) {}
 
 	async generate(
-		context: InteractionContext<GenerateTextInput>,
+		context: InteractionContext<GenerateTextInput>
 	): Promise<InteractionResult<GeneratedTextOutput>> {
 		const { input } = context;
 
-		const messages: OpenAI.Chat.Completions.ChatCompletionMessageParam[] =
-			[];
+		const messages: OpenAI.Chat.Completions.ChatCompletionMessageParam[] = [];
 
 		messages.push({
 			role: 'system',

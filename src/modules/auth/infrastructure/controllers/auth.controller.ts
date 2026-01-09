@@ -14,7 +14,7 @@ export class AuthController {
 	constructor(
 		private readonly signInUseCase: SignInUseCase,
 		private readonly signUpUseCase: SignUpUseCase,
-		private readonly refreshTokenUseCase: RefreshTokenUseCase,
+		private readonly refreshTokenUseCase: RefreshTokenUseCase
 	) {}
 
 	@Post('sign-in')

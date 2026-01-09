@@ -21,7 +21,7 @@ export const documents = pgTable(
 		index('documents_embedding_idx')
 			.using(
 				'ivfflat',
-				table.embedding.asc().nullsLast().op('vector_cosine_ops'),
+				table.embedding.asc().nullsLast().op('vector_cosine_ops')
 			)
 			.with({ lists: '100' }),
 		pgPolicy('Usuário pode ver seus próprios documentos', {
@@ -45,5 +45,5 @@ export const documents = pgTable(
 			for: 'delete',
 			to: ['public'],
 		}),
-	],
+	]
 );

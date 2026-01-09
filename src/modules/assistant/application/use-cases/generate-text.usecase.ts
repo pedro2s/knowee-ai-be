@@ -19,12 +19,12 @@ export class GenerateTextUseCase {
 		@Inject(HISTORY_SERVICE)
 		private readonly historyService: HistoryServicePort,
 		@Inject(TOKEN_USAGE_SERVICE)
-		private readonly tokenUsageService: TokenUsagePort,
+		private readonly tokenUsageService: TokenUsagePort
 	) {}
 
 	async execute(
 		input: GenerateTextDto,
-		userId: string,
+		userId: string
 	): Promise<GeneratedTextOutput> {
 		const { courseId, prompt, ai } = input;
 
@@ -34,29 +34,27 @@ export class GenerateTextUseCase {
 		};
 
 		const textGenerator = this.providerRegistry.getTextGeneratorStrategy(
-			ai?.provider || 'openai',
+			ai?.provider || 'openai'
 		);
 
 		const summary = await this.historyService.getSummary(auth, courseId);
-		const window = await this.historyService.getWindowMessages(
-			auth,
-			courseId,
-		);
+		const window = await this.historyService.getWindowMessages(auth, courseId);
 
-		const { content: generatedText, tokenUsage } =
-			await textGenerator.generate({
+		const { content: generatedText, tokenUsage } = await textGenerator.generate(
+			{
 				input: {
 					prompt,
 				},
 				summary: summary || null,
 				recentHistory: window,
-			});
+			}
+		);
 
 		if (tokenUsage) {
 			this.tokenUsageService.save(
 				auth.userId,
 				tokenUsage.totalTokens,
-				tokenUsage.model,
+				tokenUsage.model
 			);
 		}
 
@@ -65,7 +63,7 @@ export class GenerateTextUseCase {
 			auth,
 			courseId,
 			'assistant',
-			generatedText.text,
+			generatedText.text
 		);
 
 		return generatedText;

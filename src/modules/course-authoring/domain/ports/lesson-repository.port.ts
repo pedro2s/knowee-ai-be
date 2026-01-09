@@ -11,7 +11,7 @@ export interface LessonRepositoryPort {
 	update(
 		id: string,
 		lesson: Partial<CreateLessonInput>,
-		auth: AuthContext,
+		auth: AuthContext
 	): Promise<Lesson | null>;
 	delete(id: string, auth: AuthContext): Promise<void>;
 }

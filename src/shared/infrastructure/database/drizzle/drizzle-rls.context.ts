@@ -12,11 +12,11 @@ export class DrizzleRlsContext implements DbContext {
 
 	async runAsUser<T>(
 		auth: AuthContext,
-		fn: (db: unknown) => Promise<T>,
+		fn: (db: unknown) => Promise<T>
 	): Promise<T> {
 		return this.drizzle.db.transaction(async (tx) => {
 			await tx.execute(
-				sql`select set_config('request.jwt.claim.sub', ${auth.userId}, true), set_config('request.jwt.claim.role', ${auth.role}, true)`,
+				sql`select set_config('request.jwt.claim.sub', ${auth.userId}, true), set_config('request.jwt.claim.role', ${auth.role}, true)`
 			);
 			return fn(tx);
 		});
@@ -25,7 +25,7 @@ export class DrizzleRlsContext implements DbContext {
 	runAsService<T>(fn: (db: unknown) => Promise<T>): Promise<T> {
 		return this.drizzle.db.transaction(async (tx) => {
 			await tx.execute(
-				sql`select set_config('request.jwt.claim.role', 'service_role', true)`,
+				sql`select set_config('request.jwt.claim.role', 'service_role', true)`
 			);
 			return fn(tx);
 		});

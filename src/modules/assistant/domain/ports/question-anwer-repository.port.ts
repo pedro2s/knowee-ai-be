@@ -6,10 +6,10 @@ export const QUESTION_ANSWER_REPOSITORY = 'QUESTION_ANSWER_REPOSITORY';
 export interface QuestionAnswerRepositoryPort {
 	create(
 		questionAnswer: QuestionAnswer,
-		auth: AuthContext,
+		auth: AuthContext
 	): Promise<QuestionAnswer>;
 	findAllByCourseId(
 		courseId: string,
-		auth: AuthContext,
+		auth: AuthContext
 	): Promise<QuestionAnswer[]>;
 }

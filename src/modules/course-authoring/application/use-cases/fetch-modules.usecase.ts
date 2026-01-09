@@ -9,7 +9,7 @@ import { Module } from '../../domain/entities/module.entity';
 export class FetchModulesUseCase {
 	constructor(
 		@Inject(MODULE_REPOSITORY)
-		private readonly moduleRepository: ModuleRepositoryPort,
+		private readonly moduleRepository: ModuleRepositoryPort
 	) {}
 
 	execute(courseId: string, userId: string): Promise<Module[]> {

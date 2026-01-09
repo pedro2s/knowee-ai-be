@@ -24,32 +24,32 @@ export class HistoryService implements HistoryServicePort {
 		private readonly historyRepository: HistoryRepositoryPort,
 		@Inject(HISTORY_SUMMARY_REPOSITORY)
 		private readonly historySummaryRepository: HistorySummaryRepositoryPort,
-		private readonly openAISumarizeHistory: OpenAISummarizeHistoryAdapter,
+		private readonly openAISumarizeHistory: OpenAISummarizeHistoryAdapter
 	) {}
 
 	public async getWindowMessages(context: AuthContext, courseId: string) {
 		return this.historyRepository.findWindowHistory(
 			courseId,
 			MAX_WINDOW_MESSAGES,
-			context,
+			context
 		);
 	}
 
 	public async getSummary(context: AuthContext, courseId: string) {
 		const summary = await this.historySummaryRepository.findHistorySummary(
 			courseId,
-			context,
+			context
 		);
 		return summary?.summary;
 	}
 
 	public async shouldSummarizeHistory(
 		context: AuthContext,
-		courseId: string,
+		courseId: string
 	): Promise<boolean> {
 		const messageCount = await this.historyRepository.countMessages(
 			courseId,
-			context,
+			context
 		);
 		return messageCount > MAX_WINDOW_MESSAGES;
 	}
@@ -58,7 +58,7 @@ export class HistoryService implements HistoryServicePort {
 		context: AuthContext,
 		courseId: string,
 		role: 'user' | 'assistant' | 'system',
-		content: string,
+		content: string
 	): Promise<void> {
 		const history = History.create({
 			userId: context.userId,
@@ -72,13 +72,13 @@ export class HistoryService implements HistoryServicePort {
 		context: AuthContext,
 		courseId: string,
 		role: 'user' | 'assistant' | 'system',
-		content: string,
+		content: string
 	): Promise<void> {
 		await this.saveMessage(context, courseId, role, content);
 
 		const shouldSummarize = await this.shouldSummarizeHistory(
 			context,
-			courseId,
+			courseId
 		);
 
 		if (shouldSummarize) {
@@ -89,16 +89,13 @@ export class HistoryService implements HistoryServicePort {
 
 	public async summarizeHistory(
 		context: AuthContext,
-		courseId: string,
+		courseId: string
 	): Promise<void> {
-		const history = await this.historyRepository.findHistory(
-			courseId,
-			context,
-		);
+		const history = await this.historyRepository.findHistory(courseId, context);
 
 		if (history.length === 0) {
 			this.logger.log(
-				`[SummarizeHistoryUseCase] Nenhum histórico encontrado para resumir.`,
+				`[SummarizeHistoryUseCase] Nenhum histórico encontrado para resumir.`
 			);
 			return;
 		}
@@ -119,10 +116,7 @@ export class HistoryService implements HistoryServicePort {
 			summary: summaryText,
 		});
 
-		await this.historySummaryRepository.saveHistorySummary(
-			summary,
-			context,
-		);
+		await this.historySummaryRepository.saveHistorySummary(summary, context);
 		this.logger.log(`[SummarizeHistoryUseCase] Resumo atualizado.`);
 
 		await this.historyRepository.deleteHistory(courseId, context);

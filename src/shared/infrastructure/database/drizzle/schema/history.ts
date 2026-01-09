@@ -28,7 +28,7 @@ export const history = pgTable(
 	(table) => [
 		index('history_user_id_idx').using(
 			'btree',
-			table.userId.asc().nullsLast().op('uuid_ops'),
+			table.userId.asc().nullsLast().op('uuid_ops')
 		),
 		foreignKey({
 			columns: [table.courseId],
@@ -51,7 +51,7 @@ export const history = pgTable(
 			for: 'delete',
 			to: ['public'],
 		}),
-	],
+	]
 );
 
 export type SelectHistory = typeof history.$inferSelect;

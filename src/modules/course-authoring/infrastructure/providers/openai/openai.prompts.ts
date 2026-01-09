@@ -3,7 +3,7 @@ import { CourseDetails } from 'src/modules/course-authoring/domain/ports/course-
 
 export function buildCoursePrompt(
 	courseDetails: CourseDetails,
-	filesAnalysis: string,
+	filesAnalysis: string
 ): OpenAI.Chat.Completions.ChatCompletionMessageParam[] {
 	const {
 		// dados básicos do curso

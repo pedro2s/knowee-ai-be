@@ -19,13 +19,13 @@ import { SupabaseAuthGuard } from 'src/modules/auth/infrastructure/guards/supaba
 export class LessonsController {
 	constructor(
 		private readonly getLessonUseCase: GetLessonUseCase,
-		private readonly generateAudio: GenerateLessonAudioUseCase,
+		private readonly generateAudio: GenerateLessonAudioUseCase
 	) {} // Updated injected type and name
 
 	@Get('/:id')
 	async getLesson(
 		@Param('id') lessonId: string,
-		@CurrentUser() user: UserPayload,
+		@CurrentUser() user: UserPayload
 	): Promise<LessonResponseDto> {
 		const lesson = await this.getLessonUseCase.execute(lessonId, user.id);
 		return LessonResponseDto.fromDomain(lesson);
@@ -35,7 +35,7 @@ export class LessonsController {
 	async geneateLessonVideo(
 		@Req() req: Request & { user: { id: string } },
 		@Param('id') lessonId: string,
-		@Body() body,
+		@Body() body
 	) {
 		this.generateAudio.execute({
 			lessonId,

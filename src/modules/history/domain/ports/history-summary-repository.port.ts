@@ -6,11 +6,11 @@ export const HISTORY_SUMMARY_REPOSITORY = 'HISTORY_SUMMARY_REPOSITORY';
 export interface HistorySummaryRepositoryPort {
 	findHistorySummary(
 		courseId: string,
-		context: AuthContext,
+		context: AuthContext
 	): Promise<HistorySummary | null>;
 
 	saveHistorySummary(
 		historySummary: HistorySummary,
-		context: AuthContext,
+		context: AuthContext
 	): Promise<void>;
 }

@@ -19,28 +19,25 @@ export class TokenUsageService implements TokenUsagePort {
 	async save(
 		userId: string,
 		totalTokens: number,
-		model: string,
+		model: string
 	): Promise<void> {
 		try {
-			this.logger.log(
-				`Registrando uso de tokens para o usuário: ${userId}`,
-			);
+			this.logger.log(`Registrando uso de tokens para o usuário: ${userId}`);
 
 			// Find the user's active subscription
-			const subscription =
-				await this.drizzle.db.query.subscribers.findFirst({
-					where: and(
-						eq(subscribers.userId, userId),
-						eq(subscribers.subscribed, true),
-					),
-					columns: {
-						id: true,
-					},
-				});
+			const subscription = await this.drizzle.db.query.subscribers.findFirst({
+				where: and(
+					eq(subscribers.userId, userId),
+					eq(subscribers.subscribed, true)
+				),
+				columns: {
+					id: true,
+				},
+			});
 
 			if (!subscription) {
 				this.logger.warn(
-					`Nenhuma assinatura ativa encontrada para o usuário ${userId}. O uso de tokens não será registrado.`,
+					`Nenhuma assinatura ativa encontrada para o usuário ${userId}. O uso de tokens não será registrado.`
 				);
 				return;
 			}
@@ -54,7 +51,7 @@ export class TokenUsageService implements TokenUsagePort {
 			});
 
 			this.logger.log(
-				`Uso de ${totalTokens} tokens registrado com sucesso para o usuário ${userId}`,
+				`Uso de ${totalTokens} tokens registrado com sucesso para o usuário ${userId}`
 			);
 		} catch (error) {
 			this.logger.error('Erro ao registrar uso de tokens:', error);

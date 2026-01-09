@@ -9,7 +9,7 @@ export interface HistoryRepositoryPort {
 	findWindowHistory(
 		courseId: string,
 		windowSize: number,
-		context: AuthContext,
+		context: AuthContext
 	): Promise<History[]>;
 
 	countMessages(courseId: string, context: AuthContext): Promise<number>;

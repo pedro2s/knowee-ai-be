@@ -36,5 +36,5 @@ export const muxData = pgTable(
 			name: 'mux_data_lesson_id_fkey',
 		}).onDelete('cascade'),
 		unique('mux_data_lesson_id_unique').on(table.lessonId),
-	],
+	]
 );
