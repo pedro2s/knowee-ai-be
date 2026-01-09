@@ -64,6 +64,6 @@ export class ModulesController {
 		@CurrentUser() user: UserPayload
 	): Promise<LessonResponseDto[]> {
 		const lessons = await this.fetchLessons.execute(id, user.id);
-		return lessons.map(LessonResponseDto.fromDomain);
+		return lessons.map((lesson) => LessonResponseDto.fromDomain(lesson));
 	}
 }

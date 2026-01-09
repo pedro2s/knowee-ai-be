@@ -17,7 +17,7 @@ export class ModuleMapper {
 
 		// Mapeia as lições, se existirem
 		const lessons = raw.lessons
-			? raw.lessons.map(LessonMapper.toDomain)
+			? raw.lessons.map((lesson) => LessonMapper.toDomain(lesson))
 			: undefined;
 
 		return Module.restore({

@@ -51,7 +51,7 @@ export class GenerateTextUseCase {
 		);
 
 		if (tokenUsage) {
-			this.tokenUsageService.save(
+			await this.tokenUsageService.save(
 				auth.userId,
 				tokenUsage.totalTokens,
 				tokenUsage.model

@@ -34,7 +34,7 @@ export class AuthController {
 
 	@Get('profile')
 	@UseGuards(SupabaseAuthGuard)
-	async getProfile(@CurrentUser() user: UserPayload) {
+	getProfile(@CurrentUser() user: UserPayload) {
 		// O objeto 'user' agora contém as informações do usuário logado,
 		// tipadas de acordo com a interface UserPayload.
 		// Você pode retornar este objeto ou processá-lo conforme necessário.

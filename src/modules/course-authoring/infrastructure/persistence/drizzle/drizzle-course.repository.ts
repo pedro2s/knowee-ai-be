@@ -84,7 +84,7 @@ export class DrizzleCourseRepository implements CourseRepositoryPort {
 				},
 				orderBy: (course) => [desc(course.createdAt)],
 			});
-			return userCourses.map(CourseMapper.toDomain);
+			return userCourses.map((course) => CourseMapper.toDomain(course));
 		});
 	}
 

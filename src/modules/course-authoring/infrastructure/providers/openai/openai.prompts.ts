@@ -57,7 +57,7 @@ Experiência em Ensino: ${teachingExperience}
 Principais Conquistas: ${instructorAchievements}
 Público Típico: ${typicalAudience}
 Motivação para Criar o Curso: ${instructorMotivation}
-Formatos Preferidos: ${preferredFormats}`,
+Formatos Preferidos: ${preferredFormats?.join(', ')}`,
 				},
 				{
 					type: 'text',

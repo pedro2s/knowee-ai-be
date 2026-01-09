@@ -54,7 +54,7 @@ export class CoursesController {
 		@CurrentUser() user: UserPayload
 	): Promise<CourseSummaryResponseDto[]> {
 		const courses = await this.fetchCourses.execute(user.id);
-		return courses.map(CourseSummaryResponseDto.fromDomain);
+		return courses.map((course) => CourseSummaryResponseDto.fromDomain(course));
 	}
 
 	@Get('/:id')
@@ -75,6 +75,6 @@ export class CoursesController {
 		@CurrentUser() user: UserPayload
 	): Promise<ModuleResponseDto[]> {
 		const modules = await this.fetchModules.execute(id, user.id);
-		return modules.map(ModuleResponseDto.fromDomain);
+		return modules.map((module) => ModuleResponseDto.fromDomain(module));
 	}
 }

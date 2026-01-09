@@ -31,7 +31,7 @@ export class DrizzleHistoryRepository implements HistoryRepositoryPort {
 				orderBy: (history, { asc }) => [asc(history.createdAt)],
 			});
 
-			return result.map(HistoryMapper.toDomain);
+			return result.map((history) => HistoryMapper.toDomain(history));
 		});
 	}
 
@@ -52,7 +52,7 @@ export class DrizzleHistoryRepository implements HistoryRepositoryPort {
 				limit: windowSize,
 			});
 
-			return result.map(HistoryMapper.toDomain).reverse();
+			return result.map((history) => HistoryMapper.toDomain(history)).reverse();
 		});
 	}
 

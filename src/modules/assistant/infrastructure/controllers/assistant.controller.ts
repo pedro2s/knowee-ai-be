@@ -29,7 +29,9 @@ export class AssistantController {
 			courseId,
 			userId: user.id,
 		});
-		return chatHistory.map(ChatHistoryResponseDto.fromDomain);
+		return chatHistory.map((history) =>
+			ChatHistoryResponseDto.fromDomain(history)
+		);
 	}
 
 	@Post('chat')

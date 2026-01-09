@@ -46,7 +46,9 @@ export class DrizzleQuestionAnswerRepository implements QuestionAnswerRepository
 				where: eq(schema.questionsAnswers.courseId, courseId),
 			});
 
-			return questionAnswers.map(QuestionAnswerMapper.toDomain);
+			return questionAnswers.map((questionAnswer) =>
+				QuestionAnswerMapper.toDomain(questionAnswer)
+			);
 		});
 	}
 }

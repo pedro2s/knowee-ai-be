@@ -32,17 +32,23 @@ export class LessonsController {
 	}
 
 	@Post(':id/video')
-	async geneateLessonVideo(
-		@Req() req: Request & { user: { id: string } },
+	geneateLessonVideo(
 		@Param('id') lessonId: string,
-		@Body() body
+		@Body() body,
+		@CurrentUser() user: UserPayload
 	) {
-		this.generateAudio.execute({
-			lessonId,
-			imageProvider: body.imageProvider,
-			audioProvider: body.audioProvider,
-			userId: req.user.id,
-		});
+		void (async () => {
+			try {
+				await this.generateAudio.execute({
+					lessonId,
+					imageProvider: body.imageProvider,
+					audioProvider: body.audioProvider,
+					userId: user.id,
+				});
+			} catch (error) {
+				console.log(error);
+			}
+		})();
 
 		return {
 			message: 'Geração de vídeo iniciada',

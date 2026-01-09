@@ -57,7 +57,7 @@ export class DrizzleLessonRepository implements LessonRepositoryPort {
 				.orderBy(asc(schema.lessons.orderIndex));
 
 			// Schema Drizzle -> Mapper -> Domínio
-			return moduleLessons.map(LessonMapper.toDomain);
+			return moduleLessons.map((lesson) => LessonMapper.toDomain(lesson));
 		});
 	}
 

@@ -117,7 +117,7 @@ export class CreateCourseDto {
 		message: 'Os formatos preferidos devem ser um array de strings',
 	})
 	@Expose({ name: 'preferred_formats' })
-	@Transform(({ value }) => JSON.parse(value))
+	@Transform(({ value }) => JSON.parse(value) as string[])
 	readonly preferredFormats?: string[];
 
 	// Dados de IA

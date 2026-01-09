@@ -27,7 +27,7 @@ export class CourseMapper {
 
 		// Mapeia os módulos, se existirem, usando o ModuleMapper atualizado
 		const modules = raw.modules
-			? raw.modules.map(ModuleMapper.toDomain)
+			? raw.modules.map((module) => ModuleMapper.toDomain(module))
 			: undefined;
 
 		return Course.restore({
