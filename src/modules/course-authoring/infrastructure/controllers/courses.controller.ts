@@ -88,7 +88,6 @@ export class CoursesController {
 		@Body() data: UpdateCourseDto,
 		@CurrentUser() user: UserPayload
 	): Promise<CourseResponseDto> {
-		console.log(data);
 		const course = await this.updateCourse.execute(id, data, user.id);
 		return CourseResponseDto.fromDomain(course);
 	}
