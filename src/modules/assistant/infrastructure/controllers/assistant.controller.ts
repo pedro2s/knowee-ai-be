@@ -10,6 +10,8 @@ import { QuestionAnsweredResponseDto } from '../../application/dtos/question-ans
 import { GenerateTextDto } from '../../application/dtos/generate-text.dto';
 import { GeneratedTextResponseDto } from '../../application/dtos/generated-text.response.dto';
 import { GenerateTextUseCase } from '../../application/use-cases/generate-text.usecase';
+import { GenerateArticleDto } from '../../application/dtos/generate-article.dto';
+import { GeneratedArticleResponseDto } from '../../application/dtos/generated-article.response.dto';
 
 @Controller('assistant')
 @UseGuards(SupabaseAuthGuard)
@@ -52,4 +54,10 @@ export class AssistantController {
 		const generatedText = await this.generateTextUseCase.execute(data, user.id);
 		return GeneratedTextResponseDto.fromDomain(generatedText);
 	}
+
+	@Post('/generate-article')
+	async generateArticle(
+		@Body() data: GenerateArticleDto,
+		@CurrentUser() user: UserPayload
+	): Promise<GeneratedArticleResponseDto> {}
 }
