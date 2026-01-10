@@ -31,6 +31,7 @@ import { FileProcessingModule } from 'src/shared/infrastructure/file-processing/
 import { EmbeddingModule } from 'src/shared/infrastructure/embeddings/embedding.module';
 import { TokenUsageModule } from 'src/shared/infrastructure/token-usage/token-usage.module';
 import { GeneratorLessonVideoUseCase } from './application/use-cases/generate-lesson-video.usecase';
+import { UpdateCourseWithModuleTreeUseCase } from './application/use-cases/update-course-with-module-tree.usecase';
 
 @Module({
 	controllers: [CoursesController, ModulesController, LessonsController],
@@ -54,8 +55,9 @@ import { GeneratorLessonVideoUseCase } from './application/use-cases/generate-le
 		FetchCoursesUseCase,
 		FetchModulesUseCase,
 		FetchLessonsUseCase,
-		DeleteModuleUseCase,
+		UpdateCourseWithModuleTreeUseCase,
 		UpdateModuleUseCase,
+		DeleteModuleUseCase,
 		GenerateLessonAudioUseCase,
 		GeneratorLessonVideoUseCase,
 		ProviderRegistry,

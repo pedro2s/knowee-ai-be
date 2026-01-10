@@ -3,6 +3,7 @@ import {
 	Controller,
 	Get,
 	Param,
+	Patch,
 	Post,
 	UploadedFiles,
 	UseGuards,
@@ -20,6 +21,8 @@ import { GetCourseUseCase } from '../../application/use-cases/get-course.usecase
 import { ModuleResponseDto } from '../../application/dtos/module.response.dto';
 import { FetchModulesUseCase } from '../../application/use-cases/fetch-modules.usecase';
 import { FilesInterceptor } from '@nestjs/platform-express';
+import { UpdateCourseDto } from '../../application/dtos/update-course.dto';
+import { UpdateCourseWithModuleTreeUseCase } from '../../application/use-cases/update-course-with-module-tree.usecase';
 
 @Controller('courses')
 @UseGuards(SupabaseAuthGuard)
@@ -28,7 +31,8 @@ export class CoursesController {
 		private readonly createCourse: CreateCourseUseCase,
 		private readonly fetchCourses: FetchCoursesUseCase,
 		private readonly getCourse: GetCourseUseCase,
-		private readonly fetchModules: FetchModulesUseCase
+		private readonly fetchModules: FetchModulesUseCase,
+		private readonly updateCourse: UpdateCourseWithModuleTreeUseCase
 	) {}
 
 	@Post()
@@ -76,5 +80,16 @@ export class CoursesController {
 	): Promise<ModuleResponseDto[]> {
 		const modules = await this.fetchModules.execute(id, user.id);
 		return modules.map((module) => ModuleResponseDto.fromDomain(module));
+	}
+
+	@Patch('/:id')
+	async update(
+		@Param('id') id: string,
+		@Body() data: UpdateCourseDto,
+		@CurrentUser() user: UserPayload
+	): Promise<CourseResponseDto> {
+		console.log(data);
+		const course = await this.updateCourse.execute(id, data, user.id);
+		return CourseResponseDto.fromDomain(course);
 	}
 }
