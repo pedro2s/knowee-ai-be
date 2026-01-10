@@ -1,28 +1,17 @@
+import { PartialType } from '@nestjs/mapped-types';
 import { Type } from 'class-transformer';
 import {
-	IsInt,
 	IsNotEmpty,
 	IsOptional,
 	IsString,
 	ValidateNested,
 } from 'class-validator';
+import { UpdateModuleDto } from './update-module.dto';
 
-export class UpdateCourseModuleDto {
+export class UpdateCourseModuleDto extends PartialType(UpdateModuleDto) {
 	@IsNotEmpty()
 	@IsString()
 	id: string;
-
-	@IsOptional()
-	@IsString()
-	title: string;
-
-	@IsOptional()
-	@IsInt()
-	orderIndex: number;
-
-	@IsOptional()
-	@IsString()
-	description?: string;
 }
 
 export class UpdateCourseDto {
