@@ -12,10 +12,19 @@ import { OpenAIAssistantAdapter } from './infrastructure/providers/openai/openai
 import { GenerateTextUseCase } from './application/use-cases/generate-text.usecase';
 import { OpenAITextGeneratorAdapter } from './infrastructure/providers/openai/openai-text-generator.adapter';
 import { TokenUsageModule } from 'src/shared/infrastructure/token-usage/token-usage.module';
+import { GenerateArticleUseCase } from './application/use-cases/generate-article.usecase';
+import { OpenAIArticleGeneratorAdapter } from './infrastructure/providers/openai/openai-article-generator.adapter';
+import { CourseAuthoringModule } from '../course-authoring/course-authoring.module';
 
 @Module({
 	controllers: [AssistantController],
-	imports: [DatabaseModule, HistoryModule, AIModule, TokenUsageModule],
+	imports: [
+		DatabaseModule,
+		HistoryModule,
+		AIModule,
+		TokenUsageModule,
+		CourseAuthoringModule,
+	],
 	providers: [
 		{
 			provide: QUESTION_ANSWER_REPOSITORY,
@@ -24,9 +33,11 @@ import { TokenUsageModule } from 'src/shared/infrastructure/token-usage/token-us
 		GetChatHistoryUseCase,
 		SubmitQuestionUseCase,
 		GenerateTextUseCase,
+		GenerateArticleUseCase,
 		ProviderRegistry,
 		OpenAIAssistantAdapter,
 		OpenAITextGeneratorAdapter,
+		OpenAIArticleGeneratorAdapter,
 	],
 })
 export class AssistantModule {}

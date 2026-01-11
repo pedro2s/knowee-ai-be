@@ -12,6 +12,7 @@ import { GeneratedTextResponseDto } from '../../application/dtos/generated-text.
 import { GenerateTextUseCase } from '../../application/use-cases/generate-text.usecase';
 import { GenerateArticleDto } from '../../application/dtos/generate-article.dto';
 import { GeneratedArticleResponseDto } from '../../application/dtos/generated-article.response.dto';
+import { GenerateArticleUseCase } from '../../application/use-cases/generate-article.usecase';
 
 @Controller('assistant')
 @UseGuards(SupabaseAuthGuard)
@@ -19,7 +20,8 @@ export class AssistantController {
 	constructor(
 		private readonly getChatHistory: GetChatHistoryUseCase,
 		private readonly submitQuestion: SubmitQuestionUseCase,
-		private readonly generateTextUseCase: GenerateTextUseCase
+		private readonly generateTextUseCase: GenerateTextUseCase,
+		private readonly generateArticleUseCase: GenerateArticleUseCase
 	) {}
 
 	@Get('chat/:courseId')
@@ -59,5 +61,11 @@ export class AssistantController {
 	async generateArticle(
 		@Body() data: GenerateArticleDto,
 		@CurrentUser() user: UserPayload
-	): Promise<GeneratedArticleResponseDto> {}
+	): Promise<GeneratedArticleResponseDto> {
+		const generatedArticle = await this.generateArticleUseCase.execute(
+			data,
+			user.id
+		);
+		return GeneratedArticleResponseDto.fromDomain(generatedArticle);
+	}
 }

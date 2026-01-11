@@ -1,8 +1,8 @@
 export interface GenerateArticleInput {
-	courseId: string;
-	moduleId: string;
-	title: string;
-	description: string;
+	moduleTitle: string;
+	moduleDescription: string;
+	lessonTitle: string;
+	lessonDescription: string;
 }
 
 export interface GeneratedArticleOutput {

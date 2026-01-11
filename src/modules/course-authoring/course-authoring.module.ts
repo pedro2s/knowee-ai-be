@@ -66,5 +66,10 @@ import { UpdateCourseWithModuleTreeUseCase } from './application/use-cases/updat
 		OpenAIAudioGeneratorAdapter,
 		OpenAIImageGeneratorAdapter,
 	],
+	exports: [
+		{ provide: COURSE_REPOSITORY, useClass: DrizzleCourseRepository },
+		{ provide: LESSON_REPOSITORY, useClass: DrizzleLessonRepository },
+		{ provide: MODULE_REPOSITORY, useClass: DrizzleModuleRepository },
+	],
 })
 export class CourseAuthoringModule {}
