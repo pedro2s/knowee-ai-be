@@ -32,6 +32,7 @@ import { EmbeddingModule } from 'src/shared/infrastructure/embeddings/embedding.
 import { TokenUsageModule } from 'src/shared/infrastructure/token-usage/token-usage.module';
 import { GeneratorLessonVideoUseCase } from './application/use-cases/generate-lesson-video.usecase';
 import { UpdateCourseWithModuleTreeUseCase } from './application/use-cases/update-course-with-module-tree.usecase';
+import { UpdateLessonUseCase } from './application/use-cases/update-lesson.usecase';
 
 @Module({
 	controllers: [CoursesController, ModulesController, LessonsController],
@@ -57,6 +58,7 @@ import { UpdateCourseWithModuleTreeUseCase } from './application/use-cases/updat
 		FetchLessonsUseCase,
 		UpdateCourseWithModuleTreeUseCase,
 		UpdateModuleUseCase,
+		UpdateLessonUseCase,
 		DeleteModuleUseCase,
 		GenerateLessonAudioUseCase,
 		GeneratorLessonVideoUseCase,

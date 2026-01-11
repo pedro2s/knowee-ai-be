@@ -32,7 +32,6 @@ export class GenerateArticleUseCase {
 		input: GenerateArticleDto,
 		userId: string
 	): Promise<GeneratedArticleOutput> {
-		console.log(input);
 		const { courseId, moduleId, title, description, ai } = input;
 
 		const authContext: AuthContext = {
