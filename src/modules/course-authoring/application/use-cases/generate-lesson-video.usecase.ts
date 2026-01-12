@@ -33,8 +33,12 @@ export class GeneratorLessonVideoUseCase {
 			throw new NotFoundException('Aula não encontrada');
 		}
 
-		const imageGen = this.registry.getImageStrategy(input.imageProvider);
-		const audioGen = this.registry.getAudioStrategy(input.audioProvider);
+		const imageGen = this.registry.getGenerateImageStrategy(
+			input.imageProvider
+		);
+		const audioGen = this.registry.getGenerateAudioStrategy(
+			input.audioProvider
+		);
 
 		for (const section of (lesson.content as any).scriptSection) {
 			const image = await imageGen.generate({

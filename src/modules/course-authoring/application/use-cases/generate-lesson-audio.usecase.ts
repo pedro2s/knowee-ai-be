@@ -32,7 +32,9 @@ export class GenerateLessonAudioUseCase {
 
 		if (!lesson) throw new Error('Aula não encontrada');
 
-		const audioGen = this.registry.getAudioStrategy(input.audioProvider);
+		const audioGen = this.registry.getGenerateAudioStrategy(
+			input.audioProvider
+		);
 
 		const sections = (lesson.content as { scriptSection: any[] }).scriptSection;
 

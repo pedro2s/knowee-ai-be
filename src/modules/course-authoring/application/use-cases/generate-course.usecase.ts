@@ -4,7 +4,7 @@ import {
 	type CourseRepositoryPort,
 } from '../../domain/ports/course-repository.port';
 import { ProviderRegistry } from '../../infrastructure/providers/provider.registry';
-import { CreateCourseDto } from '../dtos/create-course.dto';
+import { GenerateCourseDto } from '../dtos/generate-course.dto';
 import { Course } from '../../domain/entities/course.entity';
 import type { InputFile } from '../../domain/entities/course.types';
 import {
@@ -26,8 +26,8 @@ import {
 import { AuthContext } from 'src/shared/application/ports/db-context.port';
 
 @Injectable()
-export class CreateCourseUseCase {
-	private readonly logger = new Logger(CreateCourseUseCase.name);
+export class GenerateCourseUseCase {
+	private readonly logger = new Logger(GenerateCourseUseCase.name);
 
 	constructor(
 		@Inject(COURSE_REPOSITORY)
@@ -44,7 +44,7 @@ export class CreateCourseUseCase {
 	) {}
 
 	async execute(
-		input: CreateCourseDto & {
+		input: GenerateCourseDto & {
 			userId: string;
 			files: Express.Multer.File[];
 		}
@@ -67,13 +67,13 @@ export class CreateCourseUseCase {
 			filesAnalysis = extractedText;
 
 			// Persist the knowledge for future use (e.g., chatbot), but don't use the query result for generation
-			this.embeddingService.insertEmbedding(input.userId, extractedText);
+			await this.embeddingService.insertEmbedding(input.userId, extractedText);
 			this.logger.log(
 				'Embeddings dos arquivos foram salvos para referência futura.'
 			);
 		}
 
-		const courseGen = this.providerRegistry.getCourseStrategy(
+		const courseGen = this.providerRegistry.getGenerateCourseStrategy(
 			input.ai?.provider || 'openai'
 		);
 
@@ -83,7 +83,7 @@ export class CreateCourseUseCase {
 		});
 
 		if (tokenUsage) {
-			this.tokenUsageService.save(
+			await this.tokenUsageService.save(
 				input.userId,
 				tokenUsage.totalTokens,
 				tokenUsage.model

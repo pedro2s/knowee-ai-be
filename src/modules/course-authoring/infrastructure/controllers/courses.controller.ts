@@ -9,11 +9,11 @@ import {
 	UseGuards,
 	UseInterceptors,
 } from '@nestjs/common';
-import { CreateCourseUseCase } from '../../application/use-cases/create-course.usecase';
+import { GenerateCourseUseCase } from '../../application/use-cases/generate-course.usecase';
 import { SupabaseAuthGuard } from 'src/modules/auth/infrastructure/guards/supabase-auth.guard';
 import { FetchCoursesUseCase } from '../../application/use-cases/fetch-courses.usecase';
 import { CourseResponseDto } from '../../application/dtos/course.response.dto';
-import { CreateCourseDto } from '../../application/dtos/create-course.dto';
+import { GenerateCourseDto } from '../../application/dtos/generate-course.dto';
 import { CurrentUser } from 'src/shared/infrastructure/decorators';
 import type { UserPayload } from 'src/shared/domain/types/user-payload';
 import { CourseSummaryResponseDto } from '../../application/dtos/course-summary.response.dto';
@@ -28,7 +28,7 @@ import { UpdateCourseWithModuleTreeUseCase } from '../../application/use-cases/u
 @UseGuards(SupabaseAuthGuard)
 export class CoursesController {
 	constructor(
-		private readonly createCourse: CreateCourseUseCase,
+		private readonly createCourse: GenerateCourseUseCase,
 		private readonly fetchCourses: FetchCoursesUseCase,
 		private readonly getCourse: GetCourseUseCase,
 		private readonly fetchModules: FetchModulesUseCase,
@@ -39,7 +39,7 @@ export class CoursesController {
 	@UseInterceptors(FilesInterceptor('files'))
 	async create(
 		@UploadedFiles() files: Express.Multer.File[],
-		@Body() body: CreateCourseDto,
+		@Body() body: GenerateCourseDto,
 		@CurrentUser() user: UserPayload
 	): Promise<CourseResponseDto> {
 		// 1. Chama o Caso de Uso passando os dados validos
@@ -73,15 +73,6 @@ export class CoursesController {
 		return CourseResponseDto.fromDomain(course);
 	}
 
-	@Get('/:id/modules')
-	async findModules(
-		@Param('id') id: string,
-		@CurrentUser() user: UserPayload
-	): Promise<ModuleResponseDto[]> {
-		const modules = await this.fetchModules.execute(id, user.id);
-		return modules.map((module) => ModuleResponseDto.fromDomain(module));
-	}
-
 	@Patch('/:id')
 	async update(
 		@Param('id') id: string,
@@ -90,5 +81,14 @@ export class CoursesController {
 	): Promise<CourseResponseDto> {
 		const course = await this.updateCourse.execute(id, data, user.id);
 		return CourseResponseDto.fromDomain(course);
+	}
+
+	@Get('/:id/modules')
+	async findModules(
+		@Param('id') id: string,
+		@CurrentUser() user: UserPayload
+	): Promise<ModuleResponseDto[]> {
+		const modules = await this.fetchModules.execute(id, user.id);
+		return modules.map((module) => ModuleResponseDto.fromDomain(module));
 	}
 }

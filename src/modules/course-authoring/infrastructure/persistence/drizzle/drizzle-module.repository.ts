@@ -11,6 +11,8 @@ import { ModuleMapper } from './mappers/module.mapper';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import * as schema from 'src/shared/infrastructure/database/drizzle/schema';
 import { asc, eq } from 'drizzle-orm';
+import { GeneratedModule } from 'src/modules/course-authoring/domain/entities/course.types';
+import { Lesson } from 'src/modules/course-authoring/domain/entities/lesson.entity';
 
 type DrizzleDB = NodePgDatabase<typeof schema>;
 
@@ -109,6 +111,51 @@ export class DrizzleModuleRepository implements ModuleRepositoryPort {
 
 			// Schema Drizzle -> Mapper -> Domínio
 			return deletedModule ? ModuleMapper.toDomain(deletedModule) : null;
+		});
+	}
+
+	async saveModuleTree(
+		generatedCourse: GeneratedModule & { courseId: string },
+		auth: AuthContext
+	): Promise<Module> {
+		const { lessons, ...moduleData } = generatedCourse;
+
+		return this.dbContext.runAsUser(auth, async (db) => {
+			const tx = db as DrizzleDB;
+			const courseId = generatedCourse.courseId;
+
+			const [module] = await tx
+				.insert(schema.modules)
+				.values({
+					...moduleData,
+					courseId: generatedCourse.courseId,
+				})
+				.returning();
+
+			const moduleId = module.id;
+
+			const lessonsToInsert = lessons.map((lesson) => ({
+				moduleId,
+				courseId,
+				lessonType: 'article',
+				title: lesson.title,
+				content: lesson.content,
+				orderIndex: lesson.orderIndex,
+				description: lesson.description,
+			}));
+
+			let savedLessons: schema.SelectLesson[] | undefined;
+			if (lessonsToInsert.length > 0) {
+				savedLessons = await tx
+					.insert(schema.lessons)
+					.values(lessonsToInsert)
+					.returning();
+			}
+
+			return ModuleMapper.toDomain({
+				...module,
+				lessons: savedLessons,
+			});
 		});
 	}
 }

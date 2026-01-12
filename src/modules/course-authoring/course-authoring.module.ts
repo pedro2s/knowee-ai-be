@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { GenerateLessonAudioUseCase } from './application/use-cases/generate-lesson-audio.usecase';
 import { DrizzleCourseRepository } from './infrastructure/persistence/drizzle/drizzle-course.repository';
-import { CreateCourseUseCase } from './application/use-cases/create-course.usecase';
+import { GenerateCourseUseCase } from './application/use-cases/generate-course.usecase';
 import { AIModule } from 'src/shared/infrastructure/ai/ai.module';
 import { DrizzleLessonRepository } from './infrastructure/persistence/drizzle/drizzle-lesson.repository';
 import { MediaModule } from 'src/shared/infrastructure/media/media.module';
@@ -33,9 +33,17 @@ import { TokenUsageModule } from 'src/shared/infrastructure/token-usage/token-us
 import { GeneratorLessonVideoUseCase } from './application/use-cases/generate-lesson-video.usecase';
 import { UpdateCourseWithModuleTreeUseCase } from './application/use-cases/update-course-with-module-tree.usecase';
 import { UpdateLessonUseCase } from './application/use-cases/update-lesson.usecase';
+import { QuickActionsController } from './infrastructure/controllers/quick-actions.controller';
+import { GenerateModuleUseCase } from './application/use-cases/generate-module.usecase';
+import { OpenAIModuleGeneratorAdapter } from './infrastructure/providers/openai/openai-module-generator.adapter';
 
 @Module({
-	controllers: [CoursesController, ModulesController, LessonsController],
+	controllers: [
+		CoursesController,
+		ModulesController,
+		LessonsController,
+		QuickActionsController,
+	],
 	imports: [
 		DatabaseModule,
 		AIModule,
@@ -49,7 +57,8 @@ import { UpdateLessonUseCase } from './application/use-cases/update-lesson.useca
 		{ provide: COURSE_REPOSITORY, useClass: DrizzleCourseRepository },
 		{ provide: LESSON_REPOSITORY, useClass: DrizzleLessonRepository },
 		{ provide: MODULE_REPOSITORY, useClass: DrizzleModuleRepository },
-		CreateCourseUseCase,
+		GenerateCourseUseCase,
+		GenerateModuleUseCase,
 		CreateModuleUseCase,
 		GetCourseUseCase,
 		GetLessonUseCase,
@@ -64,6 +73,7 @@ import { UpdateLessonUseCase } from './application/use-cases/update-lesson.useca
 		GeneratorLessonVideoUseCase,
 		ProviderRegistry,
 		OpenAICourseGeneratorAdapter,
+		OpenAIModuleGeneratorAdapter,
 		OpenAIScriptGeneratorAdapter,
 		OpenAIAudioGeneratorAdapter,
 		OpenAIImageGeneratorAdapter,

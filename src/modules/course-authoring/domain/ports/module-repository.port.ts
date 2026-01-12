@@ -1,6 +1,7 @@
 import { AuthContext } from 'src/shared/application/ports/db-context.port';
 import { Module } from '../entities/module.entity';
 import { CreateModuleInput } from '../entities/module.types';
+import { GeneratedModule } from '../entities/course.types';
 
 export const MODULE_REPOSITORY = 'MODULE_REPOSITORY';
 
@@ -15,4 +16,8 @@ export interface ModuleRepositoryPort {
 		auth: AuthContext
 	): Promise<Module | null>;
 	delete(id: string, auth: AuthContext): Promise<Module | null>;
+	saveModuleTree(
+		generatedCourse: GeneratedModule & { courseId: string },
+		auth: AuthContext
+	): Promise<Module>;
 }

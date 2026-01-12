@@ -10,7 +10,7 @@ import {
 import { AIProviderDto } from '../../../../shared/application/dtos/ai-provider.dto';
 import { Expose, Transform, Type } from 'class-transformer';
 
-export class CreateCourseDto {
+export class GenerateCourseDto {
 	// Dados básicos do curso
 	@IsString({ message: 'O título deve ser uma string' })
 	@MinLength(5, { message: 'O título é muito curto (mínimo 5 caracteres)' })

@@ -5,7 +5,6 @@ import {
 	Param,
 	Post,
 	Put,
-	Req,
 	UseGuards,
 } from '@nestjs/common';
 import { GenerateLessonAudioUseCase } from '../../application/use-cases/generate-lesson-audio.usecase';
