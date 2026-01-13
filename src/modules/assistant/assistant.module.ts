@@ -12,17 +12,10 @@ import { OpenAIAssistantAdapter } from './infrastructure/providers/openai/openai
 import { GenerateTextUseCase } from './application/use-cases/generate-text.usecase';
 import { OpenAITextGeneratorAdapter } from './infrastructure/providers/openai/openai-text-generator.adapter';
 import { TokenUsageModule } from 'src/shared/infrastructure/token-usage/token-usage.module';
-import { CourseAuthoringModule } from '../course-authoring/course-authoring.module';
 
 @Module({
 	controllers: [AssistantController],
-	imports: [
-		DatabaseModule,
-		HistoryModule,
-		AIModule,
-		TokenUsageModule,
-		CourseAuthoringModule,
-	],
+	imports: [DatabaseModule, HistoryModule, AIModule, TokenUsageModule],
 	providers: [
 		{
 			provide: QUESTION_ANSWER_REPOSITORY,
