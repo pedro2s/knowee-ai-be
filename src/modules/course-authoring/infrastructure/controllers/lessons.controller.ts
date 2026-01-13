@@ -18,6 +18,9 @@ import { UpdateLessonUseCase } from '../../application/use-cases/update-lesson.u
 import { GenerateArticleUseCase } from '../../application/use-cases/generate-article.usecase';
 import { GenerateArticleDto } from '../../application/dtos/generate-article.dto';
 import { GeneratedArticleResponseDto } from '../../application/dtos/generated-article.response.dto';
+import { GenerateLessonScriptDto } from '../../application/dtos/generate-lesson-script.dto';
+import { GeneratedLessonScriptResponseDto } from '../../application/dtos/generated-lesson-script.response.dto';
+import { GenerateLessonScriptUseCase } from '../../application/use-cases/generate-lesson-script.usecase';
 
 @Controller('lessons')
 @UseGuards(SupabaseAuthGuard)
@@ -26,7 +29,8 @@ export class LessonsController {
 		private readonly getLessonUseCase: GetLessonUseCase,
 		private readonly generateAudio: GenerateLessonAudioUseCase,
 		private readonly updateLessonUseCase: UpdateLessonUseCase,
-		private readonly generateArticleUseCase: GenerateArticleUseCase
+		private readonly generateArticleUseCase: GenerateArticleUseCase,
+		private readonly generateLessonScriptUseCase: GenerateLessonScriptUseCase
 	) {} // Updated injected type and name
 
 	// 1. Rotas Específicas (SEM ID) - Devem vir PRIMEIRO
@@ -41,6 +45,18 @@ export class LessonsController {
 			user.id
 		);
 		return GeneratedArticleResponseDto.fromDomain(generatedArticle);
+	}
+
+	@Post('/generate-script')
+	async generateScriptContent(
+		@Body() body: GenerateLessonScriptDto,
+		@CurrentUser() user: UserPayload
+	): Promise<GeneratedLessonScriptResponseDto> {
+		const generatedScript = await this.generateLessonScriptUseCase.execute(
+			body,
+			user.id
+		);
+		return GeneratedLessonScriptResponseDto.fromDomain(generatedScript);
 	}
 
 	// 2. Rotas Específicas (COM ID)

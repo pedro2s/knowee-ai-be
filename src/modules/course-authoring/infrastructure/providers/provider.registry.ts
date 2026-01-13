@@ -9,6 +9,8 @@ import { ModuleGeneratorPort } from '../../domain/ports/module-generator.port';
 import { OpenAIModuleGeneratorAdapter } from './openai/openai-module-generator.adapter';
 import { ArticleGeneratorPort } from 'src/modules/course-authoring/domain/ports/article-generator.port';
 import { OpenAIArticleGeneratorAdapter } from './openai/openai-article-generator.adapter';
+import { LessonScriptGeneratorPort } from '../../domain/ports/lesson-script-generator.port';
+import { OpenAILessonScriptGeneratorAdapter } from './openai/openai-lesson-script-generator.adapter';
 
 @Injectable()
 export class ProviderRegistry implements OnModuleInit {
@@ -20,13 +22,18 @@ export class ProviderRegistry implements OnModuleInit {
 	private generateImageStrategies: Map<string, ImageGeneratorPort> = new Map();
 	private generateArticleStrategies: Map<string, ArticleGeneratorPort> =
 		new Map();
+	private generateLessonScriptStrategies: Map<
+		string,
+		LessonScriptGeneratorPort
+	> = new Map();
 
 	constructor(
 		private OpenAICourseGeneratorAdapter: OpenAICourseGeneratorAdapter,
 		private OpenAIModuleGeneratorAdapter: OpenAIModuleGeneratorAdapter,
 		private openAIAudioGeneratorAdapter: OpenAIAudioGeneratorAdapter,
 		private openAIImageGeneratorAdapter: OpenAIImageGeneratorAdapter,
-		private openAIArticleGeneratorAdapter: OpenAIArticleGeneratorAdapter
+		private openAIArticleGeneratorAdapter: OpenAIArticleGeneratorAdapter,
+		private openAILessonScriptGeneratorAdapter: OpenAILessonScriptGeneratorAdapter
 	) {}
 
 	onModuleInit() {
@@ -57,6 +64,11 @@ export class ProviderRegistry implements OnModuleInit {
 		this.generateArticleStrategies.set(
 			'openai',
 			this.openAIArticleGeneratorAdapter
+		);
+
+		this.generateLessonScriptStrategies.set(
+			'openai',
+			this.openAILessonScriptGeneratorAdapter
 		);
 	}
 
@@ -96,6 +108,13 @@ export class ProviderRegistry implements OnModuleInit {
 		const strategy = this.generateArticleStrategies.get(provider);
 		if (!strategy)
 			throw new Error(`Provider de artigo '${provider}' não encontrado.`);
+		return strategy;
+	}
+
+	getGenerateLessonScriptStrategy(provider: string): LessonScriptGeneratorPort {
+		const strategy = this.generateLessonScriptStrategies.get(provider);
+		if (!strategy)
+			throw new Error(`Provider de script '${provider}' não encontrado.`);
 		return strategy;
 	}
 }

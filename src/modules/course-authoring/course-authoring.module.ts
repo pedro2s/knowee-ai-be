@@ -14,7 +14,6 @@ import { FetchCoursesUseCase } from './application/use-cases/fetch-courses.useca
 import { GetCourseUseCase } from './application/use-cases/get-course.usecase';
 import { ProviderRegistry } from './infrastructure/providers/provider.registry';
 import { OpenAICourseGeneratorAdapter } from './infrastructure/providers/openai/openai-course-generator.adapter';
-import { OpenAIScriptGeneratorAdapter } from './infrastructure/providers/openai/openai-script-generator.adapter';
 import { OpenAIAudioGeneratorAdapter } from './infrastructure/providers/openai/openai-audio-generator.adapter';
 import { OpenAIImageGeneratorAdapter } from './infrastructure/providers/openai/openai-image-generator.adapter';
 import { ModulesController } from './infrastructure/controllers/modules.controller';
@@ -38,6 +37,8 @@ import { GenerateModuleUseCase } from './application/use-cases/generate-module.u
 import { OpenAIModuleGeneratorAdapter } from './infrastructure/providers/openai/openai-module-generator.adapter';
 import { OpenAIArticleGeneratorAdapter } from './infrastructure/providers/openai/openai-article-generator.adapter';
 import { GenerateArticleUseCase } from './application/use-cases/generate-article.usecase';
+import { OpenAILessonScriptGeneratorAdapter } from './infrastructure/providers/openai/openai-lesson-script-generator.adapter';
+import { GenerateLessonScriptUseCase } from './application/use-cases/generate-lesson-script.usecase';
 
 @Module({
 	controllers: [
@@ -62,6 +63,7 @@ import { GenerateArticleUseCase } from './application/use-cases/generate-article
 		GenerateCourseUseCase,
 		GenerateModuleUseCase,
 		GenerateArticleUseCase,
+		GenerateLessonScriptUseCase,
 		CreateModuleUseCase,
 		GetCourseUseCase,
 		GetLessonUseCase,
@@ -77,10 +79,10 @@ import { GenerateArticleUseCase } from './application/use-cases/generate-article
 		ProviderRegistry,
 		OpenAICourseGeneratorAdapter,
 		OpenAIModuleGeneratorAdapter,
-		OpenAIScriptGeneratorAdapter,
 		OpenAIAudioGeneratorAdapter,
 		OpenAIImageGeneratorAdapter,
 		OpenAIArticleGeneratorAdapter,
+		OpenAILessonScriptGeneratorAdapter,
 	],
 	exports: [
 		{ provide: COURSE_REPOSITORY, useClass: DrizzleCourseRepository },
