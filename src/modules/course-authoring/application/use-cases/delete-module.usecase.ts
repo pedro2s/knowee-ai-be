@@ -1,15 +1,9 @@
-import {
-	Inject,
-	Injectable,
-	InternalServerErrorException,
-	NotFoundException,
-} from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import {
 	MODULE_REPOSITORY,
 	type ModuleRepositoryPort,
 } from '../../domain/ports/module-repository.port';
 import { Module } from '../../domain/entities/module.entity';
-import { AuthContext } from 'src/shared/application/ports/db-context.port';
 
 @Injectable()
 export class DeleteModuleUseCase {
