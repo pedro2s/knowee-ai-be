@@ -57,9 +57,7 @@ export class OpenAICourseGeneratorAdapter implements CourseGeneratorPort {
 			);
 		}
 
-		messages.push(completion.choices[0].message);
-
-		const course = JSON.parse(content);
+		const course = JSON.parse(content) as GeneratedCourse;
 
 		const tokenUsage = completion.usage?.total_tokens
 			? {

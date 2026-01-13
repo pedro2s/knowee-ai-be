@@ -5,7 +5,21 @@ import {
 } from 'src/shared/domain/types/interaction';
 
 export interface GenerateModuleInput {
-	courseId: string;
+	currentCourseStructure: {
+		title: string;
+		description: string;
+		modules?: Array<{
+			title: string;
+			description: string;
+			orderIndex: number;
+			lessons?: Array<{
+				title: string;
+				description: string;
+				lessonType: string;
+				orderIndex: number;
+			}>;
+		}>;
+	};
 }
 
 export interface ModuleGeneratorPort {

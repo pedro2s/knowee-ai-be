@@ -15,17 +15,22 @@ import {
 	MODULE_REPOSITORY,
 	type ModuleRepositoryPort,
 } from '../../domain/ports/module-repository.port';
-import { Lesson } from '../../domain/entities/lesson.entity';
 import {
 	LESSON_REPOSITORY,
 	type LessonRepositoryPort,
 } from '../../domain/ports/lesson-repository.port';
+import {
+	COURSE_REPOSITORY,
+	type CourseRepositoryPort,
+} from '../../domain/ports/course-repository.port';
 
 @Injectable()
 export class GenerateModuleUseCase {
 	private readonly logger = new Logger(GenerateModuleUseCase.name);
 
 	constructor(
+		@Inject(COURSE_REPOSITORY)
+		private readonly courseRepository: CourseRepositoryPort,
 		@Inject(MODULE_REPOSITORY)
 		private readonly moduleRepository: ModuleRepositoryPort,
 		@Inject(LESSON_REPOSITORY)
@@ -42,19 +47,47 @@ export class GenerateModuleUseCase {
 			input.ai?.provider || 'openai'
 		);
 
-		const auth: AuthContext = {
+		const authContext: AuthContext = {
 			userId: userId,
 			role: 'authenticated',
 		};
 
-		const summary = await this.historyService.getSummary(auth, input.courseId);
+		const course = await this.courseRepository.findById(
+			input.courseId,
+			authContext
+		);
+
+		if (!course) {
+			throw new Error('Course not found');
+		}
+
+		const summary = await this.historyService.getSummary(
+			authContext,
+			input.courseId
+		);
 		const window = await this.historyService.getWindowMessages(
-			auth,
+			authContext,
 			input.courseId
 		);
 
 		const { content: generatedModule, tokenUsage } = await moduleGen.generate({
-			input: { courseId: input.courseId },
+			input: {
+				currentCourseStructure: {
+					title: course.title,
+					description: course?.description || '',
+					modules: course.modules?.map((module) => ({
+						title: module.title,
+						description: module.description || '',
+						orderIndex: module.orderIndex,
+						lessons: module.lessons?.map((lesson) => ({
+							title: lesson.title,
+							description: lesson.description || '',
+							orderIndex: lesson.orderIndex,
+							lessonType: lesson.lessonType,
+						})),
+					})),
+				},
+			},
 			summary: summary || null,
 			recentHistory: window,
 		});
@@ -69,22 +102,19 @@ export class GenerateModuleUseCase {
 
 		const savedModule = await this.moduleRepository.saveModuleTree(
 			{ ...generatedModule, courseId: input.courseId },
-			auth
+			authContext
 		);
 
 		// input stringify sem o files
-		const userMessage = JSON.stringify({
-			...input,
-			files: 'omitted',
-		});
+		const userMessage = `Gere um modulo para o curso de título: ${course.title}\nDescrição do curso: ${course.description}`;
 		await this.historyService.saveMessage(
-			auth,
+			authContext,
 			input.courseId,
 			'user',
 			userMessage
 		);
-		await this.historyService.saveMessage(
-			auth,
+		await this.historyService.saveMessageAndSummarizeIfNecessary(
+			authContext,
 			input.courseId,
 			'assistant',
 			JSON.stringify(generatedModule)
