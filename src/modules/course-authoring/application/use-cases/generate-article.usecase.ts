@@ -1,5 +1,4 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
-import { ProviderRegistry } from '../../infrastructure/providers/provider.registry';
 import { AuthContext } from 'src/shared/application/ports/db-context.port';
 import {
 	HISTORY_SERVICE,
@@ -15,6 +14,7 @@ import {
 	type ModuleRepositoryPort,
 } from 'src/modules/course-authoring/domain/ports/module-repository.port';
 import { GeneratedArticleOutput } from '../../domain/entities/generate-article.types';
+import { ProviderRegistry } from '../../infrastructure/providers/provider.registry';
 
 @Injectable()
 export class GenerateArticleUseCase {
@@ -39,7 +39,7 @@ export class GenerateArticleUseCase {
 			role: 'authenticated',
 		};
 
-		const articleGenerator = this.providerRegistry.getArticleGeneratorStrategy(
+		const articleGenerator = this.providerRegistry.getGenerateArticleStrategy(
 			ai?.provider || 'openai'
 		);
 

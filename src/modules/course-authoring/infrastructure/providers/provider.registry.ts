@@ -7,6 +7,8 @@ import { OpenAICourseGeneratorAdapter } from './openai/openai-course-generator.a
 import { CourseGeneratorPort } from 'src/modules/course-authoring/domain/ports/course-generator.port';
 import { ModuleGeneratorPort } from '../../domain/ports/module-generator.port';
 import { OpenAIModuleGeneratorAdapter } from './openai/openai-module-generator.adapter';
+import { ArticleGeneratorPort } from 'src/modules/course-authoring/domain/ports/article-generator.port';
+import { OpenAIArticleGeneratorAdapter } from './openai/openai-article-generator.adapter';
 
 @Injectable()
 export class ProviderRegistry implements OnModuleInit {
@@ -16,12 +18,15 @@ export class ProviderRegistry implements OnModuleInit {
 		new Map();
 	private generateAudioStrategies: Map<string, AudioGeneratorPort> = new Map();
 	private generateImageStrategies: Map<string, ImageGeneratorPort> = new Map();
+	private generateArticleStrategies: Map<string, ArticleGeneratorPort> =
+		new Map();
 
 	constructor(
 		private OpenAICourseGeneratorAdapter: OpenAICourseGeneratorAdapter,
 		private OpenAIModuleGeneratorAdapter: OpenAIModuleGeneratorAdapter,
 		private openAIAudioGeneratorAdapter: OpenAIAudioGeneratorAdapter,
-		private openAIImageGeneratorAdapter: OpenAIImageGeneratorAdapter
+		private openAIImageGeneratorAdapter: OpenAIImageGeneratorAdapter,
+		private openAIArticleGeneratorAdapter: OpenAIArticleGeneratorAdapter
 	) {}
 
 	onModuleInit() {
@@ -47,6 +52,11 @@ export class ProviderRegistry implements OnModuleInit {
 		this.generateImageStrategies.set(
 			'openai',
 			this.openAIImageGeneratorAdapter
+		);
+
+		this.generateArticleStrategies.set(
+			'openai',
+			this.openAIArticleGeneratorAdapter
 		);
 	}
 
@@ -79,6 +89,13 @@ export class ProviderRegistry implements OnModuleInit {
 		if (!strategy) {
 			throw new Error(`Provider de course '${provider}' não encontrado.`);
 		}
+		return strategy;
+	}
+
+	getGenerateArticleStrategy(provider: string): ArticleGeneratorPort {
+		const strategy = this.generateArticleStrategies.get(provider);
+		if (!strategy)
+			throw new Error(`Provider de artigo '${provider}' não encontrado.`);
 		return strategy;
 	}
 }

@@ -10,9 +10,6 @@ import { QuestionAnsweredResponseDto } from '../../application/dtos/question-ans
 import { GenerateTextDto } from '../../application/dtos/generate-text.dto';
 import { GeneratedTextResponseDto } from '../../application/dtos/generated-text.response.dto';
 import { GenerateTextUseCase } from '../../application/use-cases/generate-text.usecase';
-import { GenerateArticleDto } from '../../application/dtos/generate-article.dto';
-import { GeneratedArticleResponseDto } from '../../application/dtos/generated-article.response.dto';
-import { GenerateArticleUseCase } from '../../application/use-cases/generate-article.usecase';
 
 @Controller('assistant')
 @UseGuards(SupabaseAuthGuard)
@@ -20,8 +17,7 @@ export class AssistantController {
 	constructor(
 		private readonly getChatHistory: GetChatHistoryUseCase,
 		private readonly submitQuestion: SubmitQuestionUseCase,
-		private readonly generateTextUseCase: GenerateTextUseCase,
-		private readonly generateArticleUseCase: GenerateArticleUseCase
+		private readonly generateTextUseCase: GenerateTextUseCase
 	) {}
 
 	@Get('chat/:courseId')
@@ -55,17 +51,5 @@ export class AssistantController {
 	): Promise<GeneratedTextResponseDto> {
 		const generatedText = await this.generateTextUseCase.execute(data, user.id);
 		return GeneratedTextResponseDto.fromDomain(generatedText);
-	}
-
-	@Post('/generate-article')
-	async generateArticle(
-		@Body() data: GenerateArticleDto,
-		@CurrentUser() user: UserPayload
-	): Promise<GeneratedArticleResponseDto> {
-		const generatedArticle = await this.generateArticleUseCase.execute(
-			data,
-			user.id
-		);
-		return GeneratedArticleResponseDto.fromDomain(generatedArticle);
 	}
 }

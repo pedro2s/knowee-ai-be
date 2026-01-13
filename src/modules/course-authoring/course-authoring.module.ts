@@ -36,6 +36,8 @@ import { UpdateLessonUseCase } from './application/use-cases/update-lesson.useca
 import { QuickActionsController } from './infrastructure/controllers/quick-actions.controller';
 import { GenerateModuleUseCase } from './application/use-cases/generate-module.usecase';
 import { OpenAIModuleGeneratorAdapter } from './infrastructure/providers/openai/openai-module-generator.adapter';
+import { OpenAIArticleGeneratorAdapter } from './infrastructure/providers/openai/openai-article-generator.adapter';
+import { GenerateArticleUseCase } from './application/use-cases/generate-article.usecase';
 
 @Module({
 	controllers: [
@@ -59,6 +61,7 @@ import { OpenAIModuleGeneratorAdapter } from './infrastructure/providers/openai/
 		{ provide: MODULE_REPOSITORY, useClass: DrizzleModuleRepository },
 		GenerateCourseUseCase,
 		GenerateModuleUseCase,
+		GenerateArticleUseCase,
 		CreateModuleUseCase,
 		GetCourseUseCase,
 		GetLessonUseCase,
@@ -77,6 +80,7 @@ import { OpenAIModuleGeneratorAdapter } from './infrastructure/providers/openai/
 		OpenAIScriptGeneratorAdapter,
 		OpenAIAudioGeneratorAdapter,
 		OpenAIImageGeneratorAdapter,
+		OpenAIArticleGeneratorAdapter,
 	],
 	exports: [
 		{ provide: COURSE_REPOSITORY, useClass: DrizzleCourseRepository },

@@ -4,8 +4,8 @@ import { ChatModel } from 'openai/resources';
 import {
 	GenerateArticleInput,
 	GeneratedArticleOutput,
-} from 'src/modules/assistant/domain/entities/generate-article.types';
-import { ArticleGeneratorPort } from 'src/modules/assistant/domain/ports/article-generator.port';
+} from 'src/modules/course-authoring/domain/entities/generate-article.types';
+import { ArticleGeneratorPort } from 'src/modules/course-authoring/domain/ports/article-generator.port';
 import {
 	InteractionContext,
 	InteractionResult,
