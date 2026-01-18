@@ -86,15 +86,26 @@ export class GenerateLessonAudioUseCase {
 				const mergedAudioPath = path.join(tempDir, 'final-audio.mp3');
 				await this.mediaService.mergeAudios(tempFilePaths, mergedAudioPath);
 
+				// Upload para Supabase Storage
 				const supabasePath = `${input.userId}/${
 					input.lessonId
 				}/${Date.now()}-audio.mp3`;
+
+				// Remove áudio anterior se existir (opcional, mas boa prática para limpeza)
+				const previousAudioPath = (lesson.content as { audioPath?: string })
+					?.audioPath;
+				if (previousAudioPath) {
+					await this.supabaseService
+						.getClient()
+						.storage.from('lesson-audios')
+						.remove([previousAudioPath]);
+				}
 
 				const mergedAudioBuffer = await fs.readFile(mergedAudioPath);
 
 				const { error: uploadError } = await this.supabaseService
 					.getClient()
-					.storage.from('lessons') // Assuming 'lessons' bucket
+					.storage.from('lesson-audios') // Assuming 'lessons' bucket
 					.upload(supabasePath, mergedAudioBuffer, {
 						contentType: 'audio/mpeg',
 						upsert: true,
@@ -110,7 +121,7 @@ export class GenerateLessonAudioUseCase {
 
 				const { data: publicUrlData } = this.supabaseService
 					.getClient()
-					.storage.from('lessons')
+					.storage.from('lesson-audios')
 					.getPublicUrl(supabasePath);
 
 				const updatedContent = {
