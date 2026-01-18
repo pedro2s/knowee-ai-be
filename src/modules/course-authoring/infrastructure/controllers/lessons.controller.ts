@@ -85,7 +85,6 @@ export class LessonsController {
 			try {
 				await this.generateAudio.execute({
 					lessonId,
-					imageProvider: body.imageProvider,
 					audioProvider: body.audioProvider,
 					userId: user.id,
 				});

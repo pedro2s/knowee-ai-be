@@ -39,6 +39,7 @@ import { OpenAIArticleGeneratorAdapter } from './infrastructure/providers/openai
 import { GenerateArticleUseCase } from './application/use-cases/generate-article.usecase';
 import { OpenAILessonScriptGeneratorAdapter } from './infrastructure/providers/openai/openai-lesson-script-generator.adapter';
 import { GenerateLessonScriptUseCase } from './application/use-cases/generate-lesson-script.usecase';
+import { SupabaseModule } from 'src/shared/infrastructure/supabase/supabase.module';
 
 @Module({
 	controllers: [
@@ -55,6 +56,7 @@ import { GenerateLessonScriptUseCase } from './application/use-cases/generate-le
 		EmbeddingModule,
 		FileProcessingModule,
 		TokenUsageModule,
+		SupabaseModule,
 	],
 	providers: [
 		{ provide: COURSE_REPOSITORY, useClass: DrizzleCourseRepository },

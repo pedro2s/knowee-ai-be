@@ -1,3 +1,5 @@
+import * as fs from 'fs/promises';
+import * as path from 'path';
 import {
 	BadRequestException,
 	Inject,
@@ -19,6 +21,7 @@ import {
 	SUPABASE_SERVICE,
 	type SupabasePort,
 } from 'src/shared/application/ports/supabase.port';
+import { AuthContext } from 'src/shared/application/ports/db-context.port';
 
 @Injectable()
 export class GenerateLessonAudioUseCase {
@@ -40,10 +43,15 @@ export class GenerateLessonAudioUseCase {
 		audioProvider: string;
 		userId: string;
 	}) {
-		const lesson = await this.lessonRepository.findById(input.lessonId, {
+		const authContex: AuthContext = {
 			userId: input.userId,
 			role: 'authenticated',
-		});
+		};
+
+		const lesson = await this.lessonRepository.findById(
+			input.lessonId,
+			authContex
+		);
 
 		if (!lesson) throw new NotFoundException('Aula não encontrada');
 
@@ -51,8 +59,8 @@ export class GenerateLessonAudioUseCase {
 			input.audioProvider
 		);
 
-		const sections = (lesson.content as { scriptSection: ScriptSection[] })
-			.scriptSection;
+		const sections = (lesson.content as { scriptSections: ScriptSection[] })
+			.scriptSections;
 
 		if (!sections || sections.length === 0)
 			throw new BadRequestException('Nenhum roteiro entrado para a aula.');
@@ -62,12 +70,73 @@ export class GenerateLessonAudioUseCase {
 				`[AudioJob] Iniciando geração de áudio para aula: ${lesson.title}`
 			);
 
-			for (const section of sections) {
-				const audioBuffer = await audioGen.generate({
-					text: section.content,
-				});
+			const tempDir = await fs.mkdtemp('audio-');
+			const tempFilePaths: string[] = [];
 
-				// Aqui entra o MediaService (FFmpeg)
+			try {
+				for (const [i, section] of sections.entries()) {
+					const audioBuffer = await audioGen.generate({
+						text: section.content,
+					});
+					const tempFilePath = path.join(tempDir, `section-${i}.mp3`);
+					await fs.writeFile(tempFilePath, audioBuffer);
+					tempFilePaths.push(tempFilePath);
+				}
+
+				const mergedAudioPath = path.join(tempDir, 'final-audio.mp3');
+				await this.mediaService.mergeAudios(tempFilePaths, mergedAudioPath);
+
+				const supabasePath = `${input.userId}/${
+					input.lessonId
+				}/${Date.now()}-audio.mp3`;
+
+				const mergedAudioBuffer = await fs.readFile(mergedAudioPath);
+
+				const { error: uploadError } = await this.supabaseService
+					.getClient()
+					.storage.from('lessons') // Assuming 'lessons' bucket
+					.upload(supabasePath, mergedAudioBuffer, {
+						contentType: 'audio/mpeg',
+						upsert: true,
+					});
+
+				if (uploadError) {
+					this.logger.error(
+						`[AudioJob] Erro no upload para o Supabase: ${uploadError.message}`
+					);
+					// decide if I should throw, for now just logging. The job is async.
+					return;
+				}
+
+				const { data: publicUrlData } = this.supabaseService
+					.getClient()
+					.storage.from('lessons')
+					.getPublicUrl(supabasePath);
+
+				const updatedContent = {
+					...(lesson.content as object),
+					audioPath: supabasePath,
+					audioUrl: publicUrlData.publicUrl,
+				};
+
+				await this.lessonRepository.update(
+					lesson.id,
+					{
+						content: updatedContent,
+					},
+					authContex
+				);
+
+				this.logger.log(
+					`[AudioJob] Geração de áudio para a aula "${lesson.title}" concluída com sucesso.`
+				);
+			} catch (error) {
+				this.logger.error(
+					`[AudioJob] Falha na geração de áudio para a aula: ${lesson.title}`,
+					error
+				);
+			} finally {
+				await fs.rm(tempDir, { recursive: true, force: true });
 			}
 		})();
 
