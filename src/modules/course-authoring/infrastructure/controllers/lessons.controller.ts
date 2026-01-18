@@ -21,6 +21,7 @@ import { GeneratedArticleResponseDto } from '../../application/dtos/generated-ar
 import { GenerateLessonScriptDto } from '../../application/dtos/generate-lesson-script.dto';
 import { GeneratedLessonScriptResponseDto } from '../../application/dtos/generated-lesson-script.response.dto';
 import { GenerateLessonScriptUseCase } from '../../application/use-cases/generate-lesson-script.usecase';
+import { GenerateLessonAudioDto } from '../../application/dtos/generate-lesson-audio.dto';
 
 @Controller('lessons')
 @UseGuards(SupabaseAuthGuard)
@@ -60,6 +61,19 @@ export class LessonsController {
 	}
 
 	// 2. Rotas Específicas (COM ID)
+
+	@Post('/:id/generate-audio')
+	generateLessonAudio(
+		@Param('id') lessonId: string,
+		@Body() data: GenerateLessonAudioDto,
+		@CurrentUser() user: UserPayload
+	) {
+		return this.generateAudio.execute({
+			lessonId,
+			audioProvider: data.ai?.provider || 'openai',
+			userId: user.id,
+		});
+	}
 
 	@Post('/:id/video')
 	generateLessonVideo(

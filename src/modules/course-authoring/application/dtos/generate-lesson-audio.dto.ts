@@ -1,0 +1,10 @@
+import { Type } from 'class-transformer';
+import { IsOptional, ValidateNested } from 'class-validator';
+import { AIProviderDto } from 'src/shared/application/dtos/ai-provider.dto';
+
+export class GenerateLessonAudioDto {
+	@IsOptional()
+	@ValidateNested()
+	@Type(() => AIProviderDto)
+	ai?: AIProviderDto;
+}
