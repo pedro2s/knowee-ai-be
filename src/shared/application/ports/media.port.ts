@@ -1,6 +1,7 @@
 export const MEDIA_SERVICE = 'MediaService';
 
 export interface MediaPort {
+	getAudioDuration(file: string): Promise<number>;
 	mergeAudios(files: string[], output: string): Promise<void>;
 	addBackgroundMusic(
 		voice: string,

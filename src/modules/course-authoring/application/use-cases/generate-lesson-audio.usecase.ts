@@ -85,6 +85,9 @@ export class GenerateLessonAudioUseCase {
 
 				const mergedAudioPath = path.join(tempDir, 'final-audio.mp3');
 				await this.mediaService.mergeAudios(tempFilePaths, mergedAudioPath);
+				const durationInSeconds =
+					await this.mediaService.getAudioDuration(mergedAudioPath);
+				const durationInMinutes = Math.ceil(durationInSeconds / 60);
 
 				// Upload para Supabase Storage
 				const supabasePath = `${input.userId}/${
@@ -134,6 +137,7 @@ export class GenerateLessonAudioUseCase {
 					lesson.id,
 					{
 						content: updatedContent,
+						duration: durationInMinutes,
 					},
 					authContex
 				);

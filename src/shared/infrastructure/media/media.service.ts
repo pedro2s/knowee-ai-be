@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { spawn } from 'child_process';
 import ffmpegPath from 'ffmpeg-static';
+import * as ffprobe from 'ffprobe-static';
 import { MediaPort } from '../../application/ports/media.port';
 
 @Injectable()
@@ -23,6 +24,44 @@ export class MediaService implements MediaPort {
 				}
 			});
 		});
+	}
+
+	private runFFprobe(args: string[]): Promise<string> {
+		return new Promise((resolve, reject) => {
+			// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+			const ffprobeProcess = spawn(ffprobe.path as string, args);
+			let output = '';
+
+			ffprobeProcess.stdout.on('data', (data: Buffer) => {
+				output += data.toString();
+			});
+
+			ffprobeProcess.stderr.on('data', (data) => {
+				this.logger.verbose(`FFprobe Error: ${data}`);
+			});
+			ffprobeProcess.on('error', reject);
+			ffprobeProcess.on('close', (code) => {
+				if (code === 0) {
+					resolve(output);
+				} else {
+					reject(new Error(`FFprobe process exited with code ${code}`));
+				}
+			});
+		});
+	}
+
+	async getAudioDuration(file: string): Promise<number> {
+		const output = await this.runFFprobe([
+			'-v',
+			'error',
+			'-show_entries',
+			'format=duration',
+			'-of',
+			'default=noprint_wrappers=1:nokey=1',
+			file,
+		]);
+
+		return parseFloat(output.trim());
 	}
 
 	mergeAudios(files: string[], output: string) {
