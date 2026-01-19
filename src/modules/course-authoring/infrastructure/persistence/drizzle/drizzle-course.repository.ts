@@ -145,7 +145,7 @@ export class DrizzleCourseRepository implements CourseRepositoryPort {
 				const lessonsToInsert = moduleToInsert.lessons.map((lesson) => ({
 					moduleId,
 					courseId,
-					lessonType: 'article',
+					lessonType: lesson.lessonType,
 					title: lesson.title,
 					content: lesson.content,
 					orderIndex: lesson.orderIndex,
