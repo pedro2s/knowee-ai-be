@@ -9,10 +9,9 @@ import {
 	UseGuards,
 } from '@nestjs/common';
 import { CreateModuleUseCase } from '../../application/use-cases/create-module.usecase';
-import { FetchLessonsUseCase } from '../../application/use-cases/fetchLessons.usecase';
+import { GetModuleUseCase } from '../../application/use-cases/get-module.usecase';
 import { CurrentUser } from 'src/shared/infrastructure/decorators';
 import type { UserPayload } from 'src/shared/domain/types/user-payload';
-import { LessonResponseDto } from '../../application/dtos/lesson.response.dto';
 import { SupabaseAuthGuard } from 'src/modules/auth/infrastructure/guards/supabase-auth.guard';
 import { ModuleResponseDto } from '../../application/dtos/module.response.dto';
 import { CreateModuleDto } from '../../application/dtos/create-module.dto';
@@ -25,9 +24,9 @@ import { UpdateModuleUseCase } from '../../application/use-cases/update-module.u
 export class ModulesController {
 	constructor(
 		private readonly createModule: CreateModuleUseCase,
+		private readonly getModule: GetModuleUseCase,
 		private readonly deleteModule: DeleteModuleUseCase,
-		private readonly updateModule: UpdateModuleUseCase,
-		private readonly fetchLessons: FetchLessonsUseCase
+		private readonly updateModule: UpdateModuleUseCase
 	) {}
 
 	@Post()
@@ -36,6 +35,15 @@ export class ModulesController {
 		@CurrentUser() user: UserPayload
 	): Promise<ModuleResponseDto> {
 		const module = await this.createModule.execute(data, user.id);
+		return ModuleResponseDto.fromDomain(module);
+	}
+
+	@Get('/:id')
+	async get(
+		@Param('id') id: string,
+		@CurrentUser() user: UserPayload
+	): Promise<ModuleResponseDto> {
+		const module = await this.getModule.execute(id, user.id);
 		return ModuleResponseDto.fromDomain(module);
 	}
 
@@ -56,14 +64,5 @@ export class ModulesController {
 	): Promise<{ deletedModule: ModuleResponseDto }> {
 		const { deletedModule } = await this.deleteModule.execute(id, user.id);
 		return { deletedModule: ModuleResponseDto.fromDomain(deletedModule) };
-	}
-
-	@Get('/:id/lessons')
-	async findLessons(
-		@Param('id') id: string,
-		@CurrentUser() user: UserPayload
-	): Promise<LessonResponseDto[]> {
-		const lessons = await this.fetchLessons.execute(id, user.id);
-		return lessons.map((lesson) => LessonResponseDto.fromDomain(lesson));
 	}
 }

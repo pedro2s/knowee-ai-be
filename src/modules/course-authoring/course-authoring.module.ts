@@ -17,7 +17,7 @@ import { OpenAICourseGeneratorAdapter } from './infrastructure/providers/openai/
 import { OpenAIAudioGeneratorAdapter } from './infrastructure/providers/openai/openai-audio-generator.adapter';
 import { OpenAIImageGeneratorAdapter } from './infrastructure/providers/openai/openai-image-generator.adapter';
 import { ModulesController } from './infrastructure/controllers/modules.controller';
-import { FetchLessonsUseCase } from './application/use-cases/fetchLessons.usecase';
+import { GetModuleUseCase } from './application/use-cases/get-module.usecase';
 import { GetLessonUseCase } from './application/use-cases/get-lesson.usecase';
 import { MODULE_REPOSITORY } from './domain/ports/module-repository.port';
 import { DrizzleModuleRepository } from './infrastructure/persistence/drizzle/drizzle-module.repository';
@@ -71,7 +71,7 @@ import { SupabaseModule } from 'src/shared/infrastructure/supabase/supabase.modu
 		GetLessonUseCase,
 		FetchCoursesUseCase,
 		FetchModulesUseCase,
-		FetchLessonsUseCase,
+		GetModuleUseCase,
 		UpdateCourseWithModuleTreeUseCase,
 		UpdateModuleUseCase,
 		UpdateLessonUseCase,

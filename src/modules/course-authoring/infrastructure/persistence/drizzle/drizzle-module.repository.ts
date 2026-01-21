@@ -59,10 +59,14 @@ export class DrizzleModuleRepository implements ModuleRepositoryPort {
 	findById(id: string, auth: AuthContext): Promise<Module | null> {
 		return this.dbContext.runAsUser(auth, async (db) => {
 			const tx = db as DrizzleDB;
-			const [module] = await tx
-				.select()
-				.from(schema.modules)
-				.where(eq(schema.modules.id, id));
+			const module = await tx.query.modules.findFirst({
+				where: eq(schema.modules.id, id),
+				with: {
+					lessons: {
+						orderBy: (lesson, { asc }) => [asc(lesson.orderIndex)],
+					},
+				},
+			});
 
 			// Schema Drizzle -> Mapper -> Domínio
 			return module ? ModuleMapper.toDomain(module) : null;
