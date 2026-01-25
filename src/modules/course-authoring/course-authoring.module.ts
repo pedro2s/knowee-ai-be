@@ -40,6 +40,9 @@ import { GenerateArticleUseCase } from './application/use-cases/generate-article
 import { OpenAILessonScriptGeneratorAdapter } from './infrastructure/providers/openai/openai-lesson-script-generator.adapter';
 import { GenerateLessonScriptUseCase } from './application/use-cases/generate-lesson-script.usecase';
 import { SupabaseModule } from 'src/shared/infrastructure/supabase/supabase.module';
+import { OpenAIStoryboardGeneratorAdapter } from './infrastructure/providers/openai/openai-storyboard-generator.adapter';
+import { STORYBOARD_GENERATOR } from './domain/ports/storyboard-generator.port';
+import { GenerateSectionVideoUseCase } from './application/use-cases/generate-section-video.usecase';
 
 @Module({
 	controllers: [
@@ -66,6 +69,7 @@ import { SupabaseModule } from 'src/shared/infrastructure/supabase/supabase.modu
 		GenerateModuleUseCase,
 		GenerateArticleUseCase,
 		GenerateLessonScriptUseCase,
+		GenerateSectionVideoUseCase,
 		CreateModuleUseCase,
 		GetCourseUseCase,
 		GetLessonUseCase,
@@ -85,6 +89,10 @@ import { SupabaseModule } from 'src/shared/infrastructure/supabase/supabase.modu
 		OpenAIImageGeneratorAdapter,
 		OpenAIArticleGeneratorAdapter,
 		OpenAILessonScriptGeneratorAdapter,
+		{
+			provide: STORYBOARD_GENERATOR,
+			useClass: OpenAIStoryboardGeneratorAdapter,
+		},
 	],
 	exports: [
 		{ provide: COURSE_REPOSITORY, useClass: DrizzleCourseRepository },

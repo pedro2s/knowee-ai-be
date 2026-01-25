@@ -6,6 +6,9 @@ export interface ScriptSection {
 	notes: string;
 	time: number;
 	timerActive: boolean;
+	videoUrl?: string;
+	videoPath?: string;
+	videoDuration?: number;
 }
 
 export interface GenerateLessonScriptInput {
