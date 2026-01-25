@@ -180,7 +180,7 @@ export class GenerateSectionVideoUseCase {
 
 			// faz o concat dos vídeos
 			const fileListContent = tempFilePaths
-				.map((filePath) => `file '${filePath}'`)
+				.map((filePath) => `file '${path.resolve(filePath)}'`)
 				.join('\n');
 			const fileListPath = path.join(tempDir, 'file_list.txt');
 			await fs.writeFile(fileListPath, fileListContent);

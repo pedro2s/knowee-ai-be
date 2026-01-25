@@ -109,6 +109,8 @@ export class MediaService implements MediaPort {
 			image,
 			'-i',
 			audio,
+			'-vf',
+			'scale=1280:720:force_original_aspect_ratio=decrease,pad=1280:720:(ow-iw)/2:(oh-ih)/2,setsar=1',
 			'-c:v',
 			'libx264',
 			'-c:a',
