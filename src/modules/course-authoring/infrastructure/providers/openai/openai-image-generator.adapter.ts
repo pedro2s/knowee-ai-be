@@ -1,4 +1,8 @@
-import { Inject, Injectable } from '@nestjs/common';
+import {
+	Inject,
+	Injectable,
+	PreconditionFailedException,
+} from '@nestjs/common';
 import OpenAI from 'openai';
 import { OPENAI_CLIENT } from 'src/shared/infrastructure/ai/ai.constants';
 import { ImageGeneratorPort } from 'src/modules/course-authoring/domain/ports/image-generator.port';
@@ -9,19 +13,20 @@ export class OpenAIImageGeneratorAdapter implements ImageGeneratorPort {
 
 	async generate(input: {
 		prompt: string;
-		size: '1920x1080' | '1024x1024';
+		size: '1024x1024' | '1536x1024' | '1024x1536';
 	}): Promise<Buffer> {
 		const res = await this.openai.images.generate({
-			model: 'dall-e-3',
+			model: 'gpt-image-1',
 			prompt: input.prompt,
 			size: input.size as any,
-			response_format: 'b64_json',
-			quality: 'standard',
+			quality: 'auto',
 			n: 1,
 		});
 
 		if (!res.data || res.data.length === 0 || !res.data[0].b64_json) {
-			throw new Error('Failed to generate image: No image data returned.');
+			throw new PreconditionFailedException(
+				'Falha ao gerar imagem: Nenhuma imagem retornada.'
+			);
 		}
 
 		return Buffer.from(res.data[0].b64_json, 'base64');

@@ -8,7 +8,7 @@ import {
 } from 'class-validator';
 import { AIProviderDto } from 'src/shared/application/dtos/ai-provider.dto';
 
-export class GenerateVideoDto {
+export class GenerateSectionVideoDto {
 	@IsNotEmpty()
 	@IsUUID()
 	lessonId: string;

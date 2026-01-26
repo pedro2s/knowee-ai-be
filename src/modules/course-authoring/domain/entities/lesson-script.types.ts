@@ -1,7 +1,7 @@
 export interface ScriptSection {
 	id: string;
 	content: string;
-	isRecord: boolean;
+	isRecorded: boolean;
 	status: string;
 	notes: string;
 	time: number;
@@ -9,6 +9,7 @@ export interface ScriptSection {
 	videoUrl?: string;
 	videoPath?: string;
 	videoDuration?: number;
+	videoStatus?: 'pending' | 'generating' | 'ready' | 'error';
 }
 
 export interface GenerateLessonScriptInput {

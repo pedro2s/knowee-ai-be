@@ -43,7 +43,7 @@ export class GeneratorLessonVideoUseCase {
 		for (const section of (lesson.content as any).scriptSection) {
 			const image = await imageGen.generate({
 				prompt: section.content,
-				size: '1920x1080',
+				size: '1536x1024',
 			});
 
 			const audio = await audioGen.generate({

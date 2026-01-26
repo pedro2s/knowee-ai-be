@@ -13,7 +13,7 @@ import {
 	STORYBOARD_GENERATOR,
 	type StoryboardGeneratorPort,
 } from '../../domain/ports/storyboard-generator.port';
-import { GenerateVideoDto } from '../dtos/generate-video.dto';
+import { GenerateSectionVideoDto } from '../dtos/generate-section-video.dto';
 import {
 	LESSON_REPOSITORY,
 	type LessonRepositoryPort,
@@ -54,10 +54,10 @@ export class GenerateSectionVideoUseCase {
 		private readonly mediaService: MediaPort,
 		@Inject(SUPABASE_SERVICE)
 		private readonly supabaseService: SupabasePort,
-		private readonly registry: ProviderRegistry
+		private readonly providerRegistry: ProviderRegistry
 	) {}
 
-	async execute(input: GenerateVideoDto, userId: string) {
+	async execute(input: GenerateSectionVideoDto, userId: string) {
 		const authContext: AuthContext = {
 			userId,
 			role: 'authenticated',
@@ -114,11 +114,13 @@ export class GenerateSectionVideoUseCase {
 
 		console.log('Storyboard:', storyboard);
 
-		const audioGen = this.registry.getGenerateAudioStrategy(
+		const audioGen = this.providerRegistry.getGenerateAudioStrategy(
 			input.ai?.provider || 'openai'
 		);
 
-		let videoUrl: string | undefined = undefined;
+		const imageGen = this.providerRegistry.getGenerateImageStrategy(
+			input.ai?.provider || 'openai'
+		);
 
 		const tempDir = await fs.mkdtemp(`section-${section.id}-`);
 		const tempFilePaths: string[] = [];
@@ -138,17 +140,24 @@ export class GenerateSectionVideoUseCase {
 						);
 						const data = await response.json();
 
+						let imageBuffer: Buffer;
+
 						if (data.results?.length === 0) {
 							// Gerar uma imagem com IA
+							imageBuffer = await imageGen.generate({
+								prompt: imageSearchQuery,
+								size: '1536x1024',
+							});
 						} else {
 							// Salvar a image o Unsplash no temDir
 							const imageUrl = data.results[0].urls.regular;
 							const imageResponse = await fetch(imageUrl);
 							const arrayBuffer = await imageResponse.arrayBuffer();
-							const imageBuffer = Buffer.from(arrayBuffer);
-							imagePath = path.join(tempDir, `image-${i}.jpg`);
-							await fs.writeFile(imagePath, imageBuffer);
+							imageBuffer = Buffer.from(arrayBuffer);
 						}
+
+						imagePath = path.join(tempDir, `image-${i}.jpg`);
+						await fs.writeFile(imagePath, imageBuffer);
 					} catch (error: any) {
 						this.logger.error(
 							'[GenerateSectionVideoUseCase] Falha ao obter imagem do Unsplash',
@@ -158,6 +167,22 @@ export class GenerateSectionVideoUseCase {
 							'Falha ao obter/gerar imagem da cena'
 						);
 					}
+				} else if (scene.visual.type === 'generated_image') {
+					const imageSearchQuery = scene.visual.searchQuery;
+					const imageBuffer = await imageGen.generate({
+						prompt: imageSearchQuery,
+						size: '1536x1024',
+					});
+					imagePath = path.join(tempDir, `image-${i}.jpg`);
+					await fs.writeFile(imagePath, imageBuffer);
+				} else {
+					const textOverlay = scene.textOverlay;
+					const imageBuffer = await imageGen.generate({
+						prompt: `Create a slide with the following text highlighted: ${textOverlay}`,
+						size: '1536x1024',
+					});
+					imagePath = path.join(tempDir, `image-${i}.jpg`);
+					await fs.writeFile(imagePath, imageBuffer);
 				}
 
 				// gerar o áudio da sena
@@ -230,10 +255,9 @@ export class GenerateSectionVideoUseCase {
 
 			section.videoPath = supabasePath;
 			section.videoUrl = publicUrlData.publicUrl;
-			section.videoDuration = durationInSeconds;
-
-			// URL final do vídeo
-			videoUrl = section.videoUrl;
+			section.videoDuration = Math.trunc(durationInSeconds);
+			section.videoStatus = 'ready';
+			section.isRecorded = true;
 
 			await this.lessonRepository.update(
 				lesson.id,
@@ -253,6 +277,6 @@ export class GenerateSectionVideoUseCase {
 			await fs.rm(tempDir, { recursive: true, force: true });
 		}
 
-		return { videoUrl };
+		return section;
 	}
 }

@@ -22,8 +22,9 @@ import { GenerateLessonScriptDto } from '../../application/dtos/generate-lesson-
 import { GeneratedLessonScriptResponseDto } from '../../application/dtos/generated-lesson-script.response.dto';
 import { GenerateLessonScriptUseCase } from '../../application/use-cases/generate-lesson-script.usecase';
 import { GenerateLessonAudioDto } from '../../application/dtos/generate-lesson-audio.dto';
-import { GenerateVideoDto } from '../../application/dtos/generate-video.dto';
+import { GenerateSectionVideoDto } from '../../application/dtos/generate-section-video.dto';
 import { GenerateSectionVideoUseCase } from '../../application/use-cases/generate-section-video.usecase';
+import { GeneratedSectionVideoResponseDto } from '../../application/dtos/generated-section-video.response.dto';
 
 @Controller('lessons')
 @UseGuards(SupabaseAuthGuard)
@@ -65,15 +66,13 @@ export class LessonsController {
 
 	@Post('generate-video')
 	async generateVideo(
-		@Body() body: GenerateVideoDto,
+		@Body() body: GenerateSectionVideoDto,
 		@CurrentUser() user: UserPayload
-	): Promise<{ videoUrl: string | undefined }> {
-		const generatedVideo = await this.generateSectionVideoUseCase.execute(
-			body,
-			user.id
-		);
+	): Promise<GeneratedSectionVideoResponseDto> {
+		const generatedVideoSection =
+			await this.generateSectionVideoUseCase.execute(body, user.id);
 
-		return generatedVideo;
+		return GeneratedSectionVideoResponseDto.fromDomain(generatedVideoSection);
 	}
 
 	// 2. Rotas Específicas (COM ID)
