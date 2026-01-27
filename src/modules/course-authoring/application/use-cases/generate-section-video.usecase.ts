@@ -111,8 +111,8 @@ export class GenerateSectionVideoUseCase {
 			},
 			script: section.content,
 		});
-
 		console.log('Storyboard:', storyboard);
+		section.storyboard = storyboard;
 
 		const audioGen = this.providerRegistry.getGenerateAudioStrategy(
 			input.ai?.provider || 'openai'
@@ -146,7 +146,7 @@ export class GenerateSectionVideoUseCase {
 							// Gerar uma imagem com IA
 							imageBuffer = await imageGen.generate({
 								prompt: imageSearchQuery,
-								size: '1536x1024',
+								size: '1024x1024',
 							});
 						} else {
 							// Salvar a image o Unsplash no temDir

@@ -10,6 +10,7 @@ export interface ScriptSection {
 	videoPath?: string;
 	videoDuration?: number;
 	videoStatus?: 'pending' | 'generating' | 'ready' | 'error';
+	storyboard?: unknown;
 }
 
 export interface GenerateLessonScriptInput {
