@@ -12,6 +12,8 @@ import { OpenAIAssistantAdapter } from './infrastructure/providers/openai/openai
 import { GenerateTextUseCase } from './application/use-cases/generate-text.usecase';
 import { OpenAITextGeneratorAdapter } from './infrastructure/providers/openai/openai-text-generator.adapter';
 import { TokenUsageModule } from 'src/shared/infrastructure/token-usage/token-usage.module';
+import { OpenAIAnalyticsAdapter } from './infrastructure/providers/openai/openai-analytics.adapter';
+import { AnalyticsUseCase } from './application/use-cases/analytics.usecase';
 
 @Module({
 	controllers: [AssistantController],
@@ -24,9 +26,11 @@ import { TokenUsageModule } from 'src/shared/infrastructure/token-usage/token-us
 		GetChatHistoryUseCase,
 		SubmitQuestionUseCase,
 		GenerateTextUseCase,
+		AnalyticsUseCase,
 		ProviderRegistry,
 		OpenAIAssistantAdapter,
 		OpenAITextGeneratorAdapter,
+		OpenAIAnalyticsAdapter,
 	],
 })
 export class AssistantModule {}
