@@ -10,6 +10,7 @@ import {
 	AnalysisOutput,
 } from 'src/modules/assistant/domain/ports/ai-analyze.port';
 import { OPENAI_CLIENT } from 'src/shared/infrastructure/ai/ai.constants';
+import { analyzeStructure } from './schemas/analyze-structure';
 
 @Injectable()
 export class OpenAIAnalyticsAdapter implements AIAnalyticsPort {
@@ -40,6 +41,7 @@ export class OpenAIAnalyticsAdapter implements AIAnalyticsPort {
 		const completion = await this.openai.chat.completions.create({
 			model: 'gpt-4.1-nano',
 			messages: messages,
+			response_format: analyzeStructure,
 		});
 
 		const content = completion.choices[0].message.content;

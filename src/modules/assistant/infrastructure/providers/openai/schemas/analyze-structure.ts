@@ -80,7 +80,7 @@ export const analyzeStructureAsObject = {
 	additionalProperties: false,
 };
 
-export const scriptSectionsStructure: ResponseFormatJSONSchema = {
+export const analyzeStructure: ResponseFormatJSONSchema = {
 	type: 'json_schema',
 	json_schema: {
 		name: 'analyze_structure',
