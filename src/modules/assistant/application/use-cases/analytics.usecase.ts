@@ -1,16 +1,18 @@
 import { Injectable } from '@nestjs/common';
 import { AnalysisOutput } from '../../domain/ports/ai-analyze.port';
-import { GenAIAnalyticsAdapter } from '../../infrastructure/providers/genai/gemini-analytics.adapter';
+import { OpenAIAnalyticsAdapter } from '../../infrastructure/providers/openai/openai-analytics.adapter';
 
 @Injectable()
 export class AnalyticsUseCase {
-	constructor(private readonly genAIAnalyticsAdapter: GenAIAnalyticsAdapter) {}
+	constructor(
+		private readonly openAIAnalyticsAdapter: OpenAIAnalyticsAdapter
+	) {}
 
 	async execute(input: {
 		title: string;
 		description: string;
 	}): Promise<AnalysisOutput> {
-		const analysis = await this.genAIAnalyticsAdapter.analyze(input);
+		const analysis = await this.openAIAnalyticsAdapter.analyze(input);
 		return analysis;
 	}
 }

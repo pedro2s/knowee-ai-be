@@ -21,7 +21,16 @@ const analysisSchema = z.object({
 
 export const analyzeSchema = z.object({
 	category: z
-		.enum(['Tecnologia', 'Marketing', 'Negócios', 'Design', 'Idiomas'])
+		.enum([
+			'Tecnologia',
+			'Marketing',
+			'Negócios',
+			'Design',
+			'Idiomas',
+			'Saúde e Bem-estar',
+			'Finanças',
+			'Outros',
+		])
 		.optional()
 		.describe('The category under which the course is listed.'),
 	level: z
@@ -62,12 +71,14 @@ export const analyzeStructure = {
 				'Finanças',
 				'Outros',
 			],
+			nullable: true,
 		},
 		level: {
 			type: 'STRING',
 			description:
 				'The level of the course: Iniciante (beginner), Intermediário (intermediate), Avançado (advanced).',
 			enum: ['Iniciante', 'Intermediário', 'Avançado'],
+			nullable: true,
 		},
 		duration: {
 			type: 'STRING',
@@ -81,6 +92,7 @@ export const analyzeStructure = {
 				'3 meses',
 				'6+ meses',
 			],
+			nullable: true,
 		},
 		analysis: {
 			type: 'OBJECT',
@@ -108,20 +120,23 @@ export const analyzeStructure = {
 							type: 'STRING',
 							description: 'Status of the description analysis',
 							enum: ['good', 'bad', 'neutral'],
+							nullable: true,
 						},
 						message: {
 							type: 'STRING',
 							description: 'Message of the description analysis',
+							nullable: true,
 						},
 					},
-					required: ['status', 'message'],
+					required: [],
 					additionalProperties: false,
+					nullable: true,
 				},
 			},
-			required: ['title', 'description'],
+			required: ['title'],
 			additionalProperties: false,
 		},
 	},
-	required: ['category', 'level', 'duration', 'analysis'],
+	required: ['analysis'],
 	additionalProperties: false,
 };
