@@ -14,6 +14,7 @@ import { OpenAITextGeneratorAdapter } from './infrastructure/providers/openai/op
 import { TokenUsageModule } from 'src/shared/infrastructure/token-usage/token-usage.module';
 import { OpenAIAnalyticsAdapter } from './infrastructure/providers/openai/openai-analytics.adapter';
 import { AnalyticsUseCase } from './application/use-cases/analytics.usecase';
+import { GenAIAnalyticsAdapter } from './infrastructure/providers/genai/gemini-analytics.adapter';
 
 @Module({
 	controllers: [AssistantController],
@@ -31,6 +32,7 @@ import { AnalyticsUseCase } from './application/use-cases/analytics.usecase';
 		OpenAIAssistantAdapter,
 		OpenAITextGeneratorAdapter,
 		OpenAIAnalyticsAdapter,
+		GenAIAnalyticsAdapter,
 	],
 })
 export class AssistantModule {}
