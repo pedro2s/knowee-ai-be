@@ -1,7 +1,8 @@
 import { Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import OpenAI from 'openai';
-import { OPENAI_CLIENT } from './ai.constants';
+import { GoogleGenAI } from '@google/genai';
+import { GENAI_CLIENT, OPENAI_CLIENT } from './ai.constants';
 
 @Module({
 	providers: [
@@ -14,7 +15,11 @@ import { OPENAI_CLIENT } from './ai.constants';
 			},
 			inject: [ConfigService],
 		},
+		{
+			provide: GENAI_CLIENT,
+			useFactory: () => new GoogleGenAI({}),
+		},
 	],
-	exports: [OPENAI_CLIENT],
+	exports: [OPENAI_CLIENT, GENAI_CLIENT],
 })
 export class AIModule {}

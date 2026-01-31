@@ -1,15 +1,26 @@
-import { Body, Controller, Post, UseGuards } from '@nestjs/common';
+import {
+	BadRequestException,
+	Body,
+	Controller,
+	ParseUUIDPipe,
+	Post,
+	UseGuards,
+} from '@nestjs/common';
 import { GenerateModuleUseCase } from '../../application/use-cases/generate-module.usecase';
 import { ModuleResponseDto } from '../../application/dtos/module.response.dto';
 import type { UserPayload } from 'src/shared/domain/types/user-payload';
 import { CurrentUser } from 'src/shared/infrastructure/decorators';
 import { GenerateModuleDto } from '../../application/dtos/generate-module.dto';
 import { SupabaseAuthGuard } from 'src/modules/auth/infrastructure/guards/supabase-auth.guard';
+import { ReorderContentUseCase } from '../../application/use-cases/quick-actions/georder-content.usecase';
 
 @Controller('quick-actions')
 @UseGuards(SupabaseAuthGuard)
 export class QuickActionsController {
-	constructor(private readonly generateModuleUseCase: GenerateModuleUseCase) {}
+	constructor(
+		private readonly generateModuleUseCase: GenerateModuleUseCase,
+		private readonly reorderContentUseCase: ReorderContentUseCase
+	) {}
 
 	@Post('generate-module')
 	async generateModule(
@@ -25,7 +36,19 @@ export class QuickActionsController {
 	}
 
 	@Post('reorder-content')
-	async reorderContent() {}
+	async reorderContent(
+		@Body(
+			'courseId',
+			new ParseUUIDPipe({
+				exceptionFactory: () =>
+					new BadRequestException('courseId deve ser um UUID válido'),
+			})
+		)
+		courseId: string,
+		@CurrentUser() user: UserPayload
+	) {
+		await this.reorderContentUseCase.execute(courseId, user.id);
+	}
 
 	@Post('generate-assessments')
 	async generateAssessments() {}

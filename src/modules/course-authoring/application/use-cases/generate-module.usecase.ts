@@ -1,4 +1,4 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { ProviderRegistry } from '../../infrastructure/providers/provider.registry';
 import {
 	TOKEN_USAGE_SERVICE,
@@ -58,7 +58,7 @@ export class GenerateModuleUseCase {
 		);
 
 		if (!course) {
-			throw new Error('Course not found');
+			throw new NotFoundException('Curso não encontrado');
 		}
 
 		const summary = await this.historyService.getSummary(

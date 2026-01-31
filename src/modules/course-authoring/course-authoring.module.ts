@@ -40,6 +40,12 @@ import { GenerateArticleUseCase } from './application/use-cases/generate-article
 import { OpenAILessonScriptGeneratorAdapter } from './infrastructure/providers/openai/openai-lesson-script-generator.adapter';
 import { GenerateLessonScriptUseCase } from './application/use-cases/generate-lesson-script.usecase';
 import { SupabaseModule } from 'src/shared/infrastructure/supabase/supabase.module';
+import { OpenAIStoryboardGeneratorAdapter } from './infrastructure/providers/openai/openai-storyboard-generator.adapter';
+import { STORYBOARD_GENERATOR } from './domain/ports/storyboard-generator.port';
+import { GenerateSectionVideoUseCase } from './application/use-cases/generate-section-video.usecase';
+import { OpenAIReorderContentAgentAdapter } from './infrastructure/providers/openai/openai-reorder-content-agent.adapter';
+import { REORDER_CONTENT_AGENT } from './domain/ports/reorder-content-agent.port';
+import { ReorderContentUseCase } from './application/use-cases/quick-actions/georder-content.usecase';
 
 @Module({
 	controllers: [
@@ -66,6 +72,7 @@ import { SupabaseModule } from 'src/shared/infrastructure/supabase/supabase.modu
 		GenerateModuleUseCase,
 		GenerateArticleUseCase,
 		GenerateLessonScriptUseCase,
+		GenerateSectionVideoUseCase,
 		CreateModuleUseCase,
 		GetCourseUseCase,
 		GetLessonUseCase,
@@ -78,6 +85,7 @@ import { SupabaseModule } from 'src/shared/infrastructure/supabase/supabase.modu
 		DeleteModuleUseCase,
 		GenerateLessonAudioUseCase,
 		GeneratorLessonVideoUseCase,
+		ReorderContentUseCase,
 		ProviderRegistry,
 		OpenAICourseGeneratorAdapter,
 		OpenAIModuleGeneratorAdapter,
@@ -85,6 +93,14 @@ import { SupabaseModule } from 'src/shared/infrastructure/supabase/supabase.modu
 		OpenAIImageGeneratorAdapter,
 		OpenAIArticleGeneratorAdapter,
 		OpenAILessonScriptGeneratorAdapter,
+		{
+			provide: STORYBOARD_GENERATOR,
+			useClass: OpenAIStoryboardGeneratorAdapter,
+		},
+		{
+			provide: REORDER_CONTENT_AGENT,
+			useClass: OpenAIReorderContentAgentAdapter,
+		},
 	],
 	exports: [
 		{ provide: COURSE_REPOSITORY, useClass: DrizzleCourseRepository },
