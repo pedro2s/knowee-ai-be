@@ -41,12 +41,12 @@ export class GenerateSectionVideoUseCase {
 	private readonly logger = new Logger(GenerateSectionVideoUseCase.name);
 
 	// Defina um estilo padrão para manter a consistência do vídeo inteiro
-	// private readonly VISUAL_STYLE =
-	// 	'high quality, cinematic lighting, aesthetic gradient background, futuristic ui elements, soft focus, 4k';
+	private readonly VISUAL_STYLE =
+		'high quality, cinematic lighting, aesthetic gradient background, futuristic ui elements, soft focus, 4k';
 	// private readonly VISUAL_STYLE =
 	// 	'minimalist, flat vector art style, clean lines, pastel color palette, soft lighting, 4k resolution, abstract background elements';
-	private readonly VISUAL_STYLE =
-		'cinematic lighting, photorealistic, depth of field, 8k, professional photography style';
+	// private readonly VISUAL_STYLE =
+	// 	'cinematic lighting, photorealistic, depth of field, 8k, professional photography style';
 
 	constructor(
 		@Inject(LESSON_REPOSITORY)

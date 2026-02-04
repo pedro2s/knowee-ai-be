@@ -15,7 +15,7 @@ export class MediaService implements MediaPort {
 			const ffmpeg = spawn(ffmpegPath!, args);
 
 			ffmpeg.stderr.on('data', (data) => {
-				this.logger.verbose(`FFmpeg Error: ${data}`);
+				this.logger.verbose(`FFmpeg: ${data}`);
 			});
 			ffmpeg.on('error', reject);
 			ffmpeg.on('close', (code) => {
@@ -39,7 +39,7 @@ export class MediaService implements MediaPort {
 			});
 
 			ffprobeProcess.stderr.on('data', (data) => {
-				this.logger.verbose(`FFprobe Error: ${data}`);
+				this.logger.verbose(`FFprobe: ${data}`);
 			});
 			ffprobeProcess.on('error', reject);
 			ffprobeProcess.on('close', (code) => {
@@ -175,7 +175,7 @@ export class MediaService implements MediaPort {
 		const fps = 30;
 
 		// Calculamos o total de frames + uma margem de segurança para o zoom não acabar antes do áudio
-		const totalFrames = Math.ceil((durationInSeconds + 2) * fps);
+		const totalFrames = Math.ceil((durationInSeconds + 1) * fps);
 
 		// 2. Prepara o Texto (Sanitização para o FFmpeg)
 		// O FFmpeg é chato com caracteres especiais no drawtext, precisamos escapar
@@ -235,24 +235,26 @@ export class MediaService implements MediaPort {
 		// Isso dá "gordura" para o zoompan calcular decimais sem tremer.
 		// 'force_original_aspect_ration=increase': Garante que preencha a tela sem esticar.
 		// 'crop=3840:2160': Corta os excessos para ficar exatamente 16:9
-		const preProcess = `scale=3840:2160:force_original_aspect_ratio=increase,crop=3840:2160`;
+		const preProcess = `scale=1920:1080:force_original_aspect_ratio=increase,crop=1920:1080,setsar=1`;
 
 		// Passo B: Zoopan que SAI em 4K
 		// Fórmula: Começa em 1.0 e vai até 1.15 baseado no progresso (on/totalFrames).
-		const zoomExpr = `'min(1.0+(0.15*on/${totalFrames}),1.15)'`;
+		const zoomExpr = `'min(1.0+0.10*on/${totalFrames},1.10)'`;
 
 		// const zoomFilter = `zoompan=z='min(1.0+0.15*in/${totalFrames},1.15)':d=${totalFrames}:s=1280x720`;
-		const zoomFilter = `zoompan=z=${zoomExpr}:d=${totalFrames}:x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':fps=${fps}:s=3840x2160`;
+		const zoomFilter = `zoompan=z=${zoomExpr}:x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':d=${totalFrames}:s=1920x1080`;
 
 		// Passo C: Downscale para 1080p na saída final com Lanczos
 		// O Lanczos é um algoritmo de redimensionamento de alta qualidade que remove o serrilhado (aliasing).
-		const postProcess = `scale=1920:1080:flags=lanczos`;
+		const postProcess = `fps=${fps},scale=1920:1080:flags=lanczos`;
 
 		// Pipeline: Imagem -> Escala/Crop 4K -> Zoompan em 4k -> Downscale p/ 1080p -> Legenda -> Saída
 		const filterComplex = `[0:v]${preProcess},${zoomFilter},${postProcess}${subtitleFilter}[v_out]`;
 
 		// 4. Executa o FFmpeg
 		const ffmpegArgs = [
+			'-threads',
+			'1',
 			'-y',
 			'-loop',
 			'1', // Loop na imagem
@@ -271,15 +273,17 @@ export class MediaService implements MediaPort {
 			// REMOVIDO: '-tunel stillimage'.
 			// Motivo: Às vezes o stillimage otimiza demais os vetores de movimento e cria pulos.
 			'-preset',
-			'slow', // Preset de qualidade/velocidade
+			'fast', // Preset de qualidade/velocidade
 			'-crf',
-			'18', // Qualidade do vídeo (18 é quase sem perdas)
+			'20', // Qualidade do vídeo (18 é quase sem perdas)
 			'-c:a',
 			'aac', // Codec de áudio
 			'-b:a',
 			'192k', // Qualidade do áudio
 			'-pix_fmt',
 			'yuv420p', // Garante compatibilidade com players (QuickTime/Windows)
+			'-t',
+			`${Math.ceil(durationInSeconds + 0.5)}`,
 			'-shortest', // Corta o vídeo'quando o áudio acabar
 			params.outputPath,
 		];
