@@ -22,6 +22,9 @@ import { GenerateLessonScriptDto } from '../../application/dtos/generate-lesson-
 import { GeneratedLessonScriptResponseDto } from '../../application/dtos/generated-lesson-script.response.dto';
 import { GenerateLessonScriptUseCase } from '../../application/use-cases/generate-lesson-script.usecase';
 import { GenerateLessonAudioDto } from '../../application/dtos/generate-lesson-audio.dto';
+import { GenerateSectionVideoDto } from '../../application/dtos/generate-section-video.dto';
+import { GenerateSectionVideoUseCase } from '../../application/use-cases/generate-section-video.usecase';
+import { GeneratedSectionVideoResponseDto } from '../../application/dtos/generated-section-video.response.dto';
 
 @Controller('lessons')
 @UseGuards(SupabaseAuthGuard)
@@ -31,8 +34,9 @@ export class LessonsController {
 		private readonly generateAudio: GenerateLessonAudioUseCase,
 		private readonly updateLessonUseCase: UpdateLessonUseCase,
 		private readonly generateArticleUseCase: GenerateArticleUseCase,
-		private readonly generateLessonScriptUseCase: GenerateLessonScriptUseCase
-	) {} // Updated injected type and name
+		private readonly generateLessonScriptUseCase: GenerateLessonScriptUseCase,
+		private readonly generateSectionVideoUseCase: GenerateSectionVideoUseCase
+	) {}
 
 	// 1. Rotas Específicas (SEM ID) - Devem vir PRIMEIRO
 
@@ -58,6 +62,17 @@ export class LessonsController {
 			user.id
 		);
 		return GeneratedLessonScriptResponseDto.fromDomain(generatedScript);
+	}
+
+	@Post('generate-video')
+	async generateVideo(
+		@Body() body: GenerateSectionVideoDto,
+		@CurrentUser() user: UserPayload
+	): Promise<GeneratedSectionVideoResponseDto> {
+		const generatedVideoSection =
+			await this.generateSectionVideoUseCase.execute(body, user.id);
+
+		return GeneratedSectionVideoResponseDto.fromDomain(generatedVideoSection);
 	}
 
 	// 2. Rotas Específicas (COM ID)

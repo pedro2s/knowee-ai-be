@@ -10,6 +10,8 @@ import { QuestionAnsweredResponseDto } from '../../application/dtos/question-ans
 import { GenerateTextDto } from '../../application/dtos/generate-text.dto';
 import { GeneratedTextResponseDto } from '../../application/dtos/generated-text.response.dto';
 import { GenerateTextUseCase } from '../../application/use-cases/generate-text.usecase';
+import { AnalyticsUseCase } from '../../application/use-cases/analytics.usecase';
+import { AnalysisOutput } from '../../domain/ports/ai-analyze.port';
 
 @Controller('assistant')
 @UseGuards(SupabaseAuthGuard)
@@ -17,8 +19,36 @@ export class AssistantController {
 	constructor(
 		private readonly getChatHistory: GetChatHistoryUseCase,
 		private readonly submitQuestion: SubmitQuestionUseCase,
-		private readonly generateTextUseCase: GenerateTextUseCase
+		private readonly generateTextUseCase: GenerateTextUseCase,
+		private readonly analyticsUseCase: AnalyticsUseCase
 	) {}
+
+	@Post('/generate-text')
+	async generateText(
+		@Body() data: GenerateTextDto,
+		@CurrentUser() user: UserPayload
+	): Promise<GeneratedTextResponseDto> {
+		const generatedText = await this.generateTextUseCase.execute(data, user.id);
+		return GeneratedTextResponseDto.fromDomain(generatedText);
+	}
+
+	@Post('/analyze')
+	async analyze(
+		@Body() data: { title: string; description: string }
+	): Promise<AnalysisOutput> {
+		const analysis = await this.analyticsUseCase.execute(data);
+		return analysis;
+	}
+
+	@Post('chat')
+	async question(
+		@Body() body: SubmitQuestionDto,
+		@CurrentUser() user: UserPayload
+	): Promise<QuestionAnsweredResponseDto> {
+		const questionAnswered = await this.submitQuestion.execute(body, user.id);
+
+		return { answer: questionAnswered.answer };
+	}
 
 	@Get('chat/:courseId')
 	async getChatHistoryByCourseId(
@@ -32,24 +62,5 @@ export class AssistantController {
 		return chatHistory.map((history) =>
 			ChatHistoryResponseDto.fromDomain(history)
 		);
-	}
-
-	@Post('chat')
-	async question(
-		@Body() body: SubmitQuestionDto,
-		@CurrentUser() user: UserPayload
-	): Promise<QuestionAnsweredResponseDto> {
-		const questionAnswered = await this.submitQuestion.execute(body, user.id);
-
-		return { answer: questionAnswered.answer };
-	}
-
-	@Post('/generate-text')
-	async generateText(
-		@Body() data: GenerateTextDto,
-		@CurrentUser() user: UserPayload
-	): Promise<GeneratedTextResponseDto> {
-		const generatedText = await this.generateTextUseCase.execute(data, user.id);
-		return GeneratedTextResponseDto.fromDomain(generatedText);
 	}
 }

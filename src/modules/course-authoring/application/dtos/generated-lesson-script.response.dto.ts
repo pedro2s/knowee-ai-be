@@ -4,7 +4,7 @@ export class GeneratedLessonScriptResponseDto {
 	scriptSections: Array<{
 		id: string;
 		content: string;
-		isRecord: boolean;
+		isRecorded: boolean;
 		status: string;
 		notes: string;
 		time: number;

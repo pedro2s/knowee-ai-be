@@ -11,25 +11,9 @@ export interface CourseDetails {
 	level?: string;
 	duration?: string;
 	targetAudience?: string;
-	objectives?: string;
-
-	// Dados personalizados baseados no nível
-	mainGoal?: string;
-	essentialTopics?: string;
-	examplesCases?: string;
-	courseType?: string;
-	includeAssessments: boolean;
-	includeProjects: boolean;
 
 	// perfil do instrutor
-	instructorName: string;
-	instructorLevel?: string;
-	instructorArea?: string;
-	teachingExperience?: string;
-	instructorAchievements?: string;
-	typicalAudience?: string;
-	instructorMotivation?: string;
-	preferredFormats?: string[];
+	instructorName?: string;
 }
 export interface GenerateCourseInput {
 	courseDetails: CourseDetails;
