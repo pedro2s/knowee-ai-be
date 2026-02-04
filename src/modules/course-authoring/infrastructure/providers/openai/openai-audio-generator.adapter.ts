@@ -7,12 +7,17 @@ import { OPENAI_CLIENT } from 'src/shared/infrastructure/ai/ai.constants';
 export class OpenAIAudioGeneratorAdapter implements AudioGeneratorPort {
 	constructor(@Inject(OPENAI_CLIENT) private readonly openai: OpenAI) {}
 
-	async generate(input: { text: string; voice?: string }): Promise<Buffer> {
+	async generate(input: {
+		text: string;
+		voice?: string;
+		style?: string;
+	}): Promise<Buffer> {
 		const mp3Response = await this.openai.audio.speech.create({
 			model: 'tts-1',
-			voice: input.voice || 'alloy',
+			voice: input.voice || 'ash',
 			input: input.text,
 			response_format: 'mp3',
+			instructions: input.style || '',
 		});
 
 		const buffer = Buffer.from(await mp3Response.arrayBuffer());

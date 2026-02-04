@@ -22,4 +22,15 @@ export interface MediaPort {
 		audio: string,
 		output: string
 	): Promise<void>;
+	/**
+	 * Gera um vídeo com efeito "Ken Burns" (zoom lento) e texto sobreposto.
+	 * Padrão visual estilo NotebookLM/Documentário.
+	 */
+	createDynamicScene(params: {
+		imagePath: string;
+		audioPath: string;
+		outputPath: string;
+		textOverlay?: string;
+		fontPath?: string; // Caminho para um arquivo .ttf (Opcional, mas recomendado)
+	}): Promise<void>;
 }

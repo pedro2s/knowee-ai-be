@@ -1,1 +1,2 @@
 export const OPENAI_CLIENT = 'OPENAI_CLIENT';
+export const GENAI_CLIENT = 'GENAI_CLIENT';
