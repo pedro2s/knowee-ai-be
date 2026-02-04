@@ -40,6 +40,14 @@ import path from 'path';
 export class GenerateSectionVideoUseCase {
 	private readonly logger = new Logger(GenerateSectionVideoUseCase.name);
 
+	// Defina um estilo padrão para manter a consistência do vídeo inteiro
+	// private readonly VISUAL_STYLE =
+	// 	'high quality, cinematic lighting, aesthetic gradient background, futuristic ui elements, soft focus, 4k';
+	// private readonly VISUAL_STYLE =
+	// 	'minimalist, flat vector art style, clean lines, pastel color palette, soft lighting, 4k resolution, abstract background elements';
+	private readonly VISUAL_STYLE =
+		'cinematic lighting, photorealistic, depth of field, 8k, professional photography style';
+
 	constructor(
 		@Inject(LESSON_REPOSITORY)
 		private readonly lessonRepository: LessonRepositoryPort,
@@ -140,46 +148,31 @@ export class GenerateSectionVideoUseCase {
 						);
 						const data = await response.json();
 
-						let imageBuffer: Buffer;
-
-						if (data.results?.length === 0) {
-							// Gerar uma imagem com IA
-							imageBuffer = await imageGen.generate({
-								prompt: imageSearchQuery,
-								size: '1536x1024',
-							});
-						} else {
+						if (data.results?.length > 0) {
 							// Salvar a image o Unsplash no temDir
 							const imageUrl = data.results[0].urls.regular;
 							const imageResponse = await fetch(imageUrl);
 							const arrayBuffer = await imageResponse.arrayBuffer();
-							imageBuffer = Buffer.from(arrayBuffer);
+							const imageBuffer = Buffer.from(arrayBuffer);
+							imagePath = path.join(tempDir, `image-${i}.jpg`);
+							await fs.writeFile(imagePath, imageBuffer);
 						}
-
-						imagePath = path.join(tempDir, `image-${i}.jpg`);
-						await fs.writeFile(imagePath, imageBuffer);
 					} catch (error: any) {
 						this.logger.error(
 							'[GenerateSectionVideoUseCase] Falha ao obter imagem do Unsplash',
 							error
 						);
-						throw new PreconditionFailedException(
-							'Falha ao obter/gerar imagem da cena'
-						);
 					}
-				} else if (scene.visual.type === 'generated_image') {
-					const imageSearchQuery = scene.visual.searchQuery;
+				}
+
+				// Lógica unificada de geração de imagem (se não for Unsplash ou se falhar)
+				if (!imagePath) {
+					const basePrompt = scene.visual.searchQuery;
+					const finalPrompt = `${basePrompt}, ${this.VISUAL_STYLE}, no text, no watermarks`;
+
 					const imageBuffer = await imageGen.generate({
-						prompt: imageSearchQuery,
-						size: '1536x1024',
-					});
-					imagePath = path.join(tempDir, `image-${i}.jpg`);
-					await fs.writeFile(imagePath, imageBuffer);
-				} else {
-					const textOverlay = scene.textOverlay;
-					const imageBuffer = await imageGen.generate({
-						prompt: `Create a slide with the following text highlighted: ${textOverlay}`,
-						size: '1536x1024',
+						prompt: finalPrompt,
+						size: '1536x1024', // Aspect ratio 3:2 é bom, mas 16:9 (1920x1080) é melhor para vídeo
 					});
 					imagePath = path.join(tempDir, `image-${i}.jpg`);
 					await fs.writeFile(imagePath, imageBuffer);
@@ -193,9 +186,18 @@ export class GenerateSectionVideoUseCase {
 				await fs.writeFile(audioPath, audioBuffer);
 
 				if (imagePath && audioPath) {
-					const videoPath = path.join(tempDir, `scene-${i}.mp4`);
-					await this.mediaService.imageToVideo(imagePath, audioPath, videoPath);
-					tempFilePaths.push(videoPath);
+					const outputPath = path.join(tempDir, `scene-${i}.mp4`);
+
+					// Aqui está o segredo. Não chame apenas imageToVideo.
+					// Você precisa passar opções de renderização para ficar "Bonito".
+					await this.mediaService.createDynamicScene({
+						imagePath,
+						audioPath,
+						outputPath,
+						textOverlay: scene.textOverlay, // O texto entra aqui, não na imagem!
+					});
+
+					tempFilePaths.push(outputPath);
 				}
 			}
 

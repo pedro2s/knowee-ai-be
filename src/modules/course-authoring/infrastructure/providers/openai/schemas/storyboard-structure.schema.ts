@@ -28,7 +28,8 @@ export const storyboardStructureSchemaAsObject = {
 							},
 							searchQuery: {
 								type: 'string',
-								description: 'The search query for this scene.',
+								description:
+									'The search query for this scene. It should be purely visual, without text.',
 							},
 						},
 						required: ['type', 'searchQuery'],
@@ -37,6 +38,7 @@ export const storyboardStructureSchemaAsObject = {
 					textOverlay: {
 						type: 'string',
 						description: 'The text overlay for this scene.',
+						nullable: true,
 					},
 				},
 				required: ['scene', 'audioText', 'visual', 'textOverlay'],
