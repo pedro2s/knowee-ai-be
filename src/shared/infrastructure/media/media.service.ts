@@ -175,7 +175,7 @@ export class MediaService implements MediaPort {
 		const fps = 30;
 
 		// Calculamos o total de frames + uma margem de segurança para o zoom não acabar antes do áudio
-		const totalFrames = Math.ceil((durationInSeconds + 1) * fps);
+		const totalFrames = Math.ceil((durationInSeconds + 2) * fps);
 
 		// 2. Prepara o Texto (Sanitização para o FFmpeg)
 		// O FFmpeg é chato com caracteres especiais no drawtext, precisamos escapar
@@ -235,26 +235,24 @@ export class MediaService implements MediaPort {
 		// Isso dá "gordura" para o zoompan calcular decimais sem tremer.
 		// 'force_original_aspect_ration=increase': Garante que preencha a tela sem esticar.
 		// 'crop=3840:2160': Corta os excessos para ficar exatamente 16:9
-		const preProcess = `scale=1920:1080:force_original_aspect_ratio=increase,crop=1920:1080,setsar=1`;
+		const preProcess = `scale=3840:2160:force_original_aspect_ratio=increase,crop=3840:2160,setsar=1`;
 
 		// Passo B: Zoopan que SAI em 4K
 		// Fórmula: Começa em 1.0 e vai até 1.15 baseado no progresso (on/totalFrames).
-		const zoomExpr = `'min(1.0+0.10*on/${totalFrames},1.10)'`;
+		const zoomExpr = `'min(1.0+(0.15*on/${totalFrames}),1.15)'`;
 
 		// const zoomFilter = `zoompan=z='min(1.0+0.15*in/${totalFrames},1.15)':d=${totalFrames}:s=1280x720`;
-		const zoomFilter = `zoompan=z=${zoomExpr}:x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':d=${totalFrames}:s=1920x1080`;
+		const zoomFilter = `zoompan=z=${zoomExpr}:d=${totalFrames}:x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':s=3840x2160:fps=${fps}`;
 
 		// Passo C: Downscale para 1080p na saída final com Lanczos
 		// O Lanczos é um algoritmo de redimensionamento de alta qualidade que remove o serrilhado (aliasing).
-		const postProcess = `fps=${fps},scale=1920:1080:flags=lanczos`;
+		const postProcess = `scale=1920:1080:flags=lanczos`;
 
 		// Pipeline: Imagem -> Escala/Crop 4K -> Zoompan em 4k -> Downscale p/ 1080p -> Legenda -> Saída
 		const filterComplex = `[0:v]${preProcess},${zoomFilter},${postProcess}${subtitleFilter}[v_out]`;
 
 		// 4. Executa o FFmpeg
 		const ffmpegArgs = [
-			'-threads',
-			'1',
 			'-y',
 			'-loop',
 			'1', // Loop na imagem
@@ -273,9 +271,9 @@ export class MediaService implements MediaPort {
 			// REMOVIDO: '-tunel stillimage'.
 			// Motivo: Às vezes o stillimage otimiza demais os vetores de movimento e cria pulos.
 			'-preset',
-			'fast', // Preset de qualidade/velocidade
+			'slow', // Preset de qualidade/velocidade
 			'-crf',
-			'20', // Qualidade do vídeo (18 é quase sem perdas)
+			'18', // Qualidade do vídeo (18 é quase sem perdas)
 			'-c:a',
 			'aac', // Codec de áudio
 			'-b:a',
