@@ -10,6 +10,7 @@ import {
 	type MediaPort,
 } from 'src/shared/application/ports/media.port';
 import {
+	Scene,
 	STORYBOARD_GENERATOR,
 	type StoryboardGeneratorPort,
 } from '../../domain/ports/storyboard-generator.port';
@@ -41,12 +42,12 @@ export class GenerateSectionVideoUseCase {
 	private readonly logger = new Logger(GenerateSectionVideoUseCase.name);
 
 	// Defina um estilo padrão para manter a consistência do vídeo inteiro
-	// private readonly VISUAL_STYLE =
-	// 	'high quality, cinematic lighting, aesthetic gradient background, futuristic ui elements, soft focus, 4k';
+	private readonly VISUAL_STYLE =
+		'high quality, cinematic lighting, aesthetic gradient background, futuristic ui elements, soft focus, 4k';
 	// private readonly VISUAL_STYLE =
 	// 	'minimalist, flat vector art style, clean lines, pastel color palette, soft lighting, 4k resolution, abstract background elements';
-	private readonly VISUAL_STYLE =
-		'cinematic lighting, photorealistic, depth of field, 8k, professional photography style';
+	// private readonly VISUAL_STYLE =
+	// 	'cinematic lighting, photorealistic, depth of field, 8k, professional photography style';
 
 	constructor(
 		@Inject(LESSON_REPOSITORY)
@@ -104,23 +105,36 @@ export class GenerateSectionVideoUseCase {
 		}
 		const section = scriptSections[sectionIndex];
 
-		const { storyboard } = await this.storyboardGenerator.generate({
-			course: {
-				title: course!.title,
-				description: course?.description || '',
-			},
-			module: {
-				title: module!.title,
-				description: module!.description || '',
-			},
-			lesson: {
-				title: lesson.title,
-				description: lesson.description || '',
-			},
-			script: section.content,
-		});
-		console.log('Storyboard:', storyboard);
-		section.storyboard = storyboard;
+		if (!section.storyboard) {
+			const { storyboard } = await this.storyboardGenerator.generate({
+				course: {
+					title: course!.title,
+					description: course?.description || '',
+				},
+				module: {
+					title: module!.title,
+					description: module!.description || '',
+				},
+				lesson: {
+					title: lesson.title,
+					description: lesson.description || '',
+				},
+				script: section.content,
+			});
+			console.log('Storyboard:', storyboard);
+			section.storyboard = storyboard;
+
+			// Salva storyboard para economia de gastos e computação
+			await this.lessonRepository.update(
+				lesson.id,
+				{
+					content: {
+						scriptSections: [...scriptSections],
+					},
+				},
+				authContext
+			);
+		}
 
 		const audioGen = this.providerRegistry.getGenerateAudioStrategy(
 			input.ai?.provider || 'openai'
@@ -133,42 +147,43 @@ export class GenerateSectionVideoUseCase {
 		const tempDir = await fs.mkdtemp(`section-${section.id}-`);
 		const tempFilePaths: string[] = [];
 
+		const storyboard = section.storyboard as Scene[];
+
 		try {
 			for (const [i, scene] of storyboard.entries()) {
 				let imagePath: string | undefined;
 
 				// obter a imagem para gerar o video da sena
-				if (scene.visual.type === 'stock_video') {
-					try {
-						const UNSPLASH_ACCESS_KEY = process.env.UNSPLASH_ACCESS_KEY;
-						const imageSearchQuery = scene.visual.searchQuery;
+				try {
+					const UNSPLASH_ACCESS_KEY = process.env.UNSPLASH_ACCESS_KEY;
+					const imageSearchQuery = scene.visualConcept;
 
-						const response = await fetch(
-							`https://api.unsplash.com/search/photos?client_id=${UNSPLASH_ACCESS_KEY}&query=${imageSearchQuery}`
-						);
-						const data = await response.json();
+					const response = await fetch(
+						`https://api.unsplash.com/search/photos?client_id=${UNSPLASH_ACCESS_KEY}&query=${imageSearchQuery}`
+					);
+					const data = await response.json();
 
-						if (data.results?.length > 0) {
-							// Salvar a image o Unsplash no temDir
-							const imageUrl = data.results[0].urls.regular;
-							const imageResponse = await fetch(imageUrl);
-							const arrayBuffer = await imageResponse.arrayBuffer();
-							const imageBuffer = Buffer.from(arrayBuffer);
-							imagePath = path.join(tempDir, `image-${i}.jpg`);
-							await fs.writeFile(imagePath, imageBuffer);
-						}
-					} catch (error: any) {
-						this.logger.error(
-							'[GenerateSectionVideoUseCase] Falha ao obter imagem do Unsplash',
-							error
-						);
+					if (data.results?.length > 0) {
+						// Salvar a image o Unsplash no temDir
+						const imageUrl = data.results[0].urls.regular;
+						const imageResponse = await fetch(imageUrl);
+						const arrayBuffer = await imageResponse.arrayBuffer();
+						const imageBuffer = Buffer.from(arrayBuffer);
+						imagePath = path.join(tempDir, `image-${i}.jpg`);
+						await fs.writeFile(imagePath, imageBuffer);
 					}
+				} catch (error: any) {
+					this.logger.error(
+						'[GenerateSectionVideoUseCase] Falha ao obter imagem do Unsplash',
+						error
+					);
 				}
 
 				// Lógica unificada de geração de imagem (se não for Unsplash ou se falhar)
 				if (!imagePath) {
-					const basePrompt = scene.visual.searchQuery;
-					const finalPrompt = `${basePrompt}, ${this.VISUAL_STYLE}, no text, no watermarks`;
+					const basePrompt = scene.visualConcept;
+					// const finalPrompt = `${basePrompt}, ${this.VISUAL_STYLE}, no text, no watermarks`;
+					const finalPrompt = `${basePrompt}, simple educational illustration, highly legible`;
 
 					const imageBuffer = await imageGen.generate({
 						prompt: finalPrompt,
@@ -180,7 +195,7 @@ export class GenerateSectionVideoUseCase {
 
 				// gerar o áudio da sena
 				const audioBuffer = await audioGen.generate({
-					text: scene.audioText,
+					text: scene.narration,
 				});
 				const audioPath = path.join(tempDir, `scene-${i}.mp3`);
 				await fs.writeFile(audioPath, audioBuffer);
@@ -194,7 +209,7 @@ export class GenerateSectionVideoUseCase {
 						imagePath,
 						audioPath,
 						outputPath,
-						textOverlay: scene.textOverlay, // O texto entra aqui, não na imagem!
+						textOverlay: scene.narration, // O texto entra aqui, não na imagem!
 					});
 
 					tempFilePaths.push(outputPath);

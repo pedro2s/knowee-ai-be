@@ -19,7 +19,7 @@ export class OpenAIImageGeneratorAdapter implements ImageGeneratorPort {
 			model: 'gpt-image-1',
 			prompt: input.prompt,
 			size: input.size as any,
-			quality: 'auto',
+			quality: 'medium',
 			n: 1,
 		});
 

@@ -15,7 +15,7 @@ export class MediaService implements MediaPort {
 			const ffmpeg = spawn(ffmpegPath!, args);
 
 			ffmpeg.stderr.on('data', (data) => {
-				this.logger.verbose(`FFmpeg Error: ${data}`);
+				this.logger.verbose(`FFmpeg: ${data}`);
 			});
 			ffmpeg.on('error', reject);
 			ffmpeg.on('close', (code) => {
@@ -39,7 +39,7 @@ export class MediaService implements MediaPort {
 			});
 
 			ffprobeProcess.stderr.on('data', (data) => {
-				this.logger.verbose(`FFprobe Error: ${data}`);
+				this.logger.verbose(`FFprobe: ${data}`);
 			});
 			ffprobeProcess.on('error', reject);
 			ffprobeProcess.on('close', (code) => {
@@ -166,7 +166,7 @@ export class MediaService implements MediaPort {
 		audioPath: string;
 		outputPath: string;
 		textOverlay?: string;
-		fontPath?: string;
+		quality?: 'fast' | 'balanced' | 'high';
 	}): Promise<void> {
 		// 1. Precisamos da duração para calcular o zoom suave
 		const durationInSeconds = await this.getAudioDuration(params.audioPath);
@@ -177,79 +177,57 @@ export class MediaService implements MediaPort {
 		// Calculamos o total de frames + uma margem de segurança para o zoom não acabar antes do áudio
 		const totalFrames = Math.ceil((durationInSeconds + 2) * fps);
 
-		// 2. Prepara o Texto (Sanitização para o FFmpeg)
-		// O FFmpeg é chato com caracteres especiais no drawtext, precisamos escapar
-		// let drawTextFilter = '';
-
 		// Caminho para o arquivo de texto temporário
 		let assFilePath: string | null = null;
 		let subtitleFilter = '';
 
 		if (params.textOverlay) {
-			// const sanitizedText = this.escapeFFmpegText(params.textOverlay);
-
 			// ESTRATÉGIA SEGURA: Escrever o texto em um arquivo temporário
 			// Isso evita qualquer erro de "escaping" na linha de comando do FFmpeg
 			const tempDir = path.dirname(params.outputPath);
 			const fileName = `subs_${Date.now()}.ass`; // Melhor usar extensão .ass para clareza
 			assFilePath = path.join(tempDir, fileName);
 
-			// Gera o conteúdo ASS
 			// Nota: O ASS lida automaticamente com quebras de linha se o texto for longo
 			const assContent = this.createAssContent(
 				params.textOverlay,
-				durationInSeconds + 2,
-				params.fontPath
+				durationInSeconds + 2
 			);
 			// Escreve o conteúdo ASS no arquivo temporário
 			await fs.writeFile(assFilePath, assContent, 'utf-8');
-
-			// Se não passar fonte, tenta usar uma padrão do sistema ou requer configuração
-			// RECOMENDAÇÃO: Tenha um arquivo 'font-bold.ttf' na pasta asset do seu projeto
-			// const FONT_PATH = path.resolve(
-			// 	__dirname,
-			// 	'../../../assets/fonts/Roboto-Bold.ttf'
-			// );
-			// const fontArg = params.fontPath
-			// 	? `fontfile='${params.fontPath}'`
-			// 	: `fontfile='${FONT_PATH}'`;
-
-			// Configuração do Overlay:
-			// - Texto Branco
-			// - Box preto com 50% de opacidade atrás para leitura
-			// - Centralizado horizontalmente
-			// - Posicionado na parte inferior (height - text_height - 80px)
-			// drawTextFilter = `,drawtext=${fontArg}:textfile=${assFilePath}:x=(w-text_w)/2:y=h-th-80:fontsize=48:fontcolor=white:box=1:boxcolor=black@0.6:boxborderw=20`;
 
 			// Configura o filtro ASS
 			// Precisamos escapar o caminho do arquivo apenas para o FFmpeg (barras e dois pontos)
 			// No Linux, o path geralmente é seguro, mas vamos garantir
 			const safeAssPath = assFilePath.replace(/\\/g, '/').replace(/:/g, '\\:');
-			subtitleFilter = `,ass='${safeAssPath}'`;
+			subtitleFilter = `ass='${safeAssPath}'`;
 		}
 
-		// 3. O SEGREDO DO "VISUAL NOTEBOOKLM" (Sem tremedeira)
+		// 3. ZOOM SUAVE SEM JITTER - Otimizado para Render
 
-		// Passo A: Pre-Processamento (Super-Resolution)
-		// Escalamos a imagem para 4K (3840x2160) antes de aplicar o zoom.
-		// Isso dá "gordura" para o zoompan calcular decimais sem tremer.
-		// 'force_original_aspect_ration=increase': Garante que preencha a tela sem esticar.
-		// 'crop=3840:2160': Corta os excessos para ficar exatamente 16:9
-		const preProcess = `scale=3840:2160:force_original_aspect_ratio=increase,crop=3840:2160`;
+		// Estratégia: Usar resolução intermediária (2K) para balancear qualidade e performance
+		// Escalar para 2560x1440 reduz processamento em ~50% vs 4K mantendo qualidade
+		const preProcess = `scale=2560:1440:force_original_aspect_ratio=increase,crop=2560:1440,setsar=1`;
 
-		// Passo B: Zoopan que SAI em 4K
-		// Fórmula: Começa em 1.0 e vai até 1.15 baseado no progresso (on/totalFrames).
-		const zoomExpr = `'min(1.0+(0.15*on/${totalFrames}),1.15)'`;
+		// NOVO: Interpolação cúbica suave (cubic easing out) para eliminar jitter
+		// Fórmula: easeOutCubic(t) = 1 - (1-t)^3 onde t = on/totalFrames
+		// Resultado: zoom começa rápido e desacelera suavemente no final
+		// Fator de zoom: 1.0 até 1.15 (movimento visível mas não exagerado)
+		const t = `(on/${totalFrames})`;
+		const easeOutCubic = `(1-(1-${t})*(1-${t})*(1-${t}))`;
+		const zoomExpr = `'1.0+0.15*${easeOutCubic}'`;
 
-		// const zoomFilter = `zoompan=z='min(1.0+0.15*in/${totalFrames},1.15)':d=${totalFrames}:s=1280x720`;
-		const zoomFilter = `zoompan=z=${zoomExpr}:d=${totalFrames}:x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':fps=${fps}:s=3840x2160`;
+		// Centralização com pan suave (mesmo easing aplicado ao deslocamento)
+		const panEasing = easeOutCubic;
+		const centerX = `'(iw-ow/(1.0+0.15*${panEasing}))/2'`;
+		const centerY = `'(ih-oh/(1.0+0.15*${panEasing}))/2'`;
 
-		// Passo C: Downscale para 1080p na saída final com Lanczos
-		// O Lanczos é um algoritmo de redimensionamento de alta qualidade que remove o serrilhado (aliasing).
-		const postProcess = `scale=1920:1080:flags=lanczos`;
+		const zoomFilter = `zoompan=z=${zoomExpr}:x=${centerX}:y=${centerY}:d=${totalFrames}:s=2560x1440:fps=${fps}`;
 
-		// Pipeline: Imagem -> Escala/Crop 4K -> Zoompan em 4k -> Downscale p/ 1080p -> Legenda -> Saída
-		const filterComplex = `[0:v]${preProcess},${zoomFilter},${postProcess}${subtitleFilter}[v_out]`;
+		// Downscale final com filtro bicúbico (mais rápido que Lanczos, qualidade similar)
+		const postProcess = `scale=1920:1080:flags=bicubic`;
+
+		const filterComplex = `[0:v]${preProcess},${zoomFilter},${postProcess},${subtitleFilter}[v_out]`;
 
 		// 4. Executa o FFmpeg
 		const ffmpegArgs = [
@@ -268,19 +246,27 @@ export class MediaService implements MediaPort {
 			'1:a', // Usa o áudio original
 			'-c:v',
 			'libx264', // Codec de vídeo
-			// REMOVIDO: '-tunel stillimage'.
-			// Motivo: Às vezes o stillimage otimiza demais os vetores de movimento e cria pulos.
+			// Otimizações para Render:
 			'-preset',
-			'slow', // Preset de qualidade/velocidade
+			'faster', // Mais rápido que 'medium' (~40% mais rápido), qualidade ainda ótima
 			'-crf',
-			'18', // Qualidade do vídeo (18 é quase sem perdas)
+			'22', // Qualidade balanceada (22 é praticamente indistinguível de 20 ao olho humano)
+			'-x264-params',
+			'aq-mode=3:aq-strength=0.8', // Adaptive quantization reduz artifacts
 			'-c:a',
-			'aac', // Codec de áudio
+			'aac',
 			'-b:a',
-			'192k', // Qualidade do áudio
+			'128k', // Reduzido de 192k (economiza 33% de tamanho)
 			'-pix_fmt',
-			'yuv420p', // Garante compatibilidade com players (QuickTime/Windows)
-			'-shortest', // Corta o vídeo'quando o áudio acabar
+			'yuv420p',
+			// NOVO: Otimizações para plataforma Render
+			'-movflags',
+			'+faststart', // Permite que o vídeo inicie sem baixar tudo
+			'-threads',
+			'4', // Limita threads para não sobrecarregar Render
+			'-t',
+			`${Math.ceil(durationInSeconds + 0.5)}`,
+			'-shortest',
 			params.outputPath,
 		];
 
@@ -304,11 +290,7 @@ export class MediaService implements MediaPort {
 	 * Cria o conteúdo do arquivo de legenda .ass (Advanced Substation Alpha)
 	 * Isso permite definir caixa de fundo, fonte, posição e cores sem o caos da linha de comando.
 	 */
-	private createAssContent(
-		text: string,
-		duration: number,
-		fontPath?: string
-	): string {
+	private createAssContent(text: string, duration: number): string {
 		// Se tiver fonte personalizada, tenta usar o nome da família ou o arquivo
 		// No ASS, geralmente se usa o nome da fonte instalada, mas o ffmpeg permite carregar arquivos via attachment em casos complexos.
 		// Para simplificar, vamos definir uma fonte genérica Sans, mas o estilo visual será controlado aqui.
@@ -338,21 +320,5 @@ Style: Default,Arial,48,&H00FFFFFF,&H000000FF,&H00000000,&H60000000,0,0,0,0,100,
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
 Dialogue: 0,0:00:00.00,${endTime},Default,,0,0,0,,${text}
 `;
-	}
-
-	/**
-	 * Sanitiza o texto para ser usado no drawtext do FFmpeg sem aspas.
-	 * Escapa: \ : ' ( ) [ ] e espaços.
-	 */
-	private escapeFFmpegText(text: string): string {
-		return text
-			.replace(/\\/g, '\\\\') // Escapa a própria barra invertida primeiro
-			.replace(/:/g, '\\:') // Escapa dois pontos (separador de filtro)
-			.replace(/'/g, "\\'") // Escapa aspas simples
-			.replace(/\(/g, '\\(') // Escapa parenteses (evita erros de função)
-			.replace(/\)/g, '\\)')
-			.replace(/\[/g, '\\[')
-			.replace(/\]/g, '\\]')
-			.replace(/ /g, '\\ '); // IMPORTANTE: Escapa os espaços
 	}
 }

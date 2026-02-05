@@ -23,26 +23,18 @@ export class OpenAIStoryboardGeneratorAdapter implements StoryboardGeneratorPort
 	async generate(
 		input: GenerateStoryboardInput
 	): Promise<GeneratedStoryboardOutput> {
-		const messages: OpenAI.Chat.Completions.ChatCompletionMessageParam[] = [];
-
-		messages.push(
+		const messages: OpenAI.Chat.Completions.ChatCompletionMessageParam[] = [
 			{
 				role: 'system',
-				content: `Você é um diretor e editor de vídeos profissional para cursos online, com vasta experiência em criar conteúdo didático e engajador.
-            Sua função é transformar o roteiro da aula em uma estrutura de cenas. Para cada frase ou parágrafo, defina o recurso visual.`,
-			},
-			{
-				role: 'system',
-				content: `Aqui está um contexto da aula a que o roteiro se refere:
+				content: `Você é um diretor de vídeo educacional.
+				Transforme o roteiro da aula em cenas visuais estruturadas.
                 
-                Título do curso: ${input.course.title}
-                Descrição do curso: ${input.course.description}
-                Título do módulo: ${input.module.title}
-                Descrição do módulo: ${input.module.description}
-                Título da aula: ${input.lesson.title}
-                Descrição da aula: ${input.lesson.description}`,
-			}
-		);
+				Contexto:
+                Curso: ${input.course.title}
+                Módulo: ${input.module.title}
+                Aula: ${input.lesson.title}`,
+			},
+		];
 
 		messages.push({
 			role: 'user',
@@ -55,8 +47,8 @@ export class OpenAIStoryboardGeneratorAdapter implements StoryboardGeneratorPort
 			model,
 			messages,
 			response_format: storyboardStructure,
-			temperature: 1,
-			top_p: 1,
+			temperature: 0.3,
+			top_p: 0.9,
 			frequency_penalty: 0,
 			presence_penalty: 0,
 		});
