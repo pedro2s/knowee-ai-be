@@ -16,16 +16,14 @@ export interface GenerateStoryboardInput {
 	script: string;
 }
 
+export interface Scene {
+	id: number;
+	narration: string;
+	visualConcept: string;
+	textOverlay: string;
+}
 export interface GeneratedStoryboardOutput {
-	storyboard: Array<{
-		scene: number;
-		audioText: string;
-		visual: {
-			type: 'stock_video' | 'generated_image' | 'title_card';
-			searchQuery: string;
-		};
-		textOverlay: string;
-	}>;
+	storyboard: Array<Scene>;
 }
 
 export interface StoryboardGeneratorPort {

@@ -9,31 +9,17 @@ export const storyboardStructureSchemaAsObject = {
 			items: {
 				type: 'object',
 				properties: {
-					scene: {
+					id: {
 						type: 'integer',
 						description: 'The scene number.',
 					},
-					audioText: {
+					narration: {
 						type: 'string',
 						description: 'The audio text for this scene.',
 					},
-					visual: {
-						type: 'object',
-						properties: {
-							type: {
-								type: 'string',
-								description:
-									'The image type for this scene. It could be: stock_video (to retrieve a video from a stock image bank); generated_image (to create an AI-powered illustration); title_card (a slide with highlighted text).',
-								enum: ['stock_video', 'generated_image', 'title_card'],
-							},
-							searchQuery: {
-								type: 'string',
-								description:
-									'The search query for this scene. It should be purely visual, without text.',
-							},
-						},
-						required: ['type', 'searchQuery'],
-						additionalProperties: false,
+					visualConcept: {
+						type: 'string',
+						description: 'The visual concept for this scene.',
 					},
 					textOverlay: {
 						type: 'string',
@@ -41,7 +27,7 @@ export const storyboardStructureSchemaAsObject = {
 						nullable: true,
 					},
 				},
-				required: ['scene', 'audioText', 'visual', 'textOverlay'],
+				required: ['id', 'narration', 'visualConcept', 'textOverlay'],
 				additionalProperties: false,
 			},
 		},
