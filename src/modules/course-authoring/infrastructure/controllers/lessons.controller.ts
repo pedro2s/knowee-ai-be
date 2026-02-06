@@ -25,6 +25,7 @@ import { GenerateLessonAudioDto } from '../../application/dtos/generate-lesson-a
 import { GenerateSectionVideoDto } from '../../application/dtos/generate-section-video.dto';
 import { GenerateSectionVideoUseCase } from '../../application/use-cases/generate-section-video.usecase';
 import { GeneratedSectionVideoResponseDto } from '../../application/dtos/generated-section-video.response.dto';
+import { MergeLessonSectionsVideoUseCase } from '../../application/use-cases/merge-lesson-sections-video.usecase';
 
 @Controller('lessons')
 @UseGuards(SupabaseAuthGuard)
@@ -35,7 +36,8 @@ export class LessonsController {
 		private readonly updateLessonUseCase: UpdateLessonUseCase,
 		private readonly generateArticleUseCase: GenerateArticleUseCase,
 		private readonly generateLessonScriptUseCase: GenerateLessonScriptUseCase,
-		private readonly generateSectionVideoUseCase: GenerateSectionVideoUseCase
+		private readonly generateSectionVideoUseCase: GenerateSectionVideoUseCase,
+		private readonly mergeLessonSectionsVideoUseCase: MergeLessonSectionsVideoUseCase
 	) {}
 
 	// 1. Rotas Específicas (SEM ID) - Devem vir PRIMEIRO
@@ -111,6 +113,14 @@ export class LessonsController {
 		return {
 			message: 'Geração de vídeo iniciada',
 		};
+	}
+
+	@Post('/:id/merge-videos')
+	async mergeLessonSectionsVideo(
+		@Param('id') lessonId: string,
+		@CurrentUser() user: UserPayload
+	) {
+		return this.mergeLessonSectionsVideoUseCase.execute(lessonId, user.id);
 	}
 
 	// 3. Rotas Genéricas (CRUD) - Devem vir POR ÚLTIMO
