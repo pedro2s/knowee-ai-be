@@ -152,76 +152,43 @@ export class GenerateSectionVideoUseCase {
 
 		try {
 			for (const [i, scene] of storyboard.entries()) {
-				let imagePath: string | undefined;
-
-				// obter a imagem para gerar o video da sena
-				/* try {
-					const UNSPLASH_ACCESS_KEY = process.env.UNSPLASH_ACCESS_KEY;
-					const imageSearchQuery = scene.visualConcept;
-
-					const response = await fetch(
-						`https://api.unsplash.com/search/photos?client_id=${UNSPLASH_ACCESS_KEY}&query=${imageSearchQuery}`
-					);
-					const data = await response.json();
-
-					if (data.results?.length > 0) {
-						// Salvar a image o Unsplash no temDir
-						const imageUrl = data.results[0].urls.regular;
-						const imageResponse = await fetch(imageUrl);
-						const arrayBuffer = await imageResponse.arrayBuffer();
-						const imageBuffer = Buffer.from(arrayBuffer);
-						imagePath = path.join(tempDir, `image-${i}.jpg`);
-						await fs.writeFile(imagePath, imageBuffer);
-					}
-				} catch (error: any) {
-					this.logger.error(
-						'[GenerateSectionVideoUseCase] Falha ao obter imagem do Unsplash',
-						error
-					);
-				} */
-
-				// Lógica unificada de geração de imagem (se não for Unsplash ou se falhar)
-				if (!imagePath) {
-					const coreConcept = scene.visualConcept;
-					const finalImagePrompt = `Create a didactic illustration of: ${coreConcept}.
+				// Lógica unificada de geração de imagem
+				const coreConcept = scene.visualConcept;
+				const finalImagePrompt = `Create a didactic illustration of: ${coreConcept}.
 					${this.NOTEBOOKLM_STYLE_PROMPT}
 					Make sure the background is a solid color (hex #F5F5F7) to match a video canvas.`;
 
-					const imageBuffer = await imageGen.generate({
+				const [imageBuffer, audioBuffer] = await Promise.all([
+					imageGen.generate({
 						prompt: finalImagePrompt,
 						size: '1536x1024', // Aspect ratio 3:2 é bom, mas 16:9 (1920x1080) é melhor para vídeo
-					});
-					imagePath = path.join(tempDir, `image-${i}.jpg`);
-					await fs.writeFile(imagePath, imageBuffer);
-				}
+					}),
+					audioGen.generate({
+						text: scene.narration,
+					}),
+				]);
 
-				// gerar o áudio da sena
-				const audioBuffer = await audioGen.generate({
-					text: scene.narration,
-				});
+				const imagePath = path.join(tempDir, `image-${i}.jpg`);
 				const audioPath = path.join(tempDir, `scene-${i}.mp3`);
-				await fs.writeFile(audioPath, audioBuffer);
+				await Promise.all([
+					fs.writeFile(imagePath, imageBuffer),
+					fs.writeFile(audioPath, audioBuffer),
+				]);
 
-				if (imagePath && audioPath) {
-					const outputPath = path.join(tempDir, `scene-${i}.mp4`);
+				const outputPath = path.join(tempDir, `scene-${i}.mp4`);
 
-					await this.mediaService.imageToVideo(
-						imagePath,
-						audioPath,
-						outputPath
-					);
+				await this.mediaService.imageToVideo(imagePath, audioPath, outputPath);
 
-					// Aqui está o segredo. Não chame apenas imageToVideo.
-					// Você precisa passar opções de renderização para ficar "Bonito".
-					/* await this.mediaService.createDynamicScene({
+				// Aqui está o segredo. Não chame apenas imageToVideo.
+				// Você precisa passar opções de renderização para ficar "Bonito".
+				/* await this.mediaService.createDynamicScene({
 						imagePath,
 						audioPath,
 						outputPath,
 						textOverlay: scene.narration, // O texto entra aqui, não na imagem!
 					}); */
 
-					tempFilePaths.push(outputPath);
-				}
+				tempFilePaths.push(outputPath);
 			}
 
 			if (tempFilePaths.length === 0) {
@@ -292,11 +259,6 @@ export class GenerateSectionVideoUseCase {
 					},
 				},
 				authContext
-			);
-		} catch (error) {
-			this.logger.error(
-				`[GenerateSectionVideoUseCase] Falha na geração de vídeo para a aula: ${lesson.title}`,
-				error
 			);
 		} finally {
 			await fs.rm(tempDir, { recursive: true, force: true });
