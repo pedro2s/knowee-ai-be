@@ -42,12 +42,13 @@ export class GenerateSectionVideoUseCase {
 	private readonly logger = new Logger(GenerateSectionVideoUseCase.name);
 
 	// Defina um estilo padrão para manter a consistência do vídeo inteiro
-	private readonly VISUAL_STYLE =
-		'high quality, cinematic lighting, aesthetic gradient background, futuristic ui elements, soft focus, 4k';
-	// private readonly VISUAL_STYLE =
-	// 	'minimalist, flat vector art style, clean lines, pastel color palette, soft lighting, 4k resolution, abstract background elements';
-	// private readonly VISUAL_STYLE =
-	// 	'cinematic lighting, photorealistic, depth of field, 8k, professional photography style';
+	private readonly NOTEBOOKLM_STYLE_PROMPT = `
+	STYLE GUIDELINES:
+	- Art Style: Modern Flat Vector Illustration (Corporate Memphis style).
+	- Composition: Minimalist, plenty of negative space (solid background).
+	- Colors: Pastel palete (Soft Blue, Mint Green, Light Gray, White, Dark Slate text elements).
+	- Mood: Professional, calm, education, clean.
+	- RESTRICTIONS: NO TEXT inside the image. NO photorealism. NO complex details. NO messy sketches.`;
 
 	constructor(
 		@Inject(LESSON_REPOSITORY)
@@ -121,7 +122,6 @@ export class GenerateSectionVideoUseCase {
 				},
 				script: section.content,
 			});
-			console.log('Storyboard:', storyboard);
 			section.storyboard = storyboard;
 
 			// Salva storyboard para economia de gastos e computação
@@ -148,13 +148,14 @@ export class GenerateSectionVideoUseCase {
 		const tempFilePaths: string[] = [];
 
 		const storyboard = section.storyboard as Scene[];
+		console.log('Storyboard:', storyboard);
 
 		try {
 			for (const [i, scene] of storyboard.entries()) {
 				let imagePath: string | undefined;
 
 				// obter a imagem para gerar o video da sena
-				try {
+				/* try {
 					const UNSPLASH_ACCESS_KEY = process.env.UNSPLASH_ACCESS_KEY;
 					const imageSearchQuery = scene.visualConcept;
 
@@ -177,16 +178,17 @@ export class GenerateSectionVideoUseCase {
 						'[GenerateSectionVideoUseCase] Falha ao obter imagem do Unsplash',
 						error
 					);
-				}
+				} */
 
 				// Lógica unificada de geração de imagem (se não for Unsplash ou se falhar)
 				if (!imagePath) {
-					const basePrompt = scene.visualConcept;
-					// const finalPrompt = `${basePrompt}, ${this.VISUAL_STYLE}, no text, no watermarks`;
-					const finalPrompt = `${basePrompt}, simple educational illustration, highly legible`;
+					const coreConcept = scene.visualConcept;
+					const finalImagePrompt = `Create a didactic illustration of: ${coreConcept}.
+					${this.NOTEBOOKLM_STYLE_PROMPT}
+					Make sure the background is a solid color (hex #F5F5F7) to match a video canvas.`;
 
 					const imageBuffer = await imageGen.generate({
-						prompt: finalPrompt,
+						prompt: finalImagePrompt,
 						size: '1536x1024', // Aspect ratio 3:2 é bom, mas 16:9 (1920x1080) é melhor para vídeo
 					});
 					imagePath = path.join(tempDir, `image-${i}.jpg`);
@@ -203,14 +205,20 @@ export class GenerateSectionVideoUseCase {
 				if (imagePath && audioPath) {
 					const outputPath = path.join(tempDir, `scene-${i}.mp4`);
 
+					await this.mediaService.imageToVideo(
+						imagePath,
+						audioPath,
+						outputPath
+					);
+
 					// Aqui está o segredo. Não chame apenas imageToVideo.
 					// Você precisa passar opções de renderização para ficar "Bonito".
-					await this.mediaService.createDynamicScene({
+					/* await this.mediaService.createDynamicScene({
 						imagePath,
 						audioPath,
 						outputPath,
 						textOverlay: scene.narration, // O texto entra aqui, não na imagem!
-					});
+					}); */
 
 					tempFilePaths.push(outputPath);
 				}

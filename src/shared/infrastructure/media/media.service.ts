@@ -121,9 +121,13 @@ export class MediaService implements MediaPort {
 			'libx264',
 			'-c:a',
 			'aac',
-			'-shortest',
+			'-b:a',
+			'128k',
 			'-pix_fmt',
 			'yuv420p',
+			'-tune',
+			'stillimage',
+			'-shortest',
 			output,
 		]);
 	}
@@ -320,5 +324,23 @@ Style: Default,Arial,48,&H00FFFFFF,&H000000FF,&H00000000,&H60000000,0,0,0,0,100,
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
 Dialogue: 0,0:00:00.00,${endTime},Default,,0,0,0,,${text}
 `;
+	}
+
+	private escapeTextForFFmpeg(text: string): string {
+		return (
+			text
+				// Escapa caracteres especiais do FFmpeg
+				.replace(/\\/g, '\\\\\\\\') // Backslash
+				.replace(/'/g, "\\'") // Aspas simples
+				.replace(/:/g, '\\:') // Dois pontos
+				.replace(/\[/g, '\\[') // Colchetes
+				.replace(/\]/g, '\\]')
+				.replace(/%/g, '\\%') // Porcentagem
+				// Remove quebras de linha ou substitui por espaço
+				.replace(/\n/g, ' ')
+				.replace(/\r/g, '')
+				// Limita o tamanho se necessário
+				.trim()
+		);
 	}
 }

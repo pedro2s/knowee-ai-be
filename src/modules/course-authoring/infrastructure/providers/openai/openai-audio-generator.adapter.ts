@@ -13,8 +13,8 @@ export class OpenAIAudioGeneratorAdapter implements AudioGeneratorPort {
 		style?: string;
 	}): Promise<Buffer> {
 		const mp3Response = await this.openai.audio.speech.create({
-			model: 'tts-1',
-			voice: input.voice || 'ash',
+			model: 'gpt-4o-mini-tts',
+			voice: input.voice || 'cedar',
 			input: input.text,
 			response_format: 'mp3',
 			instructions: input.style || '',

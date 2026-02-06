@@ -16,7 +16,7 @@ export class OpenAIImageGeneratorAdapter implements ImageGeneratorPort {
 		size: '1024x1024' | '1536x1024' | '1024x1536';
 	}): Promise<Buffer> {
 		const res = await this.openai.images.generate({
-			model: 'gpt-image-1',
+			model: 'gpt-image-1-mini',
 			prompt: input.prompt,
 			size: input.size as any,
 			quality: 'medium',

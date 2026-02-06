@@ -27,7 +27,10 @@ export class OpenAIStoryboardGeneratorAdapter implements StoryboardGeneratorPort
 			{
 				role: 'system',
 				content: `Você é um diretor de vídeo educacional.
-				Transforme o roteiro da aula em cenas visuais estruturadas.
+				Transforme o trecho do roteiro da aula em uma ou mais cenas visuais estruturadas.
+				Ao descrever a imagem ('visualConcept'), NÃO descreva pessoas ou cenários realistas.
+				Descreva diagramas conceituais simplificados, ícones 3D minimalistas ou formas abstratas que representem o tópico.
+				Ex: Para 'Erro de servidor', descreva 'A simple geometric red cross floating over a stylized server icon'.
                 
 				Contexto:
                 Curso: ${input.course.title}
