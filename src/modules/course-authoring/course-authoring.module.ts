@@ -43,6 +43,7 @@ import { SupabaseModule } from 'src/shared/infrastructure/supabase/supabase.modu
 import { OpenAIStoryboardGeneratorAdapter } from './infrastructure/providers/openai/openai-storyboard-generator.adapter';
 import { STORYBOARD_GENERATOR } from './domain/ports/storyboard-generator.port';
 import { GenerateSectionVideoUseCase } from './application/use-cases/generate-section-video.usecase';
+import { MergeLessonSectionsVideoUseCase } from './application/use-cases/merge-lesson-sections-video.usecase';
 import { OpenAIReorderContentAgentAdapter } from './infrastructure/providers/openai/openai-reorder-content-agent.adapter';
 import { REORDER_CONTENT_AGENT } from './domain/ports/reorder-content-agent.port';
 import { ReorderContentUseCase } from './application/use-cases/quick-actions/georder-content.usecase';
@@ -73,6 +74,7 @@ import { ReorderContentUseCase } from './application/use-cases/quick-actions/geo
 		GenerateArticleUseCase,
 		GenerateLessonScriptUseCase,
 		GenerateSectionVideoUseCase,
+		MergeLessonSectionsVideoUseCase,
 		CreateModuleUseCase,
 		GetCourseUseCase,
 		GetLessonUseCase,
