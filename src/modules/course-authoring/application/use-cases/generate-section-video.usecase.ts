@@ -48,7 +48,7 @@ export class GenerateSectionVideoUseCase {
 	- Composition: Minimalist, plenty of negative space (solid background).
 	- Colors: Pastel palete (Soft Blue, Mint Green, Light Gray, White, Dark Slate text elements).
 	- Mood: Professional, calm, education, clean.
-	- RESTRICTIONS: NO TEXT inside the image. NO photorealism. NO complex details. NO messy sketches.`;
+	- RESTRICTIONS: NO photorealism. NO complex details. NO messy sketches.`;
 
 	constructor(
 		@Inject(LESSON_REPOSITORY)
