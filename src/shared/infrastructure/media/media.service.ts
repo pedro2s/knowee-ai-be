@@ -118,6 +118,10 @@ export class MediaService implements MediaPort {
 			audio,
 			'-vf',
 			'scale=1280:720:force_original_aspect_ratio=increase,crop=1280:720:(iw-ow)/2:(ih-oh)/2,setsar=1',
+			'-map',
+			'0:v',
+			'-map',
+			'1:a',
 			'-c:v',
 			'libx264',
 			'-c:a',
@@ -136,6 +140,8 @@ export class MediaService implements MediaPort {
 	concatVideos(listFile: string, output: string) {
 		return this.runFFmpeg([
 			'-y',
+			'-fflags',
+			'+genpts',
 			'-f',
 			'concat',
 			'-safe',
@@ -144,6 +150,8 @@ export class MediaService implements MediaPort {
 			listFile,
 			'-c',
 			'copy',
+			'-fflags',
+			'+genpts',
 			output,
 		]);
 	}
@@ -271,7 +279,6 @@ export class MediaService implements MediaPort {
 			'4', // Limita threads para não sobrecarregar Render
 			'-t',
 			`${Math.ceil(durationInSeconds + 0.5)}`,
-			'-shortest',
 			params.outputPath,
 		];
 
