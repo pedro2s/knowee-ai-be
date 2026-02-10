@@ -103,10 +103,11 @@ export class MediaService implements MediaPort {
 	}
 
 	imageToVideo(image: string, audio: string, output: string) {
-		// increase: garante que cubra toda a área
-		// crop: corta o excesso
-		// decrease:
-		// pad:
+		// Opção 	O que faz?	Resultado Visual
+		// increase	Escala o vídeo até que a menor dimensão preencha o alvo.	O vídeo preenche a tela toda, mas as bordas são cortadas (Crop).
+		// decrease	Escala o vídeo até que a maior dimensão atinja o limite do alvo.	O vídeo inteiro cabe na tela, mas sobram espaços vazios (precisa de Pad).
+		// crop	Corta os pixels que estão fora das dimensões definidas.	Remove partes da imagem para forçar o encaixe no formato.
+		// pad	Adiciona bordas (preenchimento) para alcançar o tamanho final.	Cria as famosas "barras pretas" laterais ou superiores para evitar distorção.
 		return this.runFFmpeg([
 			'-y',
 			'-loop',
@@ -116,7 +117,7 @@ export class MediaService implements MediaPort {
 			'-i',
 			audio,
 			'-vf',
-			'scale=1920:1080:force_original_aspect_ratio=increase,crop=1920:1080:(ow-iw)/2:(oh-ih)/2,setsar=1',
+			'scale=1280:720:force_original_aspect_ratio=increase,crop=1280:720:(iw-ow)/2:(ih-oh)/2,setsar=1',
 			'-c:v',
 			'libx264',
 			'-c:a',
