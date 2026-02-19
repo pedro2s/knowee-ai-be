@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { BillingController } from './infrastructure/controllers/billing.controller';
 import { GetUsageUseCase } from './application/use-cases/get-usage.usecase';
+import { GetSubscriptionUseCase } from './application/use-cases/get-subscription.usecase';
 import { USAGE_REPOSITORY } from './domain/ports/usage-repository.port';
 import { DrizzleUsageRepository } from './infrastructure/persistence/drizzle/drizzle-usage.repository';
 import { DatabaseModule } from 'src/shared/infrastructure/database/database.module';
@@ -10,11 +11,12 @@ import { DatabaseModule } from 'src/shared/infrastructure/database/database.modu
 	controllers: [BillingController],
 	providers: [
 		GetUsageUseCase,
+		GetSubscriptionUseCase,
 		{
 			provide: USAGE_REPOSITORY,
 			useClass: DrizzleUsageRepository,
 		},
 	],
-	exports: [GetUsageUseCase],
+	exports: [GetUsageUseCase, GetSubscriptionUseCase],
 })
 export class BillingModule {}
