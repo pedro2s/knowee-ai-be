@@ -2,6 +2,7 @@ import {
 	BadRequestException,
 	Body,
 	Controller,
+	HttpCode,
 	ParseUUIDPipe,
 	Post,
 	UseGuards,
@@ -36,6 +37,7 @@ export class QuickActionsController {
 	}
 
 	@Post('reorder-content')
+	@HttpCode(200)
 	async reorderContent(
 		@Body(
 			'courseId',
@@ -46,8 +48,9 @@ export class QuickActionsController {
 		)
 		courseId: string,
 		@CurrentUser() user: UserPayload
-	) {
+	): Promise<{ message: string }> {
 		await this.reorderContentUseCase.execute(courseId, user.id);
+		return { message: 'Conteúdo reordenado com sucesso' };
 	}
 
 	@Post('generate-assessments')
