@@ -5,6 +5,7 @@ import { GetSubscriptionUseCase } from './application/use-cases/get-subscription
 import { USAGE_REPOSITORY } from './domain/ports/usage-repository.port';
 import { DrizzleUsageRepository } from './infrastructure/persistence/drizzle/drizzle-usage.repository';
 import { DatabaseModule } from 'src/shared/infrastructure/database/database.module';
+import { CreateFreeSubscriptionUseCase } from './application/use-cases/create-free-subscription.usecase';
 
 @Module({
 	imports: [DatabaseModule],
@@ -12,6 +13,7 @@ import { DatabaseModule } from 'src/shared/infrastructure/database/database.modu
 	providers: [
 		GetUsageUseCase,
 		GetSubscriptionUseCase,
+		CreateFreeSubscriptionUseCase,
 		{
 			provide: USAGE_REPOSITORY,
 			useClass: DrizzleUsageRepository,

@@ -11,6 +11,10 @@ export interface UsageRepositoryPort {
 		createdAt: string;
 	} | null>;
 	getSubscription(userId: string): Promise<SubscriptionResponseDto | null>;
+	createFreeSubscription(
+		userId: string,
+		email: string
+	): Promise<SubscriptionResponseDto>;
 }
 
 export const USAGE_REPOSITORY = 'USAGE_REPOSITORY';

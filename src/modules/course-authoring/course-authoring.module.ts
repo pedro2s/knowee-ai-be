@@ -47,6 +47,8 @@ import { MergeLessonSectionsVideoUseCase } from './application/use-cases/merge-l
 import { OpenAIReorderContentAgentAdapter } from './infrastructure/providers/openai/openai-reorder-content-agent.adapter';
 import { REORDER_CONTENT_AGENT } from './domain/ports/reorder-content-agent.port';
 import { ReorderContentUseCase } from './application/use-cases/quick-actions/georder-content.usecase';
+import { ReorderLessonsUseCase } from './application/use-cases/reorder-lessons.usecase';
+import { ManageLessonAssetsUseCase } from './application/use-cases/manage-lesson-assets.usecase';
 
 @Module({
 	controllers: [
@@ -88,6 +90,8 @@ import { ReorderContentUseCase } from './application/use-cases/quick-actions/geo
 		GenerateLessonAudioUseCase,
 		GeneratorLessonVideoUseCase,
 		ReorderContentUseCase,
+		ReorderLessonsUseCase,
+		ManageLessonAssetsUseCase,
 		ProviderRegistry,
 		OpenAICourseGeneratorAdapter,
 		OpenAIModuleGeneratorAdapter,

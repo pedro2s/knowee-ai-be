@@ -4,6 +4,7 @@ import { CourseAuthoringModule } from './modules/course-authoring/course-authori
 import { AuthModule } from './modules/auth/auth.module';
 import { AssistantModule } from './modules/assistant/assistant.module';
 import { BillingModule } from './modules/billing/billing.module';
+import { ProfileModule } from './modules/profile/profile.module';
 
 @Module({
 	imports: [
@@ -14,6 +15,7 @@ import { BillingModule } from './modules/billing/billing.module';
 		CourseAuthoringModule,
 		AssistantModule,
 		BillingModule,
+		ProfileModule,
 	],
 })
 export class AppModule {}

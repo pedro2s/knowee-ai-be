@@ -9,6 +9,7 @@ import { PassportModule } from '@nestjs/passport';
 import { SupabaseStrategy } from './infrastructure/strategy/supabase.strategy';
 import { JwtStrategy } from './infrastructure/strategy/jwt.strategy';
 import { RefreshTokenUseCase } from './application/use-cases/refresh-token.usecase';
+import { ChangePasswordUseCase } from './application/use-cases/change-password.usecase';
 
 @Module({
 	imports: [
@@ -20,6 +21,7 @@ import { RefreshTokenUseCase } from './application/use-cases/refresh-token.useca
 		SignInUseCase,
 		SignUpUseCase,
 		RefreshTokenUseCase,
+		ChangePasswordUseCase,
 		{
 			provide: AuthServicePort,
 			useClass: SupabaseAuthAdapter,

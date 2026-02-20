@@ -5,13 +5,16 @@ import { type UserPayload } from 'src/shared/domain/types/user-payload';
 import { GetUsageUseCase } from '../../application/use-cases/get-usage.usecase';
 import { GetSubscriptionUseCase } from '../../application/use-cases/get-subscription.usecase';
 import { SubscriptionResponseDto } from '../../application/dtos/subscription.response.dto';
+import { Post } from '@nestjs/common';
+import { CreateFreeSubscriptionUseCase } from '../../application/use-cases/create-free-subscription.usecase';
 
 @Controller('billing')
 @UseGuards(SupabaseAuthGuard)
 export class BillingController {
 	constructor(
 		private readonly getUsageUseCase: GetUsageUseCase,
-		private readonly getSubscriptionUseCase: GetSubscriptionUseCase
+		private readonly getSubscriptionUseCase: GetSubscriptionUseCase,
+		private readonly createFreeSubscriptionUseCase: CreateFreeSubscriptionUseCase
 	) {}
 
 	@Get('usage')
@@ -24,5 +27,20 @@ export class BillingController {
 		@CurrentUser() user: UserPayload
 	): Promise<SubscriptionResponseDto> {
 		return this.getSubscriptionUseCase.execute(user.id);
+	}
+
+	@Post('subscription/free')
+	async createFreeSubscription(
+		@CurrentUser() user: UserPayload
+	): Promise<{ message: string; subscription: SubscriptionResponseDto }> {
+		const subscription = await this.createFreeSubscriptionUseCase.execute(
+			user.id,
+			user.email
+		);
+
+		return {
+			message: 'Plano gratuito ativado',
+			subscription,
+		};
 	}
 }
