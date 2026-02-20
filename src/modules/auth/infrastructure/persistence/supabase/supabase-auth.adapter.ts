@@ -46,12 +46,22 @@ export class SupabaseAuthAdapter extends AuthServicePort {
 	}
 
 	async signUp(dto: SignUpDto): Promise<{ user: User }> {
-		const { email, password } = dto;
+		const { email, password, fullName } = dto;
 		const {
 			data,
 			error,
 		}: { data: { user: User | null }; error: AuthError | null } =
-			await this.supabaseService.getClient().auth.signUp({ email, password });
+			await this.supabaseService.getClient().auth.signUp({
+				email,
+				password,
+				options: fullName
+					? {
+							data: {
+								full_name: fullName,
+							},
+						}
+					: undefined,
+			});
 
 		if (error) {
 			throw error;
