@@ -35,6 +35,23 @@ export class CoursesController {
 		private readonly updateCourse: UpdateCourseWithModuleTreeUseCase
 	) {}
 
+	// 1. Rotas Específicas (SEM ID) - Devem vir PRIMEIRO
+
+	// ...
+
+	// 2. Rotas Específicas (COM ID)
+
+	@Get('/:id/modules')
+	async findModules(
+		@Param('id') id: string,
+		@CurrentUser() user: UserPayload
+	): Promise<ModuleResponseDto[]> {
+		const modules = await this.fetchModules.execute(id, user.id);
+		return modules.map((module) => ModuleResponseDto.fromDomain(module));
+	}
+
+	// 3. Rotas Genéricas (CRUD) - Devem vir POR ÚLTIMO
+
 	@Post()
 	@UseInterceptors(FilesInterceptor('files'))
 	async create(
@@ -81,14 +98,5 @@ export class CoursesController {
 	): Promise<CourseResponseDto> {
 		const course = await this.updateCourse.execute(id, data, user.id);
 		return CourseResponseDto.fromDomain(course);
-	}
-
-	@Get('/:id/modules')
-	async findModules(
-		@Param('id') id: string,
-		@CurrentUser() user: UserPayload
-	): Promise<ModuleResponseDto[]> {
-		const modules = await this.fetchModules.execute(id, user.id);
-		return modules.map((module) => ModuleResponseDto.fromDomain(module));
 	}
 }
