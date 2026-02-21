@@ -4,7 +4,7 @@ import {
 	type QuestionAnswerRepositoryPort,
 } from '../../domain/ports/question-anwer-repository.port';
 import { SubmitQuestionDto } from '../dtos/submit-question.dto';
-import { AuthContext } from 'src/shared/application/ports/db-context.port';
+import { AuthContext } from 'src/shared/database/domain/ports/db-context.port';
 import { QuestionAnswer } from 'src/modules/assistant/domain/entities/question-answer.entity';
 import { ProviderRegistry } from '../../infrastructure/providers/provider.registry';
 import {

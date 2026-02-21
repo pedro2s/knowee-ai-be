@@ -1,5 +1,5 @@
 import { HistorySummary } from 'src/modules/history/domain/entities/history-summary.entity';
-import { SelectHistorySummary } from 'src/shared/infrastructure/database/drizzle/schema';
+import { SelectHistorySummary } from 'src/shared/database/infrastructure/drizzle/schema';
 
 export class HistorySummaryMapper {
 	/** Banco de Dados -> Domínio (Entity + VOs) */

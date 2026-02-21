@@ -7,7 +7,7 @@ import { DrizzleLessonRepository } from './infrastructure/persistence/drizzle/dr
 import { MediaModule } from 'src/shared/infrastructure/media/media.module';
 import { LESSON_REPOSITORY } from './domain/ports/lesson-repository.port';
 import { COURSE_REPOSITORY } from './domain/ports/course-repository.port';
-import { DatabaseModule } from 'src/shared/infrastructure/database/database.module';
+import { DatabaseModule } from 'src/shared/database/database.module';
 import { CoursesController } from './infrastructure/controllers/courses.controller';
 import { LessonsController } from './infrastructure/controllers/lessons.controller';
 import { FetchCoursesUseCase } from './application/use-cases/fetch-courses.usecase';

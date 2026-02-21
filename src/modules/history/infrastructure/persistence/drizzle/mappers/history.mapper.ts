@@ -1,6 +1,6 @@
 import { History } from 'src/modules/history/domain/entities/history.entity';
 import { HistoryMessage } from 'src/modules/history/domain/value-objects/history-message.vo';
-import { SelectHistory } from 'src/shared/infrastructure/database/drizzle/schema';
+import { SelectHistory } from 'src/shared/database/infrastructure/drizzle/schema';
 
 export class HistoryMapper {
 	/** Banco de Dados -> Domínio (Entity + VOs) */

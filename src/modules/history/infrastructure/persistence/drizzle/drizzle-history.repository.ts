@@ -3,12 +3,12 @@ import {
 	AuthContext,
 	DB_CONTEXT,
 	type DbContext,
-} from 'src/shared/application/ports/db-context.port';
+} from 'src/shared/database/domain/ports/db-context.port';
 import { and, eq, sql } from 'drizzle-orm';
 import { HistoryRepositoryPort } from 'src/modules/history/domain/ports/history-repository.port';
 import { History } from 'src/modules/history/domain/entities/history.entity';
 import { HistoryMapper } from './mappers/history.mapper';
-import * as schema from 'src/shared/infrastructure/database/drizzle/schema';
+import * as schema from 'src/shared/database/infrastructure/drizzle/schema';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 
 type DrizzleDB = NodePgDatabase<typeof schema>;

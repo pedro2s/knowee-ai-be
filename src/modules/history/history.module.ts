@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { DatabaseModule } from 'src/shared/infrastructure/database/database.module';
+import { DatabaseModule } from 'src/shared/database/database.module';
 import { HISTORY_REPOSITORY } from './domain/ports/history-repository.port';
 import { DrizzleHistoryRepository } from './infrastructure/persistence/drizzle/drizzle-history.repository';
 import { HistoryService } from './infrastructure/services/history.service';

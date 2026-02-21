@@ -18,7 +18,7 @@ import {
 	type LessonRepositoryPort,
 } from '../../domain/ports/lesson-repository.port';
 import { GeneratedLessonScript } from '../../domain/entities/lesson-script.types';
-import { AuthContext } from 'src/shared/application/ports/db-context.port';
+import { AuthContext } from 'src/shared/database/domain/ports/db-context.port';
 
 @Injectable()
 export class GenerateLessonScriptUseCase {

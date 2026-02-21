@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
-import { DrizzleService } from './drizzle/drizzle.service';
-import { DrizzleRlsContext } from './drizzle/drizzle-rls.context';
-import { DB_CONTEXT } from '../../application/ports/db-context.port';
+import { DrizzleService } from './infrastructure/drizzle/drizzle.service';
+import { DrizzleRlsContext } from './infrastructure/drizzle/drizzle-rls.context';
+import { DB_CONTEXT } from './domain/ports/db-context.port';
 
 @Module({
 	providers: [

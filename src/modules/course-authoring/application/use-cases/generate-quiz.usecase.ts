@@ -22,7 +22,7 @@ import {
 } from '../../domain/ports/quiz-generator.port';
 import { GenerateQuizDto } from '../dtos/generate-quiz.dto';
 import { GeneratedQuiz } from '../../domain/entities/quiz.types';
-import { AuthContext } from 'src/shared/application/ports/db-context.port';
+import { AuthContext } from 'src/shared/database/domain/ports/db-context.port';
 
 @Injectable()
 export class GenerateQuizUseCase {

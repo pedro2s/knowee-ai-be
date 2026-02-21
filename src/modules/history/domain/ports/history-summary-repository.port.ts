@@ -1,4 +1,4 @@
-import { AuthContext } from 'src/shared/application/ports/db-context.port';
+import { AuthContext } from 'src/shared/database/domain/ports/db-context.port';
 import { HistorySummary } from '../entities/history-summary.entity';
 
 export const HISTORY_SUMMARY_REPOSITORY = 'HISTORY_SUMMARY_REPOSITORY';

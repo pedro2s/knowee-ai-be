@@ -21,7 +21,7 @@ import {
 	SUPABASE_SERVICE,
 	type SupabasePort,
 } from 'src/shared/application/ports/supabase.port';
-import { AuthContext } from 'src/shared/application/ports/db-context.port';
+import { AuthContext } from 'src/shared/database/domain/ports/db-context.port';
 
 @Injectable()
 export class GenerateLessonAudioUseCase {

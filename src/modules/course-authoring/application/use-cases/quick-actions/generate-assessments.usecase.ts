@@ -24,7 +24,7 @@ import {
 	GENERATE_ASSESSMENTS_AGENT,
 	type GenerateAssessmentsAgentPort,
 } from '../../../domain/ports/generate-assessments-agent.port';
-import { AuthContext } from 'src/shared/application/ports/db-context.port';
+import { AuthContext } from 'src/shared/database/domain/ports/db-context.port';
 import { Lesson } from '../../../domain/entities/lesson.entity';
 
 @Injectable()

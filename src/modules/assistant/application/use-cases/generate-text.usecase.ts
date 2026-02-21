@@ -2,7 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { GenerateTextDto } from '../dtos/generate-text.dto';
 import { ProviderRegistry } from '../../infrastructure/providers/provider.registry';
 import { GeneratedTextOutput } from '../../domain/entities/generate-text.types';
-import { AuthContext } from 'src/shared/application/ports/db-context.port';
+import { AuthContext } from 'src/shared/database/domain/ports/db-context.port';
 import {
 	HISTORY_SERVICE,
 	type HistoryServicePort,

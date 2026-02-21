@@ -1,4 +1,4 @@
-import { AuthContext } from 'src/shared/application/ports/db-context.port';
+import { AuthContext } from 'src/shared/database/domain/ports/db-context.port';
 import { Module } from '../entities/module.entity';
 import { CreateModuleInput } from '../entities/module.types';
 import { GeneratedModule } from '../entities/course.types';

@@ -1,6 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { DrizzleService } from '../database/drizzle/drizzle.service';
-import { subscribers, tokenUsage } from '../database/drizzle/schema';
+import { DrizzleService } from '../../database/infrastructure/drizzle/drizzle.service';
+import {
+	subscribers,
+	tokenUsage,
+} from '../../database/infrastructure/drizzle/schema';
 import { and, eq } from 'drizzle-orm';
 import { TokenUsagePort } from '../../application/ports/token-usage.port';
 

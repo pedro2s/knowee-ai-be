@@ -1,7 +1,7 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { toSql } from 'pgvector';
-import { DrizzleService } from '../database/drizzle/drizzle.service';
-import { documents } from '../database/drizzle/schema';
+import { DrizzleService } from 'src/shared/database/infrastructure/drizzle/drizzle.service';
+import { documents } from 'src/shared/database/infrastructure/drizzle/schema';
 import { l2Distance, desc, eq } from 'drizzle-orm';
 import {
 	TOKEN_USAGE_SERVICE,

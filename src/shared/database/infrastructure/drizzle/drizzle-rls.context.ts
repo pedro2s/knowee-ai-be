@@ -1,8 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import {
-	AuthContext,
-	DbContext,
-} from '../../../application/ports/db-context.port';
+import { AuthContext, DbContext } from '../../domain/ports/db-context.port';
 import { DrizzleService } from './drizzle.service';
 import { sql } from 'drizzle-orm';
 
