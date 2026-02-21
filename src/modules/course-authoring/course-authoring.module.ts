@@ -49,6 +49,9 @@ import { REORDER_CONTENT_AGENT } from './domain/ports/reorder-content-agent.port
 import { ReorderContentUseCase } from './application/use-cases/quick-actions/georder-content.usecase';
 import { ReorderLessonsUseCase } from './application/use-cases/reorder-lessons.usecase';
 import { ManageLessonAssetsUseCase } from './application/use-cases/manage-lesson-assets.usecase';
+import { GenerateQuizUseCase } from './application/use-cases/generate-quiz.usecase';
+import { QUIZ_GENERATOR } from './domain/ports/quiz-generator.port';
+import { OpenAIQuizGeneratorAdapter } from './infrastructure/providers/openai/openai-quiz-generator.adapter';
 
 @Module({
 	controllers: [
@@ -92,6 +95,7 @@ import { ManageLessonAssetsUseCase } from './application/use-cases/manage-lesson
 		ReorderContentUseCase,
 		ReorderLessonsUseCase,
 		ManageLessonAssetsUseCase,
+		GenerateQuizUseCase,
 		ProviderRegistry,
 		OpenAICourseGeneratorAdapter,
 		OpenAIModuleGeneratorAdapter,
@@ -107,6 +111,11 @@ import { ManageLessonAssetsUseCase } from './application/use-cases/manage-lesson
 			provide: REORDER_CONTENT_AGENT,
 			useClass: OpenAIReorderContentAgentAdapter,
 		},
+		{
+			provide: QUIZ_GENERATOR,
+			useClass: OpenAIQuizGeneratorAdapter,
+		},
+		OpenAIQuizGeneratorAdapter,
 	],
 	exports: [
 		{ provide: COURSE_REPOSITORY, useClass: DrizzleCourseRepository },

@@ -34,6 +34,9 @@ import { ReorderLessonsDto } from '../../application/dtos/reorder-lessons.dto';
 import { ReorderLessonsUseCase } from '../../application/use-cases/reorder-lessons.usecase';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ManageLessonAssetsUseCase } from '../../application/use-cases/manage-lesson-assets.usecase';
+import { GenerateQuizDto } from '../../application/dtos/generate-quiz.dto';
+import { GeneratedQuizResponseDto } from '../../application/dtos/generated-quiz.response.dto';
+import { GenerateQuizUseCase } from '../../application/use-cases/generate-quiz.usecase';
 
 @Controller('lessons')
 @UseGuards(SupabaseAuthGuard)
@@ -47,7 +50,8 @@ export class LessonsController {
 		private readonly generateSectionVideoUseCase: GenerateSectionVideoUseCase,
 		private readonly mergeLessonSectionsVideoUseCase: MergeLessonSectionsVideoUseCase,
 		private readonly reorderLessonsUseCase: ReorderLessonsUseCase,
-		private readonly manageLessonAssetsUseCase: ManageLessonAssetsUseCase
+		private readonly manageLessonAssetsUseCase: ManageLessonAssetsUseCase,
+		private readonly generateQuizUseCase: GenerateQuizUseCase
 	) {}
 
 	// 1. Rotas Específicas (SEM ID) - Devem vir PRIMEIRO
@@ -100,6 +104,15 @@ export class LessonsController {
 		return {
 			message: 'Ordem das aulas atualizada com sucesso',
 		};
+	}
+
+	@Post('/generate-quiz')
+	async generateQuiz(
+		@Body() data: GenerateQuizDto,
+		@CurrentUser() user: UserPayload
+	): Promise<GeneratedQuizResponseDto> {
+		const generatedQuiz = await this.generateQuizUseCase.execute(data, user.id);
+		return GeneratedQuizResponseDto.fromDomain(generatedQuiz);
 	}
 
 	// 2. Rotas Específicas (COM ID)
