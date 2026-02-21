@@ -1,18 +1,16 @@
 import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
+import { SupabaseClient } from '@supabase/supabase-js';
 import { Request } from 'express';
 import { ExtractJwt, Strategy } from 'passport-jwt';
-import {
-	SUPABASE_SERVICE,
-	type SupabasePort,
-} from 'src/shared/supabase/domain/ports/supabase.port';
+import { SUPABASE_CLIENT } from 'src/shared/supabase/subapase.constants';
 
 @Injectable()
 export class SupabaseStrategy extends PassportStrategy(Strategy, 'supabase') {
 	constructor(
-		@Inject(SUPABASE_SERVICE)
-		private readonly supabaseService: SupabasePort,
+		@Inject(SUPABASE_CLIENT)
+		private readonly supabaseClient: SupabaseClient,
 		private readonly configService: ConfigService
 	) {
 		const secret = configService.get<string>('SUPABASE_JWT_SECRET');
@@ -30,9 +28,9 @@ export class SupabaseStrategy extends PassportStrategy(Strategy, 'supabase') {
 	async validate(req: Request, payload: any) {
 		const accessToken = ExtractJwt.fromAuthHeaderAsBearerToken()(req);
 
-		const { data, error } = await this.supabaseService
-			.getClient()
-			.auth.getUser(accessToken!);
+		const { data, error } = await this.supabaseClient.auth.getUser(
+			accessToken!
+		);
 
 		if (error) {
 			throw new UnauthorizedException('Invalid token');

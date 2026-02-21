@@ -19,10 +19,6 @@ import {
 	LESSON_REPOSITORY,
 	type LessonRepositoryPort,
 } from '../../domain/ports/lesson-repository.port';
-import {
-	SUPABASE_SERVICE,
-	type SupabasePort,
-} from 'src/shared/supabase/domain/ports/supabase.port';
 import { ProviderRegistry } from '../../infrastructure/providers/provider.registry';
 import { AuthContext } from 'src/shared/database/domain/ports/db-context.port';
 import { ScriptSection } from '../../domain/entities/lesson-script.types';
@@ -36,6 +32,8 @@ import {
 } from '../../domain/ports/module-repository.port';
 import fs from 'fs/promises';
 import path from 'path';
+import { SUPABASE_CLIENT } from 'src/shared/supabase/subapase.constants';
+import { SupabaseClient } from '@supabase/supabase-js';
 
 @Injectable()
 export class GenerateSectionVideoUseCase {
@@ -62,8 +60,8 @@ export class GenerateSectionVideoUseCase {
 		private readonly storyboardGenerator: StoryboardGeneratorPort,
 		@Inject(MEDIA_SERVICE)
 		private readonly mediaService: MediaPort,
-		@Inject(SUPABASE_SERVICE)
-		private readonly supabaseService: SupabasePort,
+		@Inject(SUPABASE_CLIENT)
+		private readonly supabaseClient: SupabaseClient,
 		private readonly providerRegistry: ProviderRegistry
 	) {}
 
@@ -215,17 +213,15 @@ export class GenerateSectionVideoUseCase {
 			const previousVideoPath = (lesson.content as { videoPath?: string })
 				?.videoPath;
 			if (previousVideoPath) {
-				await this.supabaseService
-					.getClient()
-					.storage.from('lesson-videos')
+				await this.supabaseClient.storage
+					.from('lesson-videos')
 					.remove([previousVideoPath]);
 			}
 
 			const finalVideoBuffer = await fs.readFile(finalVideoPath);
 
-			const { error: uploadError } = await this.supabaseService
-				.getClient()
-				.storage.from('lesson-videos') // Assuming 'lessons' bucket
+			const { error: uploadError } = await this.supabaseClient.storage
+				.from('lesson-videos') // Assuming 'lessons' bucket
 				.upload(supabasePath, finalVideoBuffer, {
 					contentType: 'video/mp4',
 					upsert: true,
@@ -240,9 +236,8 @@ export class GenerateSectionVideoUseCase {
 			}
 
 			// Obtem a url publica do vído no Supabase
-			const { data: publicUrlData } = this.supabaseService
-				.getClient()
-				.storage.from('lesson-videos')
+			const { data: publicUrlData } = this.supabaseClient.storage
+				.from('lesson-videos')
 				.getPublicUrl(supabasePath);
 
 			section.videoPath = supabasePath;

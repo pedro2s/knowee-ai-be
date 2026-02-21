@@ -17,11 +17,9 @@ import {
 } from 'src/shared/media/domain/ports/media.port';
 import { ProviderRegistry } from '../../infrastructure/providers/provider.registry';
 import { ScriptSection } from '../../domain/entities/lesson-script.types';
-import {
-	SUPABASE_SERVICE,
-	type SupabasePort,
-} from 'src/shared/supabase/domain/ports/supabase.port';
 import { AuthContext } from 'src/shared/database/domain/ports/db-context.port';
+import { SupabaseClient } from '@supabase/supabase-js';
+import { SUPABASE_CLIENT } from 'src/shared/supabase/subapase.constants';
 
 @Injectable()
 export class GenerateLessonAudioUseCase {
@@ -34,8 +32,8 @@ export class GenerateLessonAudioUseCase {
 		private readonly registry: ProviderRegistry,
 		@Inject(MEDIA_SERVICE)
 		private readonly mediaService: MediaPort,
-		@Inject(SUPABASE_SERVICE)
-		private readonly supabaseService: SupabasePort
+		@Inject(SUPABASE_CLIENT)
+		private readonly supabaseClient: SupabaseClient
 	) {}
 
 	async execute(input: {
@@ -98,17 +96,15 @@ export class GenerateLessonAudioUseCase {
 				const previousAudioPath = (lesson.content as { audioPath?: string })
 					?.audioPath;
 				if (previousAudioPath) {
-					await this.supabaseService
-						.getClient()
-						.storage.from('lesson-audios')
+					await this.supabaseClient.storage
+						.from('lesson-audios')
 						.remove([previousAudioPath]);
 				}
 
 				const mergedAudioBuffer = await fs.readFile(mergedAudioPath);
 
-				const { error: uploadError } = await this.supabaseService
-					.getClient()
-					.storage.from('lesson-audios') // Assuming 'lessons' bucket
+				const { error: uploadError } = await this.supabaseClient.storage
+					.from('lesson-audios') // Assuming 'lessons' bucket
 					.upload(supabasePath, mergedAudioBuffer, {
 						contentType: 'audio/mpeg',
 						upsert: true,
@@ -122,9 +118,8 @@ export class GenerateLessonAudioUseCase {
 					return;
 				}
 
-				const { data: publicUrlData } = this.supabaseService
-					.getClient()
-					.storage.from('lesson-audios')
+				const { data: publicUrlData } = this.supabaseClient.storage
+					.from('lesson-audios')
 					.getPublicUrl(supabasePath);
 
 				const updatedContent = {
