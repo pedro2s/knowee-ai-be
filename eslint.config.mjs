@@ -6,7 +6,11 @@ import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
 	{
-		ignores: ['eslint.config.mjs'],
+		ignores: [
+			'eslint.config.mjs',
+			'nest-cli.json',
+			'src/modules/course-authoring/infrastructure/providers/scorm/templates/**/*.js',
+		],
 	},
 	eslint.configs.recommended,
 	...tseslint.configs.recommendedTypeChecked,

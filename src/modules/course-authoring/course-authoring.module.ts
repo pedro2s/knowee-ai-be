@@ -55,6 +55,10 @@ import { OpenAIQuizGeneratorAdapter } from './infrastructure/providers/openai/op
 import { GenerateAssessmentsUseCase } from './application/use-cases/quick-actions/generate-assessments.usecase';
 import { GENERATE_ASSESSMENTS_AGENT } from './domain/ports/generate-assessments-agent.port';
 import { OpenAIGenerateAssessmentsAgentAdapter } from './infrastructure/providers/openai/openai-generate-assessments-agent.adapter';
+import { ExportCourseScormUseCase } from './application/use-cases/export-course-scorm.usecase';
+import { SCORM_PACKAGE_GENERATOR } from './domain/ports/scorm-package-generator.port';
+import { ScormPackageGeneratorAdapter } from './infrastructure/providers/scorm/scorm-package-generator.adapter';
+import { ScormManifestBuilder } from './infrastructure/providers/scorm/scorm-manifest.builder';
 
 @Module({
 	controllers: [
@@ -100,6 +104,7 @@ import { OpenAIGenerateAssessmentsAgentAdapter } from './infrastructure/provider
 		ManageLessonAssetsUseCase,
 		GenerateQuizUseCase,
 		GenerateAssessmentsUseCase,
+		ExportCourseScormUseCase,
 		ProviderRegistry,
 		OpenAICourseGeneratorAdapter,
 		OpenAIModuleGeneratorAdapter,
@@ -125,6 +130,12 @@ import { OpenAIGenerateAssessmentsAgentAdapter } from './infrastructure/provider
 			useClass: OpenAIGenerateAssessmentsAgentAdapter,
 		},
 		OpenAIGenerateAssessmentsAgentAdapter,
+		ScormManifestBuilder,
+		{
+			provide: SCORM_PACKAGE_GENERATOR,
+			useClass: ScormPackageGeneratorAdapter,
+		},
+		ScormPackageGeneratorAdapter,
 	],
 	exports: [
 		{ provide: COURSE_REPOSITORY, useClass: DrizzleCourseRepository },
