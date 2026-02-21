@@ -14,13 +14,15 @@ import { CurrentUser } from 'src/shared/infrastructure/decorators';
 import { GenerateModuleDto } from '../../application/dtos/generate-module.dto';
 import { SupabaseAuthGuard } from 'src/modules/auth/infrastructure/guards/supabase-auth.guard';
 import { ReorderContentUseCase } from '../../application/use-cases/quick-actions/georder-content.usecase';
+import { GenerateAssessmentsUseCase } from '../../application/use-cases/quick-actions/generate-assessments.usecase';
 
 @Controller('quick-actions')
 @UseGuards(SupabaseAuthGuard)
 export class QuickActionsController {
 	constructor(
 		private readonly generateModuleUseCase: GenerateModuleUseCase,
-		private readonly reorderContentUseCase: ReorderContentUseCase
+		private readonly reorderContentUseCase: ReorderContentUseCase,
+		private readonly generateAssessmentsUseCase: GenerateAssessmentsUseCase
 	) {}
 
 	@Post('generate-module')
@@ -54,5 +56,19 @@ export class QuickActionsController {
 	}
 
 	@Post('generate-assessments')
-	async generateAssessments() {}
+	@HttpCode(200)
+	async generateAssessments(
+		@Body(
+			'courseId',
+			new ParseUUIDPipe({
+				exceptionFactory: () =>
+					new BadRequestException('courseId deve ser um UUID válido'),
+			})
+		)
+		courseId: string,
+		@CurrentUser() user: UserPayload
+	): Promise<{ message: string }> {
+		await this.generateAssessmentsUseCase.execute(courseId, user.id);
+		return { message: 'Avaliações geradas com sucesso' };
+	}
 }

@@ -52,6 +52,9 @@ import { ManageLessonAssetsUseCase } from './application/use-cases/manage-lesson
 import { GenerateQuizUseCase } from './application/use-cases/generate-quiz.usecase';
 import { QUIZ_GENERATOR } from './domain/ports/quiz-generator.port';
 import { OpenAIQuizGeneratorAdapter } from './infrastructure/providers/openai/openai-quiz-generator.adapter';
+import { GenerateAssessmentsUseCase } from './application/use-cases/quick-actions/generate-assessments.usecase';
+import { GENERATE_ASSESSMENTS_AGENT } from './domain/ports/generate-assessments-agent.port';
+import { OpenAIGenerateAssessmentsAgentAdapter } from './infrastructure/providers/openai/openai-generate-assessments-agent.adapter';
 
 @Module({
 	controllers: [
@@ -96,6 +99,7 @@ import { OpenAIQuizGeneratorAdapter } from './infrastructure/providers/openai/op
 		ReorderLessonsUseCase,
 		ManageLessonAssetsUseCase,
 		GenerateQuizUseCase,
+		GenerateAssessmentsUseCase,
 		ProviderRegistry,
 		OpenAICourseGeneratorAdapter,
 		OpenAIModuleGeneratorAdapter,
@@ -116,6 +120,11 @@ import { OpenAIQuizGeneratorAdapter } from './infrastructure/providers/openai/op
 			useClass: OpenAIQuizGeneratorAdapter,
 		},
 		OpenAIQuizGeneratorAdapter,
+		{
+			provide: GENERATE_ASSESSMENTS_AGENT,
+			useClass: OpenAIGenerateAssessmentsAgentAdapter,
+		},
+		OpenAIGenerateAssessmentsAgentAdapter,
 	],
 	exports: [
 		{ provide: COURSE_REPOSITORY, useClass: DrizzleCourseRepository },
