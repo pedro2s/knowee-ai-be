@@ -11,7 +11,7 @@ import {
 } from '../../domain/ports/history-summary-repository.port';
 import { OpenAISummarizeHistoryAdapter } from '../providers/openai/openai-summarize-history.adapter';
 import { HistorySummary } from '../../domain/entities/history-summary.entity';
-import { HistoryServicePort } from '../../application/ports/history-service.port';
+import { HistoryServicePort } from '../../domain/ports/history-service.port';
 
 const MAX_WINDOW_MESSAGES = 10;
 

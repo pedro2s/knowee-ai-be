@@ -3,7 +3,7 @@ import { GenerateLessonScriptDto } from '../dtos/generate-lesson-script.dto';
 import {
 	HISTORY_SERVICE,
 	type HistoryServicePort,
-} from 'src/shared/history/application/ports/history-service.port';
+} from 'src/shared/history/domain/ports/history-service.port';
 import { ProviderRegistry } from '../../infrastructure/providers/provider.registry';
 import {
 	TOKEN_USAGE_SERVICE,

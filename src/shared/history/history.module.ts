@@ -7,7 +7,7 @@ import { AIProvidersModule } from 'src/shared/ai-providers/ai-providers.module';
 import { OpenAISummarizeHistoryAdapter } from './infrastructure/providers/openai/openai-summarize-history.adapter';
 import { DrizzleHistorySummaryRepository } from './infrastructure/persistence/drizzle/drizzle-history-summary.repository';
 import { HISTORY_SUMMARY_REPOSITORY } from './domain/ports/history-summary-repository.port';
-import { HISTORY_SERVICE } from './application/ports/history-service.port';
+import { HISTORY_SERVICE } from './domain/ports/history-service.port';
 
 @Module({
 	imports: [DatabaseModule, AIProvidersModule],

@@ -1,5 +1,5 @@
 import { AuthContext } from 'src/shared/database/domain/ports/db-context.port';
-import { History } from '../../domain/entities/history.entity';
+import { History } from '../entities/history.entity';
 
 export const HISTORY_SERVICE = 'HISTORY_SERVICE';
 

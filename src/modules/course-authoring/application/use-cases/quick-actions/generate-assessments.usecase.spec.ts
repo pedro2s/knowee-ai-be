@@ -1,7 +1,7 @@
 import { NotFoundException, PreconditionFailedException } from '@nestjs/common';
 import type { CourseRepositoryPort } from 'src/modules/course-authoring/domain/ports/course-repository.port';
 import type { LessonRepositoryPort } from 'src/modules/course-authoring/domain/ports/lesson-repository.port';
-import type { HistoryServicePort } from 'src/shared/history/application/ports/history-service.port';
+import type { HistoryServicePort } from 'src/shared/history/domain/ports/history-service.port';
 import type { TokenUsagePort } from 'src/shared/token-usage/domain/ports/token-usage.port';
 import type { GenerateAssessmentsAgentPort } from 'src/modules/course-authoring/domain/ports/generate-assessments-agent.port';
 import { GenerateAssessmentsUseCase } from './generate-assessments.usecase';

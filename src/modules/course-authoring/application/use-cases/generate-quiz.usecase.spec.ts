@@ -1,7 +1,7 @@
 import { NotFoundException, PreconditionFailedException } from '@nestjs/common';
 import { GenerateQuizUseCase } from './generate-quiz.usecase';
 import type { ModuleRepositoryPort } from '../../domain/ports/module-repository.port';
-import type { HistoryServicePort } from 'src/shared/history/application/ports/history-service.port';
+import type { HistoryServicePort } from 'src/shared/history/domain/ports/history-service.port';
 import type { TokenUsagePort } from 'src/shared/token-usage/domain/ports/token-usage.port';
 import type { QuizGeneratorPort } from '../../domain/ports/quiz-generator.port';
 

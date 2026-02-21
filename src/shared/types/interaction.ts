@@ -1,5 +1,4 @@
 import { History } from 'src/shared/history/domain/entities/history.entity';
-import { HistoryMessage } from 'src/shared/history/domain/value-objects/history-message.vo';
 
 export interface InteractionContext<T> {
 	input: T;

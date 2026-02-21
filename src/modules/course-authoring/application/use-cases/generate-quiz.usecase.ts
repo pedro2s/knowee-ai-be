@@ -11,7 +11,7 @@ import {
 import {
 	HISTORY_SERVICE,
 	type HistoryServicePort,
-} from 'src/shared/history/application/ports/history-service.port';
+} from 'src/shared/history/domain/ports/history-service.port';
 import {
 	TOKEN_USAGE_SERVICE,
 	type TokenUsagePort,
