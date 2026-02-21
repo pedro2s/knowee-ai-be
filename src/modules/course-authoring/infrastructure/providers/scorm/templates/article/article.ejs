@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Aula de Leitura Guiada - <%- title %></title>
+
+		<style>
+			@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap");
+
+			body {
+				margin: 0;
+				padding: 0;
+				font-family: "Inter", sans-serif;
+				background-color: #f4f6f8;
+				color: #333;
+			}
+
+			header {
+				background-color: #1e293b;
+				color: #fff;
+				padding: 1.5rem;
+				text-align: center;
+			}
+
+			header h1 {
+				margin: 0;
+				font-size: 1.8rem;
+			}
+
+			main {
+				max-width: 900px;
+				margin: 2rem auto;
+				padding: 0 1rem;
+			}
+
+			section {
+				background: #ffffff;
+				border-radius: 8px;
+				padding: 2rem;
+				box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+			}
+
+			h2 {
+				color: #1e293b;
+				margin-bottom: 1.5rem;
+			}
+
+			#article-content {
+				font-size: 1.1rem;
+				line-height: 1.8;
+				color: #374151;
+			}
+
+			/* Estilos básicos para conteúdo gerado por editores HTML como o ReactQuill */
+			#article-content p {
+				margin-bottom: 1.2em;
+			}
+
+			#article-content h3 {
+				margin-top: 1.5em;
+				font-size: 1.3rem;
+				color: #1e293b;
+			}
+
+			#article-content ul,
+			#article-content ol {
+				padding-left: 1.5em;
+				margin-bottom: 1.2em;
+			}
+
+			#article-content li {
+				margin-bottom: 0.6em;
+			}
+
+			#article-content blockquote {
+				margin: 1em 0;
+				padding: 1em;
+				background-color: #f1f5f9;
+				border-left: 4px solid #3b82f6;
+				font-style: italic;
+			}
+
+			#article-content img {
+				max-width: 100%;
+				height: auto;
+				display: block;
+				margin: 1.5em auto;
+				border-radius: 6px;
+			}
+
+			footer {
+				background-color: #1e293b;
+				color: #fff;
+				text-align: center;
+				padding: 1rem;
+				font-size: 0.9rem;
+				margin-top: 3rem;
+			}
+
+			@media (max-width: 768px) {
+				header h1 {
+					font-size: 1.4rem;
+				}
+
+				section {
+					padding: 1.5rem;
+				}
+
+				#article-content {
+					font-size: 1rem;
+				}
+			}
+		</style>
+	</head>
+	<body>
+		<header>
+			<h1>Aula de Leitura Guiada: <%- title %></h1>
+		</header>
+
+		<main>
+			<section>
+				<div id="article-content"><%- articleContent %></div>
+			</section>
+		</main>
+
+		<footer>
+			<p>&copy; <span id="year"></span> Nome da Instituição</p>
+		</footer>
+
+		<script src="scorm_api_wrapper.js"></script>
+		<script>
+			// Atualiza o ano automaticamente
+			document.getElementById("year").textContent = new Date().getFullYear();
+
+			// SCORM integração
+			window.onload = function () {
+				scorm.init();
+				scorm.setStatus("completed");
+				scorm.setScore(100);
+				scorm.save();
+			};
+		</script>
+	</body>
+</html>

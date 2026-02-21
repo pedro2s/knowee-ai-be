@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { AuthServicePort } from '../../../domain/ports/auth.service.port';
 import {
 	SUPABASE_SERVICE,
@@ -46,12 +46,22 @@ export class SupabaseAuthAdapter extends AuthServicePort {
 	}
 
 	async signUp(dto: SignUpDto): Promise<{ user: User }> {
-		const { email, password } = dto;
+		const { email, password, fullName } = dto;
 		const {
 			data,
 			error,
 		}: { data: { user: User | null }; error: AuthError | null } =
-			await this.supabaseService.getClient().auth.signUp({ email, password });
+			await this.supabaseService.getClient().auth.signUp({
+				email,
+				password,
+				options: fullName
+					? {
+							data: {
+								full_name: fullName,
+							},
+						}
+					: undefined,
+			});
 
 		if (error) {
 			throw error;
@@ -85,5 +95,33 @@ export class SupabaseAuthAdapter extends AuthServicePort {
 
 		const { access_token, refresh_token } = session;
 		return { access_token, refresh_token };
+	}
+
+	async changePassword(input: {
+		userId: string;
+		email: string;
+		currentPassword: string;
+		newPassword: string;
+	}): Promise<void> {
+		const verify = await this.supabaseService
+			.getClient()
+			.auth.signInWithPassword({
+				email: input.email,
+				password: input.currentPassword,
+			});
+
+		if (verify.error || !verify.data.user) {
+			throw new UnauthorizedException('Senha atual inválida');
+		}
+
+		const update = await this.supabaseService
+			.getClient()
+			.auth.admin.updateUserById(input.userId, {
+				password: input.newPassword,
+			});
+
+		if (update.error) {
+			throw update.error;
+		}
 	}
 }

@@ -47,6 +47,18 @@ import { MergeLessonSectionsVideoUseCase } from './application/use-cases/merge-l
 import { OpenAIReorderContentAgentAdapter } from './infrastructure/providers/openai/openai-reorder-content-agent.adapter';
 import { REORDER_CONTENT_AGENT } from './domain/ports/reorder-content-agent.port';
 import { ReorderContentUseCase } from './application/use-cases/quick-actions/georder-content.usecase';
+import { ReorderLessonsUseCase } from './application/use-cases/reorder-lessons.usecase';
+import { ManageLessonAssetsUseCase } from './application/use-cases/manage-lesson-assets.usecase';
+import { GenerateQuizUseCase } from './application/use-cases/generate-quiz.usecase';
+import { QUIZ_GENERATOR } from './domain/ports/quiz-generator.port';
+import { OpenAIQuizGeneratorAdapter } from './infrastructure/providers/openai/openai-quiz-generator.adapter';
+import { GenerateAssessmentsUseCase } from './application/use-cases/quick-actions/generate-assessments.usecase';
+import { GENERATE_ASSESSMENTS_AGENT } from './domain/ports/generate-assessments-agent.port';
+import { OpenAIGenerateAssessmentsAgentAdapter } from './infrastructure/providers/openai/openai-generate-assessments-agent.adapter';
+import { ExportCourseScormUseCase } from './application/use-cases/export-course-scorm.usecase';
+import { SCORM_PACKAGE_GENERATOR } from './domain/ports/scorm-package-generator.port';
+import { ScormPackageGeneratorAdapter } from './infrastructure/providers/scorm/scorm-package-generator.adapter';
+import { ScormManifestBuilder } from './infrastructure/providers/scorm/scorm-manifest.builder';
 
 @Module({
 	controllers: [
@@ -88,6 +100,11 @@ import { ReorderContentUseCase } from './application/use-cases/quick-actions/geo
 		GenerateLessonAudioUseCase,
 		GeneratorLessonVideoUseCase,
 		ReorderContentUseCase,
+		ReorderLessonsUseCase,
+		ManageLessonAssetsUseCase,
+		GenerateQuizUseCase,
+		GenerateAssessmentsUseCase,
+		ExportCourseScormUseCase,
 		ProviderRegistry,
 		OpenAICourseGeneratorAdapter,
 		OpenAIModuleGeneratorAdapter,
@@ -103,6 +120,22 @@ import { ReorderContentUseCase } from './application/use-cases/quick-actions/geo
 			provide: REORDER_CONTENT_AGENT,
 			useClass: OpenAIReorderContentAgentAdapter,
 		},
+		{
+			provide: QUIZ_GENERATOR,
+			useClass: OpenAIQuizGeneratorAdapter,
+		},
+		OpenAIQuizGeneratorAdapter,
+		{
+			provide: GENERATE_ASSESSMENTS_AGENT,
+			useClass: OpenAIGenerateAssessmentsAgentAdapter,
+		},
+		OpenAIGenerateAssessmentsAgentAdapter,
+		ScormManifestBuilder,
+		{
+			provide: SCORM_PACKAGE_GENERATOR,
+			useClass: ScormPackageGeneratorAdapter,
+		},
+		ScormPackageGeneratorAdapter,
 	],
 	exports: [
 		{ provide: COURSE_REPOSITORY, useClass: DrizzleCourseRepository },

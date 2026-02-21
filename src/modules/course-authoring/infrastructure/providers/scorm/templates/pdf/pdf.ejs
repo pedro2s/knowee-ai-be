@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Aula em PDF - <%- title %></title>
+
+		<style>
+			@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap");
+
+			body {
+				margin: 0;
+				padding: 0;
+				font-family: "Inter", sans-serif;
+				background-color: #f4f6f8;
+				color: #333;
+			}
+
+			header {
+				background-color: #1e293b;
+				color: #fff;
+				padding: 1.5rem;
+				text-align: center;
+			}
+
+			header h1 {
+				margin: 0;
+				font-size: 1.8rem;
+			}
+
+			main {
+				max-width: 1000px;
+				margin: 2rem auto;
+				padding: 0 1rem;
+			}
+
+			section {
+				background: #fff;
+				border-radius: 8px;
+				padding: 1.5rem;
+				margin-bottom: 2rem;
+				box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+			}
+
+			h2 {
+				color: #1e293b;
+				margin-bottom: 1rem;
+			}
+
+			#pdf-container {
+				width: 100%;
+				aspect-ratio: 16 / 11;
+				border: 1px solid #d1d5db;
+				border-radius: 6px;
+				overflow: hidden;
+			}
+
+			iframe {
+				width: 100%;
+				height: 100%;
+				border: none;
+			}
+
+			footer {
+				background-color: #1e293b;
+				color: #fff;
+				text-align: center;
+				padding: 1rem;
+				font-size: 0.9rem;
+			}
+
+			@media (max-width: 768px) {
+				header h1 {
+					font-size: 1.4rem;
+				}
+
+				h2 {
+					font-size: 1.2rem;
+				}
+
+				#pdf-container {
+					aspect-ratio: 3 / 4;
+				}
+			}
+		</style>
+	</head>
+	<body>
+		<header>
+			<h1>Aula em PDF: <%- title %></h1>
+		</header>
+
+		<main>
+			<section>
+				<div id="pdf-container">
+					<iframe
+						src="<%- pdfUrl %>"
+						title="Visualizador de PDF"
+						aria-label="Visualizador de PDF"
+					></iframe>
+				</div>
+			</section>
+		</main>
+
+		<footer>
+			<p>&copy; <span id="year"></span> Nome da Instituição</p>
+		</footer>
+
+		<script>
+			document.getElementById("year").textContent = new Date().getFullYear();
+		</script>
+
+		<script src="scorm_api_wrapper.js"></script>
+		<script>
+			// Atualiza o ano automaticamente
+			document.getElementById("year").textContent = new Date().getFullYear();
+
+			// SCORM integração
+			window.onload = function () {
+				scorm.init();
+				scorm.setStatus("completed");
+				scorm.setScore(100);
+				scorm.save();
+			};
+		</script>
+	</body>
+</html>

@@ -4,20 +4,22 @@ import {
 	type CourseRepositoryPort,
 } from 'src/modules/course-authoring/domain/ports/course-repository.port';
 import {
-	LESSON_REPOSITORY,
-	type LessonRepositoryPort,
-} from 'src/modules/course-authoring/domain/ports/lesson-repository.port';
-import {
 	MODULE_REPOSITORY,
 	type ModuleRepositoryPort,
 } from 'src/modules/course-authoring/domain/ports/module-repository.port';
-import { REORDER_CONTENT_AGENT } from 'src/modules/course-authoring/domain/ports/reorder-content-agent.port';
-import { OpenAIReorderContentAgentAdapter } from 'src/modules/course-authoring/infrastructure/providers/openai/openai-reorder-content-agent.adapter';
+import {
+	REORDER_CONTENT_AGENT,
+	type ReorderContentAgentPort,
+} from 'src/modules/course-authoring/domain/ports/reorder-content-agent.port';
 import {
 	HISTORY_SERVICE,
 	type HistoryServicePort,
 } from 'src/modules/history/application/ports/history-service.port';
 import { AuthContext } from 'src/shared/application/ports/db-context.port';
+import {
+	TOKEN_USAGE_SERVICE,
+	type TokenUsagePort,
+} from 'src/shared/application/ports/token-usage.port';
 
 @Injectable()
 export class ReorderContentUseCase {
@@ -26,16 +28,15 @@ export class ReorderContentUseCase {
 		private readonly courseRepository: CourseRepositoryPort,
 		@Inject(MODULE_REPOSITORY)
 		private readonly moduleRepository: ModuleRepositoryPort,
-		@Inject(LESSON_REPOSITORY)
-		private readonly lessonRepository: LessonRepositoryPort,
 		@Inject(HISTORY_SERVICE)
 		private readonly historyService: HistoryServicePort,
+		@Inject(TOKEN_USAGE_SERVICE)
+		private readonly tokenUsageService: TokenUsagePort,
 		@Inject(REORDER_CONTENT_AGENT)
-		private readonly openAIReorderContentAgent: OpenAIReorderContentAgentAdapter
+		private readonly reorderContentAgent: ReorderContentAgentPort
 	) {}
 
 	async execute(courseId: string, userId: string): Promise<void> {
-		console.log('courseId', courseId, 'userId', userId);
 		const authContext: AuthContext = {
 			userId,
 			role: 'authenticated',
@@ -58,17 +59,21 @@ export class ReorderContentUseCase {
 			courseId
 		);
 
-		const { content: reorderedCourse, tokenUsage } =
-			await this.openAIReorderContentAgent.reorderContent({
+		const userMessage =
+			'Analise a estrutura atual do curso e faça uma reordenação lógica dos módulos para melhor progressão de aprendizado.';
+		const { content: reorderedContent, tokenUsage } =
+			await this.reorderContentAgent.reorderContent({
 				input: {
 					id: primitive.id,
 					title: primitive.title,
 					description: primitive.description || '',
 					modules: primitive.modules!.map((module) => ({
+						id: module.id,
 						title: module.title,
 						description: module.description || '',
 						orderIndex: module.orderIndex,
 						lessons: module.lessons?.map((lesson) => ({
+							id: lesson.id,
 							title: lesson.title,
 							description: lesson.description || '',
 							orderIndex: lesson.orderIndex,
@@ -77,12 +82,19 @@ export class ReorderContentUseCase {
 					})),
 				},
 
-				summary: summary || '',
+				summary: summary || null,
 				recentHistory: window,
 			});
 
+		if (tokenUsage) {
+			await this.tokenUsageService.save(
+				userId,
+				tokenUsage.totalTokens,
+				tokenUsage.model
+			);
+		}
+
 		// salvar histórico de reordenação ou atualizar o curso com a nova ordem
-		const userMessage = `Reordene o conteúdo do curso "${course.title}".`;
 		await this.historyService.saveMessage(
 			authContext,
 			courseId,
@@ -93,20 +105,11 @@ export class ReorderContentUseCase {
 		await this.historyService.saveMessageAndSummarizeIfNecessary(
 			authContext,
 			courseId,
-			'system',
-			JSON.stringify(reorderedCourse)
+			'assistant',
+			JSON.stringify(reorderedContent)
 		);
 
-		// Salvar o curso reordenado
-		for (const module of reorderedCourse.modules || []) {
-			for (const lesson of module.lessons || []) {
-				await this.lessonRepository.update(
-					lesson.id,
-					{ orderIndex: lesson.orderIndex },
-					authContext
-				);
-			}
-
+		for (const module of reorderedContent.modules || []) {
 			await this.moduleRepository.update(
 				module.id,
 				{ orderIndex: module.orderIndex },

@@ -13,4 +13,11 @@ export abstract class AuthServicePort {
 		access_token: string;
 		refresh_token: string;
 	}>;
+
+	abstract changePassword(input: {
+		userId: string;
+		email: string;
+		currentPassword: string;
+		newPassword: string;
+	}): Promise<void>;
 }

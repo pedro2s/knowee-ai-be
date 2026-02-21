@@ -1,11 +1,15 @@
 import {
 	Body,
 	Controller,
+	Delete,
 	Get,
+	HttpCode,
 	Param,
 	Post,
 	Put,
+	UploadedFile,
 	UseGuards,
+	UseInterceptors,
 } from '@nestjs/common';
 import { GenerateLessonAudioUseCase } from '../../application/use-cases/generate-lesson-audio.usecase';
 import { GetLessonUseCase } from '../../application/use-cases/get-lesson.usecase';
@@ -26,6 +30,13 @@ import { GenerateSectionVideoDto } from '../../application/dtos/generate-section
 import { GenerateSectionVideoUseCase } from '../../application/use-cases/generate-section-video.usecase';
 import { GeneratedSectionVideoResponseDto } from '../../application/dtos/generated-section-video.response.dto';
 import { MergeLessonSectionsVideoUseCase } from '../../application/use-cases/merge-lesson-sections-video.usecase';
+import { ReorderLessonsDto } from '../../application/dtos/reorder-lessons.dto';
+import { ReorderLessonsUseCase } from '../../application/use-cases/reorder-lessons.usecase';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { ManageLessonAssetsUseCase } from '../../application/use-cases/manage-lesson-assets.usecase';
+import { GenerateQuizDto } from '../../application/dtos/generate-quiz.dto';
+import { GeneratedQuizResponseDto } from '../../application/dtos/generated-quiz.response.dto';
+import { GenerateQuizUseCase } from '../../application/use-cases/generate-quiz.usecase';
 
 @Controller('lessons')
 @UseGuards(SupabaseAuthGuard)
@@ -37,7 +48,10 @@ export class LessonsController {
 		private readonly generateArticleUseCase: GenerateArticleUseCase,
 		private readonly generateLessonScriptUseCase: GenerateLessonScriptUseCase,
 		private readonly generateSectionVideoUseCase: GenerateSectionVideoUseCase,
-		private readonly mergeLessonSectionsVideoUseCase: MergeLessonSectionsVideoUseCase
+		private readonly mergeLessonSectionsVideoUseCase: MergeLessonSectionsVideoUseCase,
+		private readonly reorderLessonsUseCase: ReorderLessonsUseCase,
+		private readonly manageLessonAssetsUseCase: ManageLessonAssetsUseCase,
+		private readonly generateQuizUseCase: GenerateQuizUseCase
 	) {}
 
 	// 1. Rotas Específicas (SEM ID) - Devem vir PRIMEIRO
@@ -75,6 +89,30 @@ export class LessonsController {
 			await this.generateSectionVideoUseCase.execute(body, user.id);
 
 		return GeneratedSectionVideoResponseDto.fromDomain(generatedVideoSection);
+	}
+
+	@Post('/reorder')
+	async reorderLessons(
+		@Body() dto: ReorderLessonsDto,
+		@CurrentUser() user: UserPayload
+	): Promise<{ message: string }> {
+		await this.reorderLessonsUseCase.execute({
+			dto,
+			userId: user.id,
+		});
+
+		return {
+			message: 'Ordem das aulas atualizada com sucesso',
+		};
+	}
+
+	@Post('/generate-quiz')
+	async generateQuiz(
+		@Body() data: GenerateQuizDto,
+		@CurrentUser() user: UserPayload
+	): Promise<GeneratedQuizResponseDto> {
+		const generatedQuiz = await this.generateQuizUseCase.execute(data, user.id);
+		return GeneratedQuizResponseDto.fromDomain(generatedQuiz);
 	}
 
 	// 2. Rotas Específicas (COM ID)
@@ -121,6 +159,66 @@ export class LessonsController {
 		@CurrentUser() user: UserPayload
 	) {
 		return this.mergeLessonSectionsVideoUseCase.execute(lessonId, user.id);
+	}
+
+	@Post('/:id/assets/audio')
+	@UseInterceptors(FileInterceptor('file'))
+	async uploadAudio(
+		@Param('id') lessonId: string,
+		@UploadedFile() file: Express.Multer.File,
+		@CurrentUser() user: UserPayload
+	): Promise<{ path: string; url: string }> {
+		return this.manageLessonAssetsUseCase.uploadAudio({
+			lessonId,
+			userId: user.id,
+			file,
+		});
+	}
+
+	@Post('/:id/assets/pdf')
+	@UseInterceptors(FileInterceptor('file'))
+	async uploadPdf(
+		@Param('id') lessonId: string,
+		@UploadedFile() file: Express.Multer.File,
+		@CurrentUser() user: UserPayload
+	): Promise<{ path: string; url: string }> {
+		return this.manageLessonAssetsUseCase.uploadPdf({
+			lessonId,
+			userId: user.id,
+			file,
+		});
+	}
+
+	@Delete('/:id/assets/audio')
+	@HttpCode(200)
+	async deleteAudio(
+		@Param('id') lessonId: string,
+		@CurrentUser() user: UserPayload
+	): Promise<{ message: string }> {
+		await this.manageLessonAssetsUseCase.deleteAudio({
+			lessonId,
+			userId: user.id,
+		});
+
+		return {
+			message: 'Áudio removido com sucesso',
+		};
+	}
+
+	@Delete('/:id/assets/pdf')
+	@HttpCode(200)
+	async deletePdf(
+		@Param('id') lessonId: string,
+		@CurrentUser() user: UserPayload
+	): Promise<{ message: string }> {
+		await this.manageLessonAssetsUseCase.deletePdf({
+			lessonId,
+			userId: user.id,
+		});
+
+		return {
+			message: 'PDF removido com sucesso',
+		};
 	}
 
 	// 3. Rotas Genéricas (CRUD) - Devem vir POR ÚLTIMO

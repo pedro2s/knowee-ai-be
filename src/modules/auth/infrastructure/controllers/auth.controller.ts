@@ -8,13 +8,16 @@ import { SupabaseAuthGuard } from '../guards/supabase-auth.guard'; // Importar o
 import type { UserPayload } from 'src/shared/domain/types/user-payload';
 import { RefreshTokenUseCase } from '../../application/use-cases/refresh-token.usecase';
 import { RefreshTokenDto } from '../../application/dtos/refresh-token.dto';
+import { ChangePasswordUseCase } from '../../application/use-cases/change-password.usecase';
+import { ChangePasswordDto } from '../../application/dtos/change-password.dto';
 
 @Controller('auth')
 export class AuthController {
 	constructor(
 		private readonly signInUseCase: SignInUseCase,
 		private readonly signUpUseCase: SignUpUseCase,
-		private readonly refreshTokenUseCase: RefreshTokenUseCase
+		private readonly refreshTokenUseCase: RefreshTokenUseCase,
+		private readonly changePasswordUseCase: ChangePasswordUseCase
 	) {}
 
 	@Post('sign-in')
@@ -39,5 +42,19 @@ export class AuthController {
 		// tipadas de acordo com a interface UserPayload.
 		// Você pode retornar este objeto ou processá-lo conforme necessário.
 		return user;
+	}
+
+	@Post('change-password')
+	@UseGuards(SupabaseAuthGuard)
+	async changePassword(
+		@CurrentUser() user: UserPayload,
+		@Body() dto: ChangePasswordDto
+	): Promise<{ message: string }> {
+		await this.changePasswordUseCase.execute({
+			userId: user.id,
+			email: user.email,
+			dto,
+		});
+		return { message: 'Senha alterada com sucesso' };
 	}
 }
