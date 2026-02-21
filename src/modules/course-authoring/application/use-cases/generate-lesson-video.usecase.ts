@@ -2,7 +2,7 @@ import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import {
 	MEDIA_SERVICE,
 	type MediaPort,
-} from 'src/shared/application/ports/media.port';
+} from 'src/shared/media/domain/ports/media.port';
 import { ProviderRegistry } from '../../infrastructure/providers/provider.registry';
 import {
 	LESSON_REPOSITORY,

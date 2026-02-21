@@ -7,7 +7,7 @@ import {
 	AIAnalyticsPort,
 	AnalysisOutput,
 } from 'src/modules/assistant/domain/ports/ai-analyze.port';
-import { GENAI_CLIENT } from 'src/shared/infrastructure/ai/ai.constants';
+import { GENAI_CLIENT } from 'src/shared/ai-providers/ai-providers.constants';
 import { GoogleGenAI, Content } from '@google/genai';
 import { analyzeSchema, analyzeStructure } from './schemas/analyze-structure';
 

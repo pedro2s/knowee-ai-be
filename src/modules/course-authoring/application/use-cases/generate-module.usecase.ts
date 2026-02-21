@@ -3,11 +3,11 @@ import { ProviderRegistry } from '../../infrastructure/providers/provider.regist
 import {
 	TOKEN_USAGE_SERVICE,
 	type TokenUsagePort,
-} from 'src/shared/application/ports/token-usage.port';
+} from 'src/shared/token-usage/domain/ports/token-usage.port';
 import {
 	HISTORY_SERVICE,
 	type HistoryServicePort,
-} from 'src/modules/history/application/ports/history-service.port';
+} from 'src/shared/history/application/ports/history-service.port';
 import { AuthContext } from 'src/shared/database/domain/ports/db-context.port';
 import { GenerateModuleDto } from '../dtos/generate-module.dto';
 import { Module } from '../../domain/entities/module.entity';

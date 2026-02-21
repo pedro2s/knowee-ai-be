@@ -10,19 +10,19 @@ import type { InputFile } from '../../domain/entities/course.types';
 import {
 	FILE_PROCESSING_SERVICE,
 	type FileProcessingPort,
-} from 'src/shared/application/ports/file-processing.port';
+} from 'src/shared/storage/domain/ports/file-processing.port';
 import {
 	EMBEDDING_SERVICE,
 	type EmbeddingPort,
-} from 'src/shared/application/ports/embedding.port';
+} from 'src/shared/storage/domain/ports/embedding.port';
 import {
 	TOKEN_USAGE_SERVICE,
 	type TokenUsagePort,
-} from 'src/shared/application/ports/token-usage.port';
+} from 'src/shared/token-usage/domain/ports/token-usage.port';
 import {
 	HISTORY_SERVICE,
 	type HistoryServicePort,
-} from 'src/modules/history/application/ports/history-service.port';
+} from 'src/shared/history/application/ports/history-service.port';
 import { AuthContext } from 'src/shared/database/domain/ports/db-context.port';
 
 @Injectable()

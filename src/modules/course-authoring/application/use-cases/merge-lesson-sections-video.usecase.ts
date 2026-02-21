@@ -14,11 +14,11 @@ import { ScriptSection } from '../../domain/entities/lesson-script.types';
 import {
 	SUPABASE_SERVICE,
 	type SupabasePort,
-} from 'src/shared/application/ports/supabase.port';
+} from 'src/shared/supabase/domain/ports/supabase.port';
 import {
 	MEDIA_SERVICE,
 	type MediaPort,
-} from 'src/shared/application/ports/media.port';
+} from 'src/shared/media/domain/ports/media.port';
 import fs from 'fs/promises';
 import path from 'path';
 

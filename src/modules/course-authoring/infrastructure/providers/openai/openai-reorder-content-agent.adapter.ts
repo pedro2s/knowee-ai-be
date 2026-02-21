@@ -14,8 +14,8 @@ import {
 import {
 	InteractionContext,
 	InteractionResult,
-} from 'src/shared/domain/types/interaction';
-import { OPENAI_CLIENT } from 'src/shared/infrastructure/ai/ai.constants';
+} from 'src/shared/types/interaction';
+import { OPENAI_CLIENT } from 'src/shared/ai-providers/ai-providers.constants';
 import { reorderContentStructure } from './schemas/reorder-content-structure.schema';
 
 @Injectable()

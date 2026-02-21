@@ -12,7 +12,7 @@ import { AuthContext } from 'src/shared/database/domain/ports/db-context.port';
 import {
 	SUPABASE_SERVICE,
 	type SupabasePort,
-} from 'src/shared/application/ports/supabase.port';
+} from 'src/shared/supabase/domain/ports/supabase.port';
 
 @Injectable()
 export class ManageLessonAssetsUseCase {

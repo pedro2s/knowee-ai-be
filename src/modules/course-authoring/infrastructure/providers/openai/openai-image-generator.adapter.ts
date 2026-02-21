@@ -4,7 +4,7 @@ import {
 	PreconditionFailedException,
 } from '@nestjs/common';
 import OpenAI from 'openai';
-import { OPENAI_CLIENT } from 'src/shared/infrastructure/ai/ai.constants';
+import { OPENAI_CLIENT } from 'src/shared/ai-providers/ai-providers.constants';
 import { ImageGeneratorPort } from 'src/modules/course-authoring/domain/ports/image-generator.port';
 
 @Injectable()

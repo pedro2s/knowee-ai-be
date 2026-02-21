@@ -9,8 +9,8 @@ import {
 } from '@nestjs/common';
 import { GenerateModuleUseCase } from '../../application/use-cases/generate-module.usecase';
 import { ModuleResponseDto } from '../../application/dtos/module.response.dto';
-import type { UserPayload } from 'src/shared/domain/types/user-payload';
-import { CurrentUser } from 'src/shared/infrastructure/decorators';
+import type { UserPayload } from 'src/shared/types/user-payload';
+import { CurrentUser } from 'src/shared/decorators';
 import { GenerateModuleDto } from '../../application/dtos/generate-module.dto';
 import { SupabaseAuthGuard } from 'src/modules/auth/infrastructure/guards/supabase-auth.guard';
 import { ReorderContentUseCase } from '../../application/use-cases/quick-actions/georder-content.usecase';

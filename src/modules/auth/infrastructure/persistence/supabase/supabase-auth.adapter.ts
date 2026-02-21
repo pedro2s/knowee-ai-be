@@ -3,7 +3,7 @@ import { AuthServicePort } from '../../../domain/ports/auth.service.port';
 import {
 	SUPABASE_SERVICE,
 	type SupabasePort,
-} from 'src/shared/application/ports/supabase.port';
+} from 'src/shared/supabase/domain/ports/supabase.port';
 import { SignInDto } from '../../../application/dtos/sign-in.dto';
 import { SignUpDto } from '../../../application/dtos/sign-up.dto';
 import { User, AuthError } from '@supabase/supabase-js';

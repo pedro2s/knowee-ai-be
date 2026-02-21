@@ -1,7 +1,7 @@
 import { Controller, Get, UseGuards } from '@nestjs/common';
 import { SupabaseAuthGuard } from 'src/modules/auth/infrastructure/guards/supabase-auth.guard';
-import { CurrentUser } from 'src/shared/infrastructure/decorators';
-import { type UserPayload } from 'src/shared/domain/types/user-payload';
+import { CurrentUser } from 'src/shared/decorators';
+import { type UserPayload } from 'src/shared/types/user-payload';
 import { GetUsageUseCase } from '../../application/use-cases/get-usage.usecase';
 import { GetSubscriptionUseCase } from '../../application/use-cases/get-subscription.usecase';
 import { SubscriptionResponseDto } from '../../application/dtos/subscription.response.dto';

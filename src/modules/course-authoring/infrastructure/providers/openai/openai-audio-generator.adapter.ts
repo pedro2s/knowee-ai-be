@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import OpenAI from 'openai';
 import { AudioGeneratorPort } from 'src/modules/course-authoring/domain/ports/audio-generator.port';
-import { OPENAI_CLIENT } from 'src/shared/infrastructure/ai/ai.constants';
+import { OPENAI_CLIENT } from 'src/shared/ai-providers/ai-providers.constants';
 
 @Injectable()
 export class OpenAIAudioGeneratorAdapter implements AudioGeneratorPort {

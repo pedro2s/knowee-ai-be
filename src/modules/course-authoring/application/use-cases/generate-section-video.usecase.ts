@@ -8,7 +8,7 @@ import {
 import {
 	MEDIA_SERVICE,
 	type MediaPort,
-} from 'src/shared/application/ports/media.port';
+} from 'src/shared/media/domain/ports/media.port';
 import {
 	Scene,
 	STORYBOARD_GENERATOR,
@@ -22,7 +22,7 @@ import {
 import {
 	SUPABASE_SERVICE,
 	type SupabasePort,
-} from 'src/shared/application/ports/supabase.port';
+} from 'src/shared/supabase/domain/ports/supabase.port';
 import { ProviderRegistry } from '../../infrastructure/providers/provider.registry';
 import { AuthContext } from 'src/shared/database/domain/ports/db-context.port';
 import { ScriptSection } from '../../domain/entities/lesson-script.types';

@@ -15,11 +15,11 @@ import {
 import {
 	HISTORY_SERVICE,
 	type HistoryServicePort,
-} from 'src/modules/history/application/ports/history-service.port';
+} from 'src/shared/history/application/ports/history-service.port';
 import {
 	TOKEN_USAGE_SERVICE,
 	type TokenUsagePort,
-} from 'src/shared/application/ports/token-usage.port';
+} from 'src/shared/token-usage/domain/ports/token-usage.port';
 import {
 	GENERATE_ASSESSMENTS_AGENT,
 	type GenerateAssessmentsAgentPort,

@@ -10,7 +10,7 @@ import { ProviderRegistry } from '../../infrastructure/providers/provider.regist
 import {
 	HISTORY_SERVICE,
 	type HistoryServicePort,
-} from 'src/modules/history/application/ports/history-service.port';
+} from 'src/shared/history/application/ports/history-service.port';
 
 @Injectable()
 export class SubmitQuestionUseCase {
