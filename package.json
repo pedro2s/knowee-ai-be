@@ -96,6 +96,9 @@
 		"transform": {
 			"^.+\\.(t|j)s$": "ts-jest"
 		},
+		"moduleNameMapper": {
+			"^src/(.*)$": "<rootDir>/$1"
+		},
 		"collectCoverageFrom": [
 			"**/*.(t|j)s"
 		],
@@ -105,7 +108,7 @@
 	"lint-staged": {
 		"*.{js,jsx,ts,tsx,json,css,md}": [
 			"prettier --write",
-			"eslint --fix"
+			"eslint --fix --no-warn-ignored"
 		]
 	}
 }

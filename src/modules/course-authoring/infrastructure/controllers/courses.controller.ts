@@ -1,10 +1,15 @@
 import {
+	BadRequestException,
 	Body,
 	Controller,
 	Get,
+	HttpCode,
+	ParseUUIDPipe,
 	Param,
 	Patch,
 	Post,
+	Res,
+	StreamableFile,
 	UploadedFiles,
 	UseGuards,
 	UseInterceptors,
@@ -23,6 +28,10 @@ import { FetchModulesUseCase } from '../../application/use-cases/fetch-modules.u
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { UpdateCourseDto } from '../../application/dtos/update-course.dto';
 import { UpdateCourseWithModuleTreeUseCase } from '../../application/use-cases/update-course-with-module-tree.usecase';
+import { ExportCourseScormUseCase } from '../../application/use-cases/export-course-scorm.usecase';
+import { ExportScormDto } from '../../application/dtos/export-scorm.dto';
+import type { Response } from 'express';
+import { createReadStream } from 'fs';
 
 @Controller('courses')
 @UseGuards(SupabaseAuthGuard)
@@ -32,8 +41,26 @@ export class CoursesController {
 		private readonly fetchCourses: FetchCoursesUseCase,
 		private readonly getCourse: GetCourseUseCase,
 		private readonly fetchModules: FetchModulesUseCase,
-		private readonly updateCourse: UpdateCourseWithModuleTreeUseCase
+		private readonly updateCourse: UpdateCourseWithModuleTreeUseCase,
+		private readonly exportCourseScormUseCase: ExportCourseScormUseCase
 	) {}
+
+	// 1. Rotas Específicas (SEM ID) - Devem vir PRIMEIRO
+
+	// ...
+
+	// 2. Rotas Específicas (COM ID)
+
+	@Get('/:id/modules')
+	async findModules(
+		@Param('id') id: string,
+		@CurrentUser() user: UserPayload
+	): Promise<ModuleResponseDto[]> {
+		const modules = await this.fetchModules.execute(id, user.id);
+		return modules.map((module) => ModuleResponseDto.fromDomain(module));
+	}
+
+	// 3. Rotas Genéricas (CRUD) - Devem vir POR ÚLTIMO
 
 	@Post()
 	@UseInterceptors(FilesInterceptor('files'))
@@ -83,12 +110,41 @@ export class CoursesController {
 		return CourseResponseDto.fromDomain(course);
 	}
 
-	@Get('/:id/modules')
-	async findModules(
-		@Param('id') id: string,
-		@CurrentUser() user: UserPayload
-	): Promise<ModuleResponseDto[]> {
-		const modules = await this.fetchModules.execute(id, user.id);
-		return modules.map((module) => ModuleResponseDto.fromDomain(module));
+	@Post('/:id/export/scorm')
+	@HttpCode(200)
+	async exportScorm(
+		@Param(
+			'id',
+			new ParseUUIDPipe({
+				exceptionFactory: () =>
+					new BadRequestException('id deve ser um UUID válido'),
+			})
+		)
+		id: string,
+		@Body() payload: ExportScormDto,
+		@CurrentUser() user: UserPayload,
+		@Res({ passthrough: true }) res: Response
+	): Promise<StreamableFile> {
+		const { zipPath, fileName, cleanup } =
+			await this.exportCourseScormUseCase.execute(id, user.id, payload);
+
+		let cleaned = false;
+		const safeCleanup = async () => {
+			if (cleaned) return;
+			cleaned = true;
+			await cleanup();
+		};
+
+		void res.on('finish', () => {
+			void safeCleanup();
+		});
+		void res.on('close', () => {
+			void safeCleanup();
+		});
+
+		res.setHeader('Content-Type', 'application/zip');
+		res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+
+		return new StreamableFile(createReadStream(zipPath));
 	}
 }

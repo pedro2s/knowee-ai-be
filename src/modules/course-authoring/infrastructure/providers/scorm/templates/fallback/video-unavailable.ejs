@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Conteúdo indisponível - <%- title %></title>
+		<style>
+			body {
+				margin: 0;
+				padding: 0;
+				font-family: Arial, sans-serif;
+				background: #f8fafc;
+				color: #0f172a;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				min-height: 100vh;
+			}
+			main {
+				max-width: 640px;
+				background: #ffffff;
+				padding: 24px;
+				border-radius: 12px;
+				border: 1px solid #e2e8f0;
+				box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+			}
+			h1 {
+				margin-top: 0;
+				font-size: 22px;
+			}
+			p {
+				line-height: 1.6;
+				color: #334155;
+			}
+		</style>
+	</head>
+	<body>
+		<main>
+			<h1><%- title %></h1>
+			<p><%- description %></p>
+			<p>O vídeo final desta aula não está disponível neste pacote SCORM.</p>
+		</main>
+
+		<script src="scorm_api_wrapper.js"></script>
+		<script>
+			window.onload = function () {
+				scorm.init();
+				scorm.setStatus('completed');
+				scorm.setScore(100);
+				scorm.save();
+			};
+		</script>
+	</body>
+</html>

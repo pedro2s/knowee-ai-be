@@ -1,6 +1,6 @@
 import { AuthContext } from 'src/shared/application/ports/db-context.port';
-import { Lesson } from '../entities/lesson.entity';
-import { CreateLessonInput } from '../entities/lesson.types';
+import type { Lesson } from '../entities/lesson.entity';
+import type { CreateLessonInput } from '../entities/lesson.types';
 
 export const LESSON_REPOSITORY = 'LessonRepository';
 

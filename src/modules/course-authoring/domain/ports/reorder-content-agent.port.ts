@@ -2,7 +2,6 @@ import {
 	InteractionContext,
 	InteractionResult,
 } from 'src/shared/domain/types/interaction';
-import { Course } from '../entities/course.entity';
 
 export const REORDER_CONTENT_AGENT = Symbol('REORDER_CONTENT_AGENT');
 
@@ -11,10 +10,12 @@ export interface CourseSummary {
 	title: string;
 	description: string;
 	modules: Array<{
+		id: string;
 		title: string;
 		description: string;
 		orderIndex: number;
 		lessons?: Array<{
+			id: string;
 			title: string;
 			description: string;
 			orderIndex: number;
@@ -23,8 +24,15 @@ export interface CourseSummary {
 	}>;
 }
 
+export interface ReorderedContentResult {
+	modules: Array<{
+		id: string;
+		orderIndex: number;
+	}>;
+}
+
 export interface ReorderContentAgentPort {
 	reorderContent(
 		input: InteractionContext<CourseSummary>
-	): Promise<InteractionResult<Course>>;
+	): Promise<InteractionResult<ReorderedContentResult>>;
 }

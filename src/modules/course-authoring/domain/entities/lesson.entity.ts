@@ -1,4 +1,3 @@
-import { v4 as uuidv4 } from 'uuid';
 import { CreateLessonInput } from './lesson.types';
 import { LessonProps } from './lesson.types';
 
@@ -10,7 +9,7 @@ export class Lesson {
 	static create(input: CreateLessonInput): Lesson {
 		// Regras de Negócio aqui
 		return new Lesson({
-			id: uuidv4(),
+			id: crypto.randomUUID(),
 			moduleId: input.moduleId,
 			courseId: input.courseId,
 			title: input.title,
