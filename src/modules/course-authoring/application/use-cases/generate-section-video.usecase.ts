@@ -34,6 +34,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import { SUPABASE_CLIENT } from 'src/shared/supabase/subapase.constants';
 import { SupabaseClient } from '@supabase/supabase-js';
+import { ProviderRegistry as SharedProviderRegistry } from 'src/shared/ai-providers/infrastructrue/registry/provider.registry';
 
 @Injectable()
 export class GenerateSectionVideoUseCase {
@@ -62,7 +63,8 @@ export class GenerateSectionVideoUseCase {
 		private readonly mediaService: MediaPort,
 		@Inject(SUPABASE_CLIENT)
 		private readonly supabaseClient: SupabaseClient,
-		private readonly providerRegistry: ProviderRegistry
+		private readonly providerRegistry: ProviderRegistry,
+		private readonly sharedProviderRegistry: SharedProviderRegistry
 	) {}
 
 	async execute(input: GenerateSectionVideoDto, userId: string) {
@@ -134,12 +136,14 @@ export class GenerateSectionVideoUseCase {
 			);
 		}
 
-		const audioGen = this.providerRegistry.getGenerateAudioStrategy(
-			input.ai?.provider || 'openai'
+		const audioGen = this.sharedProviderRegistry.get(
+			input.ai?.provider || 'openai',
+			'tts'
 		);
 
-		const imageGen = this.providerRegistry.getGenerateImageStrategy(
-			input.ai?.provider || 'openai'
+		const imageGen = this.sharedProviderRegistry.get(
+			input.ai?.provider || 'openai',
+			'image'
 		);
 
 		const tempDir = await fs.mkdtemp(`section-${section.id}-`);
@@ -156,15 +160,16 @@ export class GenerateSectionVideoUseCase {
 					${this.NOTEBOOKLM_STYLE_PROMPT}
 					Make sure the background is a solid color (hex #F5F5F7) to match a video canvas.`;
 
-				const [imageBuffer, audioBuffer] = await Promise.all([
-					imageGen.generate({
-						prompt: finalImagePrompt,
-						size: '1536x1024', // Aspect ratio 3:2 é bom, mas 16:9 (1920x1080) é melhor para vídeo
-					}),
-					audioGen.generate({
-						text: scene.narration,
-					}),
-				]);
+				const [{ content: imageBuffer }, { content: audioBuffer }] =
+					await Promise.all([
+						imageGen.generate({
+							prompt: finalImagePrompt,
+							size: '1536x1024', // Aspect ratio 3:2 é bom, mas 16:9 (1920x1080) é melhor para vídeo
+						}),
+						audioGen.generate({
+							text: scene.narration,
+						}),
+					]);
 
 				const imagePath = path.join(tempDir, `image-${i}.jpg`);
 				const audioPath = path.join(tempDir, `scene-${i}.mp3`);

@@ -1,20 +1,21 @@
+import { InteractionResult } from 'src/shared/types/interaction';
+import { ImageProviderPort } from '../../domain/ports/image.provider.port';
 import {
 	Inject,
 	Injectable,
 	PreconditionFailedException,
 } from '@nestjs/common';
-import OpenAI from 'openai';
-import { OPENAI_CLIENT } from 'src/shared/ai-providers/ai-providers.constants';
-import { ImageGeneratorPort } from 'src/modules/course-authoring/domain/ports/image-generator.port';
+import { OPENAI_CLIENT } from '../../ai-providers.constants';
+import { OpenAI } from 'openai/client';
 
 @Injectable()
-export class OpenAIImageGeneratorAdapter implements ImageGeneratorPort {
+export class OpenAIImageProviderAdapter implements ImageProviderPort {
 	constructor(@Inject(OPENAI_CLIENT) private readonly openai: OpenAI) {}
 
 	async generate(input: {
 		prompt: string;
 		size: '1024x1024' | '1536x1024' | '1024x1536';
-	}): Promise<Buffer> {
+	}): Promise<InteractionResult<Buffer>> {
 		const res = await this.openai.images.generate({
 			model: 'gpt-image-1-mini',
 			prompt: input.prompt,
@@ -29,6 +30,10 @@ export class OpenAIImageGeneratorAdapter implements ImageGeneratorPort {
 			);
 		}
 
-		return Buffer.from(res.data[0].b64_json, 'base64');
+		const buffer = Buffer.from(res.data[0].b64_json, 'base64');
+
+		return {
+			content: buffer,
+		};
 	}
 }

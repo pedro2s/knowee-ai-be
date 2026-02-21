@@ -14,8 +14,6 @@ import { FetchCoursesUseCase } from './application/use-cases/fetch-courses.useca
 import { GetCourseUseCase } from './application/use-cases/get-course.usecase';
 import { ProviderRegistry } from './infrastructure/providers/provider.registry';
 import { OpenAICourseGeneratorAdapter } from './infrastructure/providers/openai/openai-course-generator.adapter';
-import { OpenAIAudioGeneratorAdapter } from './infrastructure/providers/openai/openai-audio-generator.adapter';
-import { OpenAIImageGeneratorAdapter } from './infrastructure/providers/openai/openai-image-generator.adapter';
 import { ModulesController } from './infrastructure/controllers/modules.controller';
 import { GetModuleUseCase } from './application/use-cases/get-module.usecase';
 import { GetLessonUseCase } from './application/use-cases/get-lesson.usecase';
@@ -106,8 +104,6 @@ import { ScormManifestBuilder } from './infrastructure/providers/scorm/scorm-man
 		ProviderRegistry,
 		OpenAICourseGeneratorAdapter,
 		OpenAIModuleGeneratorAdapter,
-		OpenAIAudioGeneratorAdapter,
-		OpenAIImageGeneratorAdapter,
 		OpenAIArticleGeneratorAdapter,
 		OpenAILessonScriptGeneratorAdapter,
 		{

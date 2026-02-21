@@ -15,7 +15,7 @@ import {
 	MEDIA_SERVICE,
 	type MediaPort,
 } from 'src/shared/media/domain/ports/media.port';
-import { ProviderRegistry } from '../../infrastructure/providers/provider.registry';
+import { ProviderRegistry } from 'src/shared/ai-providers/infrastructrue/registry/provider.registry';
 import { ScriptSection } from '../../domain/entities/lesson-script.types';
 import { AuthContext } from 'src/shared/database/domain/ports/db-context.port';
 import { SupabaseClient } from '@supabase/supabase-js';
@@ -53,9 +53,7 @@ export class GenerateLessonAudioUseCase {
 
 		if (!lesson) throw new NotFoundException('Aula não encontrada');
 
-		const audioGen = this.registry.getGenerateAudioStrategy(
-			input.audioProvider
-		);
+		const audioGen = this.registry.get(input.audioProvider, 'tts');
 
 		const sections = (lesson.content as { scriptSections: ScriptSection[] })
 			.scriptSections;
@@ -73,7 +71,7 @@ export class GenerateLessonAudioUseCase {
 
 			try {
 				for (const [i, section] of sections.entries()) {
-					const audioBuffer = await audioGen.generate({
+					const { content: audioBuffer } = await audioGen.generate({
 						text: section.content,
 					});
 					const tempFilePath = path.join(tempDir, `section-${i}.mp3`);
