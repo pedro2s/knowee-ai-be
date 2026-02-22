@@ -32,12 +32,15 @@ import { ExportCourseScormUseCase } from '../../application/use-cases/export-cou
 import { ExportScormDto } from '../../application/dtos/export-scorm.dto';
 import type { Response } from 'express';
 import { createReadStream } from 'fs';
+import { StartCourseGenerationUseCase } from '../../application/use-cases/start-course-generation.usecase';
+import { StartCourseGenerationResponseDto } from '../../application/dtos/start-course-generation.response.dto';
 
 @Controller('courses')
 @UseGuards(SupabaseAuthGuard)
 export class CoursesController {
 	constructor(
 		private readonly createCourse: GenerateCourseUseCase,
+		private readonly startCourseGenerationUseCase: StartCourseGenerationUseCase,
 		private readonly fetchCourses: FetchCoursesUseCase,
 		private readonly getCourse: GetCourseUseCase,
 		private readonly fetchModules: FetchModulesUseCase,
@@ -78,6 +81,27 @@ export class CoursesController {
 
 		// 2. Converte a Entidade de Domínio para o Contrato da API (Response DTO)
 		return CourseResponseDto.fromDomain(courseEntity);
+	}
+
+	@Post('/generate-async')
+	@UseInterceptors(FilesInterceptor('files'))
+	async createAsync(
+		@UploadedFiles() files: Express.Multer.File[],
+		@Body() body: GenerateCourseDto,
+		@CurrentUser() user: UserPayload
+	): Promise<StartCourseGenerationResponseDto> {
+		const job = await this.startCourseGenerationUseCase.execute({
+			data: body,
+			files: files ?? [],
+			userId: user.id,
+		});
+
+		return {
+			jobId: job.id,
+			status: job.status,
+			phase: job.phase,
+			progress: job.progress,
+		};
 	}
 
 	@Get()

@@ -1,27 +1,34 @@
 {
-  "version": "7",
-  "dialect": "postgresql",
-  "entries": [
-    {
-      "idx": 0,
-      "version": "7",
-      "when": 1766005734770,
-      "tag": "0000_conscious_starbolt",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1766274824572,
-      "tag": "0001_curious_bullseye",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1766444495165,
-      "tag": "0002_supreme_eternals",
-      "breakpoints": true
-    }
-  ]
+	"version": "7",
+	"dialect": "postgresql",
+	"entries": [
+		{
+			"idx": 0,
+			"version": "7",
+			"when": 1766005734770,
+			"tag": "0000_conscious_starbolt",
+			"breakpoints": true
+		},
+		{
+			"idx": 1,
+			"version": "7",
+			"when": 1766274824572,
+			"tag": "0001_curious_bullseye",
+			"breakpoints": true
+		},
+		{
+			"idx": 2,
+			"version": "7",
+			"when": 1766444495165,
+			"tag": "0002_supreme_eternals",
+			"breakpoints": true
+		},
+		{
+			"idx": 3,
+			"version": "7",
+			"when": 1771764300000,
+			"tag": "0003_mighty_generation_jobs",
+			"breakpoints": true
+		}
+	]
 }

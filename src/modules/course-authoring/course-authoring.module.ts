@@ -56,6 +56,14 @@ import { ExportCourseScormUseCase } from './application/use-cases/export-course-
 import { SCORM_PACKAGE_GENERATOR } from './domain/ports/scorm-package-generator.port';
 import { ScormPackageGeneratorAdapter } from './infrastructure/providers/scorm/scorm-package-generator.adapter';
 import { ScormManifestBuilder } from './infrastructure/providers/scorm/scorm-manifest.builder';
+import { StartCourseGenerationUseCase } from './application/use-cases/start-course-generation.usecase';
+import { CourseGenerationOrchestratorUseCase } from './application/use-cases/course-generation-orchestrator.usecase';
+import { GENERATION_JOB_REPOSITORY } from './domain/ports/generation-job-repository.port';
+import { DrizzleGenerationJobRepository } from './infrastructure/persistence/drizzle/drizzle-generation-job.repository';
+import { GenerationEventsService } from './application/services/generation-events.service';
+import { GetGenerationJobUseCase } from './application/use-cases/get-generation-job.usecase';
+import { GenerationController } from './infrastructure/controllers/generation.controller';
+import { GenerateLessonStoryboardUseCase } from './application/use-cases/generate-lesson-storyboard.usecase';
 
 @Module({
 	controllers: [
@@ -63,6 +71,7 @@ import { ScormManifestBuilder } from './infrastructure/providers/scorm/scorm-man
 		ModulesController,
 		LessonsController,
 		QuickActionsController,
+		GenerationController,
 	],
 	imports: [
 		DatabaseModule,
@@ -77,7 +86,15 @@ import { ScormManifestBuilder } from './infrastructure/providers/scorm/scorm-man
 		{ provide: COURSE_REPOSITORY, useClass: DrizzleCourseRepository },
 		{ provide: LESSON_REPOSITORY, useClass: DrizzleLessonRepository },
 		{ provide: MODULE_REPOSITORY, useClass: DrizzleModuleRepository },
+		{
+			provide: GENERATION_JOB_REPOSITORY,
+			useClass: DrizzleGenerationJobRepository,
+		},
 		GenerateCourseUseCase,
+		StartCourseGenerationUseCase,
+		CourseGenerationOrchestratorUseCase,
+		GetGenerationJobUseCase,
+		GenerateLessonStoryboardUseCase,
 		GenerateModuleUseCase,
 		GenerateArticleUseCase,
 		GenerateLessonScriptUseCase,
@@ -125,6 +142,7 @@ import { ScormManifestBuilder } from './infrastructure/providers/scorm/scorm-man
 		},
 		OpenAIGenerateAssessmentsAgentAdapter,
 		ScormManifestBuilder,
+		GenerationEventsService,
 		{
 			provide: SCORM_PACKAGE_GENERATOR,
 			useClass: ScormPackageGeneratorAdapter,
