@@ -5,8 +5,8 @@ import {
 	ProfileData,
 	ProfileRepositoryPort,
 } from 'src/modules/profile/domain/ports/profile-repository.port';
-import { DrizzleService } from 'src/shared/infrastructure/database/drizzle/drizzle.service';
-import { profiles } from 'src/shared/infrastructure/database/drizzle/schema';
+import { DrizzleService } from 'src/shared/database/infrastructure/drizzle/drizzle.service';
+import { profiles } from 'src/shared/database/infrastructure/drizzle/schema';
 
 @Injectable()
 export class DrizzleProfileRepository implements ProfileRepositoryPort {

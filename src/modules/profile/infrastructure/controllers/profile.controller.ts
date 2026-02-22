@@ -1,6 +1,6 @@
 import { Body, Controller, Get, Patch, UseGuards } from '@nestjs/common';
-import type { UserPayload } from 'src/shared/domain/types/user-payload';
-import { CurrentUser } from 'src/shared/infrastructure/decorators';
+import type { UserPayload } from 'src/shared/types/user-payload';
+import { CurrentUser } from 'src/shared/decorators';
 import { SupabaseAuthGuard } from 'src/modules/auth/infrastructure/guards/supabase-auth.guard';
 import { GetProfileUseCase } from '../../application/use-cases/get-profile.usecase';
 import { UpdateProfileUseCase } from '../../application/use-cases/update-profile.usecase';

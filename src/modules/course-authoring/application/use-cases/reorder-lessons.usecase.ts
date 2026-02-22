@@ -4,7 +4,7 @@ import {
 	type LessonRepositoryPort,
 } from '../../domain/ports/lesson-repository.port';
 import { ReorderLessonsDto } from '../dtos/reorder-lessons.dto';
-import { AuthContext } from 'src/shared/application/ports/db-context.port';
+import { AuthContext } from 'src/shared/database/domain/ports/db-context.port';
 
 @Injectable()
 export class ReorderLessonsUseCase {

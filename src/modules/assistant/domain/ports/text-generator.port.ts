@@ -1,7 +1,7 @@
 import {
 	InteractionContext,
 	InteractionResult,
-} from 'src/shared/domain/types/interaction';
+} from 'src/shared/types/interaction';
 import {
 	GeneratedTextOutput,
 	GenerateTextInput,

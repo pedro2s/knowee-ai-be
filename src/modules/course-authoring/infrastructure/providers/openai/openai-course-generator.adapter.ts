@@ -11,9 +11,9 @@ import {
 import { buildCoursePrompt } from './openai.prompts';
 import OpenAI from 'openai';
 import { courseStructure } from './schemas/course-structure.schema';
-import { OPENAI_CLIENT } from 'src/shared/infrastructure/ai/ai.constants';
+import { OPENAI_CLIENT } from 'src/shared/ai-providers/ai-providers.constants';
 import { ChatModel } from 'openai/resources';
-import { InteractionResult } from 'src/shared/domain/types/interaction';
+import { InteractionResult } from 'src/shared/types/interaction';
 import { GeneratedCourse } from 'src/modules/course-authoring/domain/entities/course.types';
 
 @Injectable()

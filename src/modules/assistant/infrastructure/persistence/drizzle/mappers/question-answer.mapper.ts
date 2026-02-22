@@ -1,5 +1,5 @@
 import { QuestionAnswer } from 'src/modules/assistant/domain/entities/question-answer.entity';
-import { SelectQuestionAnswer } from 'src/shared/infrastructure/database/drizzle/schema';
+import { SelectQuestionAnswer } from 'src/shared/database/infrastructure/drizzle/schema';
 
 export class QuestionAnswerMapper {
 	static toDomain(raw: SelectQuestionAnswer): QuestionAnswer {

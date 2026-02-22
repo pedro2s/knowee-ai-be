@@ -9,18 +9,16 @@ import {
 	LESSON_REPOSITORY,
 	type LessonRepositoryPort,
 } from '../../domain/ports/lesson-repository.port';
-import { AuthContext } from 'src/shared/application/ports/db-context.port';
+import { AuthContext } from 'src/shared/database/domain/ports/db-context.port';
 import { ScriptSection } from '../../domain/entities/lesson-script.types';
-import {
-	SUPABASE_SERVICE,
-	type SupabasePort,
-} from 'src/shared/application/ports/supabase.port';
 import {
 	MEDIA_SERVICE,
 	type MediaPort,
-} from 'src/shared/application/ports/media.port';
+} from 'src/shared/media/domain/ports/media.port';
 import fs from 'fs/promises';
 import path from 'path';
+import { SUPABASE_CLIENT } from 'src/shared/supabase/subapase.constants';
+import { SupabaseClient } from '@supabase/supabase-js';
 
 @Injectable()
 export class MergeLessonSectionsVideoUseCase {
@@ -29,8 +27,8 @@ export class MergeLessonSectionsVideoUseCase {
 	constructor(
 		@Inject(LESSON_REPOSITORY)
 		private readonly lessonRepository: LessonRepositoryPort,
-		@Inject(SUPABASE_SERVICE)
-		private readonly supabaseService: SupabasePort,
+		@Inject(SUPABASE_CLIENT)
+		private readonly supabaseClient: SupabaseClient,
 		@Inject(MEDIA_SERVICE)
 		private readonly mediaService: MediaPort
 	) {}
@@ -79,9 +77,8 @@ export class MergeLessonSectionsVideoUseCase {
 
 			// 4. Download all section videos from Supabase to temp files
 			for (const [index, video] of videosToMerge.entries()) {
-				const { data, error } = await this.supabaseService
-					.getClient()
-					.storage.from('lesson-videos')
+				const { data, error } = await this.supabaseClient.storage
+					.from('lesson-videos')
 					.download(video.videoPath);
 
 				if (error) {
@@ -119,9 +116,8 @@ export class MergeLessonSectionsVideoUseCase {
 			const mergedVideoBuffer = await fs.readFile(finalVideoPath);
 			const supabaseUploadPath = `${userId}/${lesson.id}/merged-lesson-${Date.now()}.mp4`;
 
-			const { error: uploadError } = await this.supabaseService
-				.getClient()
-				.storage.from('lesson-videos')
+			const { error: uploadError } = await this.supabaseClient.storage
+				.from('lesson-videos')
 				.upload(supabaseUploadPath, mergedVideoBuffer, {
 					contentType: 'video/mp4',
 					upsert: true,
@@ -137,9 +133,8 @@ export class MergeLessonSectionsVideoUseCase {
 			}
 
 			// 7. Update lesson with merged video path/URL
-			const { data: publicUrlData } = this.supabaseService
-				.getClient()
-				.storage.from('lesson-videos')
+			const { data: publicUrlData } = this.supabaseClient.storage
+				.from('lesson-videos')
 				.getPublicUrl(supabaseUploadPath);
 
 			const durationInSeconds =

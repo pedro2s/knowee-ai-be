@@ -15,16 +15,16 @@ import {
 import {
 	HISTORY_SERVICE,
 	type HistoryServicePort,
-} from 'src/modules/history/application/ports/history-service.port';
+} from 'src/shared/history/domain/ports/history-service.port';
 import {
 	TOKEN_USAGE_SERVICE,
 	type TokenUsagePort,
-} from 'src/shared/application/ports/token-usage.port';
+} from 'src/shared/token-usage/domain/ports/token-usage.port';
 import {
 	GENERATE_ASSESSMENTS_AGENT,
 	type GenerateAssessmentsAgentPort,
 } from '../../../domain/ports/generate-assessments-agent.port';
-import { AuthContext } from 'src/shared/application/ports/db-context.port';
+import { AuthContext } from 'src/shared/database/domain/ports/db-context.port';
 import { Lesson } from '../../../domain/entities/lesson.entity';
 
 @Injectable()

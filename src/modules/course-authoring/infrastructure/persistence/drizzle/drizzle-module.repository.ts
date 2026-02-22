@@ -6,10 +6,10 @@ import {
 	AuthContext,
 	DB_CONTEXT,
 	type DbContext,
-} from 'src/shared/application/ports/db-context.port';
+} from 'src/shared/database/domain/ports/db-context.port';
 import { ModuleMapper } from './mappers/module.mapper';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import * as schema from 'src/shared/infrastructure/database/drizzle/schema';
+import * as schema from 'src/shared/database/infrastructure/drizzle/schema';
 import { asc, eq } from 'drizzle-orm';
 import { GeneratedModule } from 'src/modules/course-authoring/domain/entities/course.types';
 import { Lesson } from 'src/modules/course-authoring/domain/entities/lesson.entity';

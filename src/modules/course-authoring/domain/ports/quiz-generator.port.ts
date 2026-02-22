@@ -2,7 +2,7 @@ import { GeneratedQuiz, GenerateQuizInput } from '../entities/quiz.types';
 import {
 	InteractionContext,
 	InteractionResult,
-} from 'src/shared/domain/types/interaction';
+} from 'src/shared/types/interaction';
 
 export const QUIZ_GENERATOR = Symbol('QUIZ_GENERATOR');
 

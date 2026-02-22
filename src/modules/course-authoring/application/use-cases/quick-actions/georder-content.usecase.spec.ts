@@ -2,12 +2,12 @@ import { NotFoundException } from '@nestjs/common';
 import { ReorderContentUseCase } from './georder-content.usecase';
 import type { CourseRepositoryPort } from 'src/modules/course-authoring/domain/ports/course-repository.port';
 import type { ModuleRepositoryPort } from 'src/modules/course-authoring/domain/ports/module-repository.port';
-import type { HistoryServicePort } from 'src/modules/history/application/ports/history-service.port';
+import type { HistoryServicePort } from 'src/shared/history/domain/ports/history-service.port';
 import type {
 	ReorderContentAgentPort,
 	ReorderedContentResult,
 } from 'src/modules/course-authoring/domain/ports/reorder-content-agent.port';
-import type { TokenUsagePort } from 'src/shared/application/ports/token-usage.port';
+import type { TokenUsagePort } from 'src/shared/token-usage/domain/ports/token-usage.port';
 
 describe('ReorderContentUseCase', () => {
 	let useCase: ReorderContentUseCase;

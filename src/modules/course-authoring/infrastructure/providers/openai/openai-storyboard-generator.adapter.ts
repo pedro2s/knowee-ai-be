@@ -11,7 +11,7 @@ import {
 	GeneratedStoryboardOutput,
 	StoryboardGeneratorPort,
 } from 'src/modules/course-authoring/domain/ports/storyboard-generator.port';
-import { OPENAI_CLIENT } from 'src/shared/infrastructure/ai/ai.constants';
+import { OPENAI_CLIENT } from 'src/shared/ai-providers/ai-providers.constants';
 import { storyboardStructure } from './schemas/storyboard-structure.schema';
 
 @Injectable()

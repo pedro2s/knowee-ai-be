@@ -14,14 +14,12 @@ import {
 import {
 	MEDIA_SERVICE,
 	type MediaPort,
-} from 'src/shared/application/ports/media.port';
-import { ProviderRegistry } from '../../infrastructure/providers/provider.registry';
+} from 'src/shared/media/domain/ports/media.port';
+import { ProviderRegistry } from 'src/shared/ai-providers/infrastructure/registry/provider.registry';
 import { ScriptSection } from '../../domain/entities/lesson-script.types';
-import {
-	SUPABASE_SERVICE,
-	type SupabasePort,
-} from 'src/shared/application/ports/supabase.port';
-import { AuthContext } from 'src/shared/application/ports/db-context.port';
+import { AuthContext } from 'src/shared/database/domain/ports/db-context.port';
+import { SupabaseClient } from '@supabase/supabase-js';
+import { SUPABASE_CLIENT } from 'src/shared/supabase/subapase.constants';
 
 @Injectable()
 export class GenerateLessonAudioUseCase {
@@ -34,8 +32,8 @@ export class GenerateLessonAudioUseCase {
 		private readonly registry: ProviderRegistry,
 		@Inject(MEDIA_SERVICE)
 		private readonly mediaService: MediaPort,
-		@Inject(SUPABASE_SERVICE)
-		private readonly supabaseService: SupabasePort
+		@Inject(SUPABASE_CLIENT)
+		private readonly supabaseClient: SupabaseClient
 	) {}
 
 	async execute(input: {
@@ -55,9 +53,7 @@ export class GenerateLessonAudioUseCase {
 
 		if (!lesson) throw new NotFoundException('Aula não encontrada');
 
-		const audioGen = this.registry.getGenerateAudioStrategy(
-			input.audioProvider
-		);
+		const audioGen = this.registry.get(input.audioProvider, 'tts');
 
 		const sections = (lesson.content as { scriptSections: ScriptSection[] })
 			.scriptSections;
@@ -75,7 +71,7 @@ export class GenerateLessonAudioUseCase {
 
 			try {
 				for (const [i, section] of sections.entries()) {
-					const audioBuffer = await audioGen.generate({
+					const { content: audioBuffer } = await audioGen.generate({
 						text: section.content,
 					});
 					const tempFilePath = path.join(tempDir, `section-${i}.mp3`);
@@ -98,17 +94,15 @@ export class GenerateLessonAudioUseCase {
 				const previousAudioPath = (lesson.content as { audioPath?: string })
 					?.audioPath;
 				if (previousAudioPath) {
-					await this.supabaseService
-						.getClient()
-						.storage.from('lesson-audios')
+					await this.supabaseClient.storage
+						.from('lesson-audios')
 						.remove([previousAudioPath]);
 				}
 
 				const mergedAudioBuffer = await fs.readFile(mergedAudioPath);
 
-				const { error: uploadError } = await this.supabaseService
-					.getClient()
-					.storage.from('lesson-audios') // Assuming 'lessons' bucket
+				const { error: uploadError } = await this.supabaseClient.storage
+					.from('lesson-audios') // Assuming 'lessons' bucket
 					.upload(supabasePath, mergedAudioBuffer, {
 						contentType: 'audio/mpeg',
 						upsert: true,
@@ -122,9 +116,8 @@ export class GenerateLessonAudioUseCase {
 					return;
 				}
 
-				const { data: publicUrlData } = this.supabaseService
-					.getClient()
-					.storage.from('lesson-audios')
+				const { data: publicUrlData } = this.supabaseClient.storage
+					.from('lesson-audios')
 					.getPublicUrl(supabasePath);
 
 				const updatedContent = {

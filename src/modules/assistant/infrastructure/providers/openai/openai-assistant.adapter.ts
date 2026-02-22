@@ -6,11 +6,11 @@ import {
 } from 'src/modules/assistant/domain/ports/ai-assistant.port';
 import { QuestionAnswered } from 'src/modules/assistant/domain/entities/question-answer.types';
 import { ChatCompletionMessageParam, ChatModel } from 'openai/resources';
-import { OPENAI_CLIENT } from 'src/shared/infrastructure/ai/ai.constants';
+import { OPENAI_CLIENT } from 'src/shared/ai-providers/ai-providers.constants';
 import {
 	InteractionContext,
 	InteractionResult,
-} from 'src/shared/domain/types/interaction';
+} from 'src/shared/types/interaction';
 
 @Injectable()
 export class OpenAIAssistantAdapter implements AIAssistantPort {

@@ -5,7 +5,7 @@ import {
 	COURSE_REPOSITORY,
 	type CourseRepositoryPort,
 } from '../../domain/ports/course-repository.port';
-import { AuthContext } from 'src/shared/application/ports/db-context.port';
+import { AuthContext } from 'src/shared/database/domain/ports/db-context.port';
 import {
 	MODULE_REPOSITORY,
 	type ModuleRepositoryPort,

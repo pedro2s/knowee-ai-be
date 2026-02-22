@@ -9,8 +9,8 @@ import { ArticleGeneratorPort } from 'src/modules/course-authoring/domain/ports/
 import {
 	InteractionContext,
 	InteractionResult,
-} from 'src/shared/domain/types/interaction';
-import { OPENAI_CLIENT } from 'src/shared/infrastructure/ai/ai.constants';
+} from 'src/shared/types/interaction';
+import { OPENAI_CLIENT } from 'src/shared/ai-providers/ai-providers.constants';
 
 @Injectable()
 export class OpenAIArticleGeneratorAdapter implements ArticleGeneratorPort {

@@ -3,9 +3,9 @@ import { SignInUseCase } from '../../application/use-cases/sign-in.usecase';
 import { SignUpUseCase } from '../../application/use-cases/sign-up.usecase';
 import { SignInDto } from '../../application/dtos/sign-in.dto';
 import { SignUpDto } from '../../application/dtos/sign-up.dto';
-import { CurrentUser } from 'src/shared/infrastructure/decorators'; // Importar o novo decorator
+import { CurrentUser } from 'src/shared/decorators'; // Importar o novo decorator
 import { SupabaseAuthGuard } from '../guards/supabase-auth.guard'; // Importar o guard
-import type { UserPayload } from 'src/shared/domain/types/user-payload';
+import type { UserPayload } from 'src/shared/types/user-payload';
 import { RefreshTokenUseCase } from '../../application/use-cases/refresh-token.usecase';
 import { RefreshTokenDto } from '../../application/dtos/refresh-token.dto';
 import { ChangePasswordUseCase } from '../../application/use-cases/change-password.usecase';
