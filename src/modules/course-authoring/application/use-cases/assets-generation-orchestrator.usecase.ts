@@ -12,6 +12,8 @@ import { GenerateSectionVideoUseCase } from './generate-section-video.usecase';
 import { MergeLessonSectionsVideoUseCase } from './merge-lesson-sections-video.usecase';
 import { GenerateLessonAudioUseCase } from './generate-lesson-audio.usecase';
 import { ScriptSection } from '../../domain/entities/lesson-script.types';
+import { GenerateArticleUseCase } from './generate-article.usecase';
+import { GenerateQuizUseCase } from './generate-quiz.usecase';
 
 interface AssetsGenerationInput {
 	jobId: string;
@@ -49,7 +51,9 @@ export class AssetsGenerationOrchestratorUseCase {
 		private readonly generationEventsService: GenerationEventsService,
 		private readonly generateSectionVideoUseCase: GenerateSectionVideoUseCase,
 		private readonly mergeLessonSectionsVideoUseCase: MergeLessonSectionsVideoUseCase,
-		private readonly generateLessonAudioUseCase: GenerateLessonAudioUseCase
+		private readonly generateLessonAudioUseCase: GenerateLessonAudioUseCase,
+		private readonly generateArticleUseCase: GenerateArticleUseCase,
+		private readonly generateQuizUseCase: GenerateQuizUseCase
 	) {}
 
 	async run(input: AssetsGenerationInput): Promise<void> {
@@ -146,6 +150,77 @@ export class AssetsGenerationOrchestratorUseCase {
 							userId: input.userId,
 							runInBackground: false,
 						});
+						summary.push({
+							lessonId: lesson.id,
+							lessonType: lesson.lessonType,
+							status: 'success',
+						});
+					} else if (lesson.lessonType === 'article') {
+						const generatedArticle = await this.generateArticleUseCase.execute(
+							{
+								courseId: input.courseId,
+								moduleId: lesson.moduleId,
+								title: lesson.title,
+								description: lesson.description ?? lesson.title,
+								ai: {
+									provider: 'openai',
+								},
+							},
+							input.userId
+						);
+
+						if (!generatedArticle.content?.trim()) {
+							throw new Error('article_content_empty');
+						}
+
+						const currentContent =
+							lesson.content && typeof lesson.content === 'object'
+								? (lesson.content as Record<string, unknown>)
+								: {};
+						await this.lessonRepository.update(
+							lesson.id,
+							{
+								content: {
+									...currentContent,
+									articleContent: generatedArticle.content,
+								},
+							},
+							auth
+						);
+
+						summary.push({
+							lessonId: lesson.id,
+							lessonType: lesson.lessonType,
+							status: 'success',
+						});
+					} else if (lesson.lessonType === 'quiz') {
+						const generatedQuiz = await this.generateQuizUseCase.execute(
+							{
+								courseId: input.courseId,
+								moduleId: lesson.moduleId,
+							},
+							input.userId
+						);
+
+						if (!generatedQuiz.quizQuestions?.length) {
+							throw new Error('quiz_questions_empty');
+						}
+
+						const currentContent =
+							lesson.content && typeof lesson.content === 'object'
+								? (lesson.content as Record<string, unknown>)
+								: {};
+						await this.lessonRepository.update(
+							lesson.id,
+							{
+								content: {
+									...currentContent,
+									quizQuestions: generatedQuiz.quizQuestions,
+								},
+							},
+							auth
+						);
+
 						summary.push({
 							lessonId: lesson.id,
 							lessonType: lesson.lessonType,
