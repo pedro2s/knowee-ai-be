@@ -17,6 +17,7 @@ import { interval, map, merge, Observable, of } from 'rxjs';
 import { StartAssetsGenerationUseCase } from '../../application/use-cases/start-assets-generation.usecase';
 import { StartAssetsGenerationDto } from '../../application/dtos/start-assets-generation.dto';
 import { StartAssetsGenerationResponseDto } from '../../application/dtos/start-assets-generation.response.dto';
+import { GetActiveGenerationJobByCourseUseCase } from '../../application/use-cases/get-active-generation-job-by-course.usecase';
 
 interface SseMessage {
 	type: string;
@@ -28,6 +29,7 @@ interface SseMessage {
 export class GenerationController {
 	constructor(
 		private readonly getGenerationJobUseCase: GetGenerationJobUseCase,
+		private readonly getActiveGenerationJobByCourseUseCase: GetActiveGenerationJobByCourseUseCase,
 		private readonly generationEventsService: GenerationEventsService,
 		private readonly startAssetsGenerationUseCase: StartAssetsGenerationUseCase
 	) {}
@@ -41,6 +43,19 @@ export class GenerationController {
 			userId: user.id,
 			data: body,
 		});
+	}
+
+	@Get('/course/:courseId/active')
+	async getActiveByCourse(
+		@Param('courseId') courseId: string,
+		@CurrentUser() user: UserPayload
+	): Promise<GenerationJobResponseDto | null> {
+		const job = await this.getActiveGenerationJobByCourseUseCase.execute(
+			courseId,
+			user.id
+		);
+
+		return job ? GenerationJobResponseDto.fromDomain(job) : null;
 	}
 
 	@Get('/:jobId')

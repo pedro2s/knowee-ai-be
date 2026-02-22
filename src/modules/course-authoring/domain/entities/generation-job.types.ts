@@ -59,6 +59,7 @@ export interface GenerationJob {
 
 export interface CreateGenerationJobInput {
 	userId: string;
+	courseId?: string | null;
 	phase?: GenerationJobPhase;
 	status?: GenerationJobStatus;
 	progress?: number;

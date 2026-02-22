@@ -83,6 +83,7 @@ export class StartAssetsGenerationUseCase {
 		const job = await this.generationJobRepository.create(
 			{
 				userId: input.userId,
+				courseId: input.data.courseId,
 				status: 'pending',
 				phase: 'assets_prepare',
 				progress: 0,

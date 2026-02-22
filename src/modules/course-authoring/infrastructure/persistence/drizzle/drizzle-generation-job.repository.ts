@@ -6,7 +6,7 @@ import {
 } from 'src/shared/database/domain/ports/db-context.port';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import * as schema from 'src/shared/database/infrastructure/drizzle/schema';
-import { eq } from 'drizzle-orm';
+import { and, desc, eq, inArray } from 'drizzle-orm';
 import {
 	CreateGenerationJobInput,
 	GenerationJob,
@@ -30,6 +30,7 @@ export class DrizzleGenerationJobRepository implements GenerationJobRepositoryPo
 				.insert(schema.generationJobs)
 				.values({
 					userId: input.userId,
+					courseId: input.courseId ?? null,
 					status: input.status ?? 'pending',
 					phase: input.phase ?? 'structure',
 					progress: input.progress ?? 0,
@@ -46,6 +47,24 @@ export class DrizzleGenerationJobRepository implements GenerationJobRepositoryPo
 			const tx = db as DrizzleDB;
 			const job = await tx.query.generationJobs.findFirst({
 				where: eq(schema.generationJobs.id, id),
+			});
+
+			return job ? this.toDomain(job) : null;
+		});
+	}
+
+	async findActiveByCourseId(
+		courseId: string,
+		auth: AuthContext
+	): Promise<GenerationJob | null> {
+		return this.dbContext.runAsUser(auth, async (db) => {
+			const tx = db as DrizzleDB;
+			const job = await tx.query.generationJobs.findFirst({
+				where: and(
+					eq(schema.generationJobs.courseId, courseId),
+					inArray(schema.generationJobs.status, ['pending', 'processing'])
+				),
+				orderBy: (table) => [desc(table.updatedAt)],
 			});
 
 			return job ? this.toDomain(job) : null;

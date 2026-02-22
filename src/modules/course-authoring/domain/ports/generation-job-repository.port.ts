@@ -13,6 +13,10 @@ export interface GenerationJobRepositoryPort {
 		auth: AuthContext
 	): Promise<GenerationJob>;
 	findById(id: string, auth: AuthContext): Promise<GenerationJob | null>;
+	findActiveByCourseId(
+		courseId: string,
+		auth: AuthContext
+	): Promise<GenerationJob | null>;
 	update(
 		id: string,
 		input: UpdateGenerationJobInput,
