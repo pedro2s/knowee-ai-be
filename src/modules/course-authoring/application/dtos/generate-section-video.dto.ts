@@ -21,4 +21,16 @@ export class GenerateSectionVideoDto {
 	@ValidateNested()
 	@Type(() => AIProviderDto)
 	ai?: AIProviderDto;
+
+	@IsOptional()
+	@IsString()
+	imageProvider?: string;
+
+	@IsOptional()
+	@IsString()
+	audioProvider?: string;
+
+	@IsOptional()
+	@IsString()
+	audioVoiceId?: string;
 }

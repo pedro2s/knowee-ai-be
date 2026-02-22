@@ -126,6 +126,7 @@ export class LessonsController {
 		return this.generateAudio.execute({
 			lessonId,
 			audioProvider: data.ai?.provider || 'openai',
+			audioVoiceId: data.audioVoiceId,
 			userId: user.id,
 		});
 	}

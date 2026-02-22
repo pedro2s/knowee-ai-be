@@ -39,7 +39,9 @@ export class GenerateLessonAudioUseCase {
 	async execute(input: {
 		lessonId: string;
 		audioProvider: string;
+		audioVoiceId?: string;
 		userId: string;
+		runInBackground?: boolean;
 	}) {
 		const authContex: AuthContext = {
 			userId: input.userId,
@@ -61,7 +63,7 @@ export class GenerateLessonAudioUseCase {
 		if (!sections || sections.length === 0)
 			throw new BadRequestException('Nenhum roteiro entrado para a aula.');
 
-		void (async () => {
+		const processAudio = async () => {
 			this.logger.log(
 				`[AudioJob] Iniciando geração de áudio para aula: ${lesson.title}`
 			);
@@ -73,6 +75,7 @@ export class GenerateLessonAudioUseCase {
 				for (const [i, section] of sections.entries()) {
 					const { content: audioBuffer } = await audioGen.generate({
 						text: section.content,
+						voice: input.audioVoiceId,
 					});
 					const tempFilePath = path.join(tempDir, `section-${i}.mp3`);
 					await fs.writeFile(tempFilePath, audioBuffer);
@@ -146,7 +149,16 @@ export class GenerateLessonAudioUseCase {
 			} finally {
 				await fs.rm(tempDir, { recursive: true, force: true });
 			}
-		})();
+		};
+
+		if (input.runInBackground === false) {
+			await processAudio();
+			return {
+				message: 'Geração de áudio concluída.',
+			};
+		}
+
+		void processAudio();
 
 		return {
 			message: 'Geração de áudio iniciada. Isso pode levar alguns minutos.',

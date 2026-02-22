@@ -1,5 +1,5 @@
 import { Type } from 'class-transformer';
-import { IsOptional, ValidateNested } from 'class-validator';
+import { IsOptional, IsString, ValidateNested } from 'class-validator';
 import { AIProviderDto } from 'src/shared/ai-providers/application/dtos/ai-provider.dto';
 
 export class GenerateLessonAudioDto {
@@ -7,4 +7,8 @@ export class GenerateLessonAudioDto {
 	@ValidateNested()
 	@Type(() => AIProviderDto)
 	ai?: AIProviderDto;
+
+	@IsOptional()
+	@IsString()
+	audioVoiceId?: string;
 }

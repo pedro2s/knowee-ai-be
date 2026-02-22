@@ -1,4 +1,12 @@
-import { Controller, Get, Param, Sse, UseGuards } from '@nestjs/common';
+import {
+	Body,
+	Controller,
+	Get,
+	Param,
+	Post,
+	Sse,
+	UseGuards,
+} from '@nestjs/common';
 import { SupabaseAuthGuard } from 'src/modules/auth/infrastructure/guards/supabase-auth.guard';
 import { CurrentUser } from 'src/shared/decorators';
 import type { UserPayload } from 'src/shared/types/user-payload';
@@ -6,6 +14,9 @@ import { GetGenerationJobUseCase } from '../../application/use-cases/get-generat
 import { GenerationJobResponseDto } from '../../application/dtos/generation-job.response.dto';
 import { GenerationEventsService } from '../../application/services/generation-events.service';
 import { interval, map, merge, Observable, of } from 'rxjs';
+import { StartAssetsGenerationUseCase } from '../../application/use-cases/start-assets-generation.usecase';
+import { StartAssetsGenerationDto } from '../../application/dtos/start-assets-generation.dto';
+import { StartAssetsGenerationResponseDto } from '../../application/dtos/start-assets-generation.response.dto';
 
 interface SseMessage {
 	type: string;
@@ -17,8 +28,20 @@ interface SseMessage {
 export class GenerationController {
 	constructor(
 		private readonly getGenerationJobUseCase: GetGenerationJobUseCase,
-		private readonly generationEventsService: GenerationEventsService
+		private readonly generationEventsService: GenerationEventsService,
+		private readonly startAssetsGenerationUseCase: StartAssetsGenerationUseCase
 	) {}
+
+	@Post('/assets/start')
+	async startAssets(
+		@Body() body: StartAssetsGenerationDto,
+		@CurrentUser() user: UserPayload
+	): Promise<StartAssetsGenerationResponseDto> {
+		return this.startAssetsGenerationUseCase.execute({
+			userId: user.id,
+			data: body,
+		});
+	}
 
 	@Get('/:jobId')
 	async getJob(

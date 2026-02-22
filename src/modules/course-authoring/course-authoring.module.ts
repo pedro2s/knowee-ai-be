@@ -65,6 +65,8 @@ import { GetGenerationJobUseCase } from './application/use-cases/get-generation-
 import { GenerationController } from './infrastructure/controllers/generation.controller';
 import { GenerateLessonStoryboardUseCase } from './application/use-cases/generate-lesson-storyboard.usecase';
 import { ProviderPreferencesModule } from '../provider-preferences/provider-preferences.module';
+import { StartAssetsGenerationUseCase } from './application/use-cases/start-assets-generation.usecase';
+import { AssetsGenerationOrchestratorUseCase } from './application/use-cases/assets-generation-orchestrator.usecase';
 
 @Module({
 	controllers: [
@@ -95,6 +97,8 @@ import { ProviderPreferencesModule } from '../provider-preferences/provider-pref
 		GenerateCourseUseCase,
 		StartCourseGenerationUseCase,
 		CourseGenerationOrchestratorUseCase,
+		StartAssetsGenerationUseCase,
+		AssetsGenerationOrchestratorUseCase,
 		GetGenerationJobUseCase,
 		GenerateLessonStoryboardUseCase,
 		GenerateModuleUseCase,

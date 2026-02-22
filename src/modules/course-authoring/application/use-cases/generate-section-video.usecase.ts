@@ -136,15 +136,10 @@ export class GenerateSectionVideoUseCase {
 			);
 		}
 
-		const audioGen = this.sharedProviderRegistry.get(
-			input.ai?.provider || 'openai',
-			'tts'
-		);
-
-		const imageGen = this.sharedProviderRegistry.get(
-			input.ai?.provider || 'openai',
-			'image'
-		);
+		const audioProvider = input.audioProvider || input.ai?.provider || 'openai';
+		const imageProvider = input.imageProvider || input.ai?.provider || 'openai';
+		const audioGen = this.sharedProviderRegistry.get(audioProvider, 'tts');
+		const imageGen = this.sharedProviderRegistry.get(imageProvider, 'image');
 
 		const tempDir = await fs.mkdtemp(`section-${section.id}-`);
 		const tempFilePaths: string[] = [];
@@ -168,6 +163,7 @@ export class GenerateSectionVideoUseCase {
 						}),
 						audioGen.generate({
 							text: scene.narration,
+							voice: input.audioVoiceId,
 						}),
 					]);
 
