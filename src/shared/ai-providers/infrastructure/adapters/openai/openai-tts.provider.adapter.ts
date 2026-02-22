@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import OpenAI from 'openai';
 import { OPENAI_CLIENT } from 'src/shared/ai-providers/ai-providers.constants';
-import { TTSProviderPort } from '../../domain/ports/tts.provider.port';
+import { TTSProviderPort } from '../../../domain/ports/tts.provider.port';
 import { InteractionResult } from 'src/shared/types/interaction';
 
 @Injectable()

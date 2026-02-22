@@ -34,7 +34,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import { SUPABASE_CLIENT } from 'src/shared/supabase/subapase.constants';
 import { SupabaseClient } from '@supabase/supabase-js';
-import { ProviderRegistry as SharedProviderRegistry } from 'src/shared/ai-providers/infrastructrue/registry/provider.registry';
+import { ProviderRegistry as SharedProviderRegistry } from 'src/shared/ai-providers/infrastructure/registry/provider.registry';
 
 @Injectable()
 export class GenerateSectionVideoUseCase {

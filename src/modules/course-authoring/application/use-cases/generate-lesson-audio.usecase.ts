@@ -15,7 +15,7 @@ import {
 	MEDIA_SERVICE,
 	type MediaPort,
 } from 'src/shared/media/domain/ports/media.port';
-import { ProviderRegistry } from 'src/shared/ai-providers/infrastructrue/registry/provider.registry';
+import { ProviderRegistry } from 'src/shared/ai-providers/infrastructure/registry/provider.registry';
 import { ScriptSection } from '../../domain/entities/lesson-script.types';
 import { AuthContext } from 'src/shared/database/domain/ports/db-context.port';
 import { SupabaseClient } from '@supabase/supabase-js';

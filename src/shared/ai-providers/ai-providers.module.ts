@@ -3,9 +3,9 @@ import { ConfigService } from '@nestjs/config';
 import OpenAI from 'openai';
 import { GoogleGenAI } from '@google/genai';
 import { GENAI_CLIENT, OPENAI_CLIENT } from './ai-providers.constants';
-import { ProviderRegistry } from './infrastructrue/registry/provider.registry';
-import { OpenAITTSProviderAdapter } from './infrastructrue/openai/openai-tts.provider.adapter';
-import { OpenAIImageProviderAdapter } from './infrastructrue/openai/openai-image.provider.adapter';
+import { ProviderRegistry } from './infrastructure/registry/provider.registry';
+import { OpenAITTSProviderAdapter } from './infrastructure/adapters/openai/openai-tts.provider.adapter';
+import { OpenAIImageProviderAdapter } from './infrastructure/adapters/openai/openai-image.provider.adapter';
 
 @Module({
 	providers: [

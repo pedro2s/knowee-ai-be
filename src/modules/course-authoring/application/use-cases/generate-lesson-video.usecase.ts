@@ -1,5 +1,5 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { ProviderRegistry as SharedProviderRegistry } from 'src/shared/ai-providers/infrastructrue/registry/provider.registry';
+import { ProviderRegistry as SharedProviderRegistry } from 'src/shared/ai-providers/infrastructure/registry/provider.registry';
 import { ProviderRegistry } from '../../infrastructure/providers/provider.registry';
 import {
 	MEDIA_SERVICE,

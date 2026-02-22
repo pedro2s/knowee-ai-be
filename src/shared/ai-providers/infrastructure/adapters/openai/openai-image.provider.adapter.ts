@@ -1,11 +1,11 @@
 import { InteractionResult } from 'src/shared/types/interaction';
-import { ImageProviderPort } from '../../domain/ports/image.provider.port';
+import { ImageProviderPort } from '../../../domain/ports/image.provider.port';
 import {
 	Inject,
 	Injectable,
 	PreconditionFailedException,
 } from '@nestjs/common';
-import { OPENAI_CLIENT } from '../../ai-providers.constants';
+import { OPENAI_CLIENT } from '../../../ai-providers.constants';
 import { OpenAI } from 'openai/client';
 
 @Injectable()
