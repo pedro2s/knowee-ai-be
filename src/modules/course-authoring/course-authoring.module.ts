@@ -64,6 +64,7 @@ import { GenerationEventsService } from './application/services/generation-event
 import { GetGenerationJobUseCase } from './application/use-cases/get-generation-job.usecase';
 import { GenerationController } from './infrastructure/controllers/generation.controller';
 import { GenerateLessonStoryboardUseCase } from './application/use-cases/generate-lesson-storyboard.usecase';
+import { ProviderPreferencesModule } from '../provider-preferences/provider-preferences.module';
 
 @Module({
 	controllers: [
@@ -81,6 +82,7 @@ import { GenerateLessonStoryboardUseCase } from './application/use-cases/generat
 		StorageModule,
 		TokenUsageModule,
 		SupabaseModule,
+		ProviderPreferencesModule,
 	],
 	providers: [
 		{ provide: COURSE_REPOSITORY, useClass: DrizzleCourseRepository },

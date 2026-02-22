@@ -8,6 +8,7 @@ import {
 	Param,
 	Patch,
 	Post,
+	Put,
 	Res,
 	StreamableFile,
 	UploadedFiles,
@@ -34,6 +35,10 @@ import type { Response } from 'express';
 import { createReadStream } from 'fs';
 import { StartCourseGenerationUseCase } from '../../application/use-cases/start-course-generation.usecase';
 import { StartCourseGenerationResponseDto } from '../../application/dtos/start-course-generation.response.dto';
+import { UpdateProviderPreferencesUseCase } from 'src/modules/provider-preferences/application/use-cases/update-provider-preferences.usecase';
+import { UpdateProviderPreferencesDto } from 'src/modules/provider-preferences/application/dtos/update-provider-preferences.dto';
+import { EffectiveProviderPreferencesResponseDto } from 'src/modules/provider-preferences/application/dtos/provider-preferences.response.dto';
+import { GetProviderPreferencesUseCase } from 'src/modules/provider-preferences/application/use-cases/get-provider-preferences.usecase';
 
 @Controller('courses')
 @UseGuards(SupabaseAuthGuard)
@@ -41,6 +46,8 @@ export class CoursesController {
 	constructor(
 		private readonly createCourse: GenerateCourseUseCase,
 		private readonly startCourseGenerationUseCase: StartCourseGenerationUseCase,
+		private readonly updateProviderPreferencesUseCase: UpdateProviderPreferencesUseCase,
+		private readonly getProviderPreferencesUseCase: GetProviderPreferencesUseCase,
 		private readonly fetchCourses: FetchCoursesUseCase,
 		private readonly getCourse: GetCourseUseCase,
 		private readonly fetchModules: FetchModulesUseCase,
@@ -132,6 +139,31 @@ export class CoursesController {
 	): Promise<CourseResponseDto> {
 		const course = await this.updateCourse.execute(id, data, user.id);
 		return CourseResponseDto.fromDomain(course);
+	}
+
+	@Put('/:id/provider-preferences')
+	async updateCourseProviderPreferences(
+		@Param('id') id: string,
+		@CurrentUser() user: UserPayload,
+		@Body() dto: UpdateProviderPreferencesDto
+	): Promise<EffectiveProviderPreferencesResponseDto> {
+		await this.updateProviderPreferencesUseCase.execute({
+			userId: user.id,
+			courseId: id,
+			selection: {
+				imageProvider: dto.imageProvider,
+				audioProvider: dto.audioProvider,
+				audioVoiceId: dto.audioVoiceId,
+				videoProvider: dto.videoProvider,
+				advancedSettings: dto.advancedSettings ?? {},
+			},
+		});
+
+		const prefs = await this.getProviderPreferencesUseCase.execute({
+			userId: user.id,
+			courseId: id,
+		});
+		return EffectiveProviderPreferencesResponseDto.fromDomain(prefs);
 	}
 
 	@Post('/:id/export/scorm')

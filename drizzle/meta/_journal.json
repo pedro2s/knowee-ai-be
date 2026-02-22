@@ -29,6 +29,13 @@
 			"when": 1771764300000,
 			"tag": "0003_mighty_generation_jobs",
 			"breakpoints": true
+		},
+		{
+			"idx": 4,
+			"version": "7",
+			"when": 1771767900000,
+			"tag": "0004_provider_preferences",
+			"breakpoints": true
 		}
 	]
 }
