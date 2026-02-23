@@ -9,7 +9,7 @@ import {
 	AIAnalyticsPort,
 	AnalysisOutput,
 } from 'src/modules/assistant/domain/ports/ai-analyze.port';
-import { OPENAI_CLIENT } from 'src/shared/infrastructure/ai/ai.constants';
+import { OPENAI_CLIENT } from 'src/shared/ai-providers/ai-providers.constants';
 import { analyzeStructure } from './schemas/analyze-structure';
 
 @Injectable()

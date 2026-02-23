@@ -9,8 +9,8 @@ import {
 import {
 	InteractionContext,
 	InteractionResult,
-} from 'src/shared/domain/types/interaction';
-import { OPENAI_CLIENT } from 'src/shared/infrastructure/ai/ai.constants';
+} from 'src/shared/types/interaction';
+import { OPENAI_CLIENT } from 'src/shared/ai-providers/ai-providers.constants';
 import { moduleStructure } from './schemas/module-structure.schema';
 
 export class OpenAIModuleGeneratorAdapter implements ModuleGeneratorPort {

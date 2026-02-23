@@ -1,5 +1,5 @@
 import { Lesson } from 'src/modules/course-authoring/domain/entities/lesson.entity';
-import { SelectLesson } from 'src/shared/infrastructure/database/drizzle/schema';
+import { SelectLesson } from 'src/shared/database/infrastructure/drizzle/schema';
 
 export class LessonMapper {
 	/** Banco de Dados -> Domínio (Entity + VOs) */

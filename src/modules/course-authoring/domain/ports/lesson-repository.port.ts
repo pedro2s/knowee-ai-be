@@ -1,4 +1,4 @@
-import { AuthContext } from 'src/shared/application/ports/db-context.port';
+import { AuthContext } from 'src/shared/database/domain/ports/db-context.port';
 import type { Lesson } from '../entities/lesson.entity';
 import type { CreateLessonInput } from '../entities/lesson.types';
 

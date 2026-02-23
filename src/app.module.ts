@@ -5,6 +5,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import { AssistantModule } from './modules/assistant/assistant.module';
 import { BillingModule } from './modules/billing/billing.module';
 import { ProfileModule } from './modules/profile/profile.module';
+import { ProviderPreferencesModule } from './modules/provider-preferences/provider-preferences.module';
 
 @Module({
 	imports: [
@@ -16,6 +17,7 @@ import { ProfileModule } from './modules/profile/profile.module';
 		AssistantModule,
 		BillingModule,
 		ProfileModule,
+		ProviderPreferencesModule,
 	],
 })
 export class AppModule {}
