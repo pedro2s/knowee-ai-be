@@ -38,6 +38,9 @@ export interface GenerationJobMetadata {
 	};
 	moduleId?: string;
 	lessonId?: string;
+	demoSectionId?: string;
+	demoSectionVideoUrl?: string;
+	demoSectionVideoStatus?: 'ready' | 'missing' | 'failed';
 	totalScenes?: number;
 	totalSections?: number;
 	[key: string]: unknown;

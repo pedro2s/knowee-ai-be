@@ -8,6 +8,7 @@ import {
 import { GenerationEventsService } from '../services/generation-events.service';
 import { GenerateLessonScriptUseCase } from './generate-lesson-script.usecase';
 import { GenerateLessonStoryboardUseCase } from './generate-lesson-storyboard.usecase';
+import { GenerateSectionVideoUseCase } from './generate-section-video.usecase';
 import {
 	COURSE_REPOSITORY,
 	type CourseRepositoryPort,
@@ -34,6 +35,7 @@ export class CourseGenerationOrchestratorUseCase {
 		private readonly generateCourseUseCase: GenerateCourseUseCase,
 		private readonly generateLessonScriptUseCase: GenerateLessonScriptUseCase,
 		private readonly generateLessonStoryboardUseCase: GenerateLessonStoryboardUseCase,
+		private readonly generateSectionVideoUseCase: GenerateSectionVideoUseCase,
 		private readonly generationEventsService: GenerationEventsService,
 		@Inject(GENERATION_JOB_REPOSITORY)
 		private readonly generationJobRepository: GenerationJobRepositoryPort,
@@ -176,6 +178,46 @@ export class CourseGenerationOrchestratorUseCase {
 				userId: input.userId,
 			});
 
+			let demoSectionId: string | undefined;
+			let demoSectionVideoUrl: string | undefined;
+			let demoSectionVideoStatus: 'ready' | 'missing' | 'failed' = 'missing';
+			const refreshedLesson = await this.lessonRepository.findById(
+				firstLesson.id,
+				auth
+			);
+			const firstSection = (
+				refreshedLesson?.content as { scriptSections?: Array<{ id: string }> }
+			)?.scriptSections?.[0];
+
+			if (!firstSection?.id) {
+				this.logger.warn(
+					`Job ${input.jobId}: aula demo sem scriptSections para gerar preview.`
+				);
+			} else {
+				demoSectionId = firstSection.id;
+				try {
+					const generatedSection =
+						await this.generateSectionVideoUseCase.execute(
+							{
+								lessonId: firstLesson.id,
+								sectionId: firstSection.id,
+								imageProvider: 'openai',
+								audioProvider: 'openai',
+							},
+							input.userId
+						);
+
+					demoSectionVideoUrl = generatedSection.videoUrl;
+					demoSectionVideoStatus = demoSectionVideoUrl ? 'ready' : 'missing';
+				} catch (sectionError) {
+					demoSectionVideoStatus = 'failed';
+					this.logger.error(
+						`Job ${input.jobId}: falha ao gerar vídeo preview da section demo ${firstSection.id}.`,
+						sectionError instanceof Error ? sectionError.stack : undefined
+					);
+				}
+			}
+
 			await this.generationJobRepository.update(
 				input.jobId,
 				{
@@ -185,6 +227,9 @@ export class CourseGenerationOrchestratorUseCase {
 					metadata: {
 						moduleId: firstModule.id,
 						lessonId: firstLesson.id,
+						demoSectionId,
+						demoSectionVideoUrl,
+						demoSectionVideoStatus,
 						totalSections: storyboard.totalSections,
 						totalScenes: storyboard.totalScenes,
 					},
@@ -200,6 +245,9 @@ export class CourseGenerationOrchestratorUseCase {
 					courseId: savedCourse.id,
 					moduleId: firstModule.id,
 					lessonId: firstLesson.id,
+					demoSectionId,
+					demoSectionVideoUrl,
+					demoSectionVideoStatus,
 					totalSections: storyboard.totalSections,
 					totalScenes: storyboard.totalScenes,
 				}
