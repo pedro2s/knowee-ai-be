@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { and, eq, gte, sql } from 'drizzle-orm';
-import { DrizzleService } from 'src/shared/infrastructure/database/drizzle/drizzle.service';
+import { DrizzleService } from 'src/shared/database/infrastructure/drizzle/drizzle.service';
 import {
 	subscribers,
 	subscriptionTier,
 	tokenUsage,
-} from 'src/shared/infrastructure/database/drizzle/schema';
+} from 'src/shared/database/infrastructure/drizzle/schema';
 import type { UsageRepositoryPort } from '../../../domain/ports/usage-repository.port';
 import { SubscriptionResponseDto } from '../../../application/dtos/subscription.response.dto';
 import { asc } from 'drizzle-orm';

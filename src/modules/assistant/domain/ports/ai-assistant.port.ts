@@ -2,7 +2,7 @@ import { QuestionAnswered } from '../entities/question-answer.types';
 import {
 	InteractionContext,
 	InteractionResult,
-} from 'src/shared/domain/types/interaction';
+} from 'src/shared/types/interaction';
 
 export interface AskQuestionInput {
 	question: string;

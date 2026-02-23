@@ -5,8 +5,8 @@ import {
 	AuthContext,
 	DB_CONTEXT,
 	type DbContext,
-} from 'src/shared/application/ports/db-context.port';
-import * as schema from 'src/shared/infrastructure/database/drizzle/schema';
+} from 'src/shared/database/domain/ports/db-context.port';
+import * as schema from 'src/shared/database/infrastructure/drizzle/schema';
 import { QuestionAnswerMapper } from './mappers/question-answer.mapper';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { eq } from 'drizzle-orm';

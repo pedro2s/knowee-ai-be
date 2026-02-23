@@ -5,7 +5,7 @@ import {
 	IsString,
 	ValidateNested,
 } from 'class-validator';
-import { AIProviderDto } from 'src/shared/application/dtos/ai-provider.dto';
+import { AIProviderDto } from 'src/shared/ai-providers/application/dtos/ai-provider.dto';
 
 export class GenerateArticleDto {
 	@IsNotEmpty()

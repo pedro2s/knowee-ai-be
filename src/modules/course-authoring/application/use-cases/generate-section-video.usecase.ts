@@ -8,7 +8,7 @@ import {
 import {
 	MEDIA_SERVICE,
 	type MediaPort,
-} from 'src/shared/application/ports/media.port';
+} from 'src/shared/media/domain/ports/media.port';
 import {
 	Scene,
 	STORYBOARD_GENERATOR,
@@ -19,12 +19,8 @@ import {
 	LESSON_REPOSITORY,
 	type LessonRepositoryPort,
 } from '../../domain/ports/lesson-repository.port';
-import {
-	SUPABASE_SERVICE,
-	type SupabasePort,
-} from 'src/shared/application/ports/supabase.port';
 import { ProviderRegistry } from '../../infrastructure/providers/provider.registry';
-import { AuthContext } from 'src/shared/application/ports/db-context.port';
+import { AuthContext } from 'src/shared/database/domain/ports/db-context.port';
 import { ScriptSection } from '../../domain/entities/lesson-script.types';
 import {
 	COURSE_REPOSITORY,
@@ -36,6 +32,9 @@ import {
 } from '../../domain/ports/module-repository.port';
 import fs from 'fs/promises';
 import path from 'path';
+import { SUPABASE_CLIENT } from 'src/shared/supabase/subapase.constants';
+import { SupabaseClient } from '@supabase/supabase-js';
+import { ProviderRegistry as SharedProviderRegistry } from 'src/shared/ai-providers/infrastructure/registry/provider.registry';
 
 @Injectable()
 export class GenerateSectionVideoUseCase {
@@ -62,9 +61,10 @@ export class GenerateSectionVideoUseCase {
 		private readonly storyboardGenerator: StoryboardGeneratorPort,
 		@Inject(MEDIA_SERVICE)
 		private readonly mediaService: MediaPort,
-		@Inject(SUPABASE_SERVICE)
-		private readonly supabaseService: SupabasePort,
-		private readonly providerRegistry: ProviderRegistry
+		@Inject(SUPABASE_CLIENT)
+		private readonly supabaseClient: SupabaseClient,
+		private readonly providerRegistry: ProviderRegistry,
+		private readonly sharedProviderRegistry: SharedProviderRegistry
 	) {}
 
 	async execute(input: GenerateSectionVideoDto, userId: string) {
@@ -136,13 +136,10 @@ export class GenerateSectionVideoUseCase {
 			);
 		}
 
-		const audioGen = this.providerRegistry.getGenerateAudioStrategy(
-			input.ai?.provider || 'openai'
-		);
-
-		const imageGen = this.providerRegistry.getGenerateImageStrategy(
-			input.ai?.provider || 'openai'
-		);
+		const audioProvider = input.audioProvider || input.ai?.provider || 'openai';
+		const imageProvider = input.imageProvider || input.ai?.provider || 'openai';
+		const audioGen = this.sharedProviderRegistry.get(audioProvider, 'tts');
+		const imageGen = this.sharedProviderRegistry.get(imageProvider, 'image');
 
 		const tempDir = await fs.mkdtemp(`section-${section.id}-`);
 		const tempFilePaths: string[] = [];
@@ -158,15 +155,17 @@ export class GenerateSectionVideoUseCase {
 					${this.NOTEBOOKLM_STYLE_PROMPT}
 					Make sure the background is a solid color (hex #F5F5F7) to match a video canvas.`;
 
-				const [imageBuffer, audioBuffer] = await Promise.all([
-					imageGen.generate({
-						prompt: finalImagePrompt,
-						size: '1536x1024', // Aspect ratio 3:2 é bom, mas 16:9 (1920x1080) é melhor para vídeo
-					}),
-					audioGen.generate({
-						text: scene.narration,
-					}),
-				]);
+				const [{ content: imageBuffer }, { content: audioBuffer }] =
+					await Promise.all([
+						imageGen.generate({
+							prompt: finalImagePrompt,
+							size: '1536x1024', // Aspect ratio 3:2 é bom, mas 16:9 (1920x1080) é melhor para vídeo
+						}),
+						audioGen.generate({
+							text: scene.narration,
+							voice: input.audioVoiceId,
+						}),
+					]);
 
 				const imagePath = path.join(tempDir, `image-${i}.jpg`);
 				const audioPath = path.join(tempDir, `scene-${i}.mp3`);
@@ -215,17 +214,15 @@ export class GenerateSectionVideoUseCase {
 			const previousVideoPath = (lesson.content as { videoPath?: string })
 				?.videoPath;
 			if (previousVideoPath) {
-				await this.supabaseService
-					.getClient()
-					.storage.from('lesson-videos')
+				await this.supabaseClient.storage
+					.from('lesson-videos')
 					.remove([previousVideoPath]);
 			}
 
 			const finalVideoBuffer = await fs.readFile(finalVideoPath);
 
-			const { error: uploadError } = await this.supabaseService
-				.getClient()
-				.storage.from('lesson-videos') // Assuming 'lessons' bucket
+			const { error: uploadError } = await this.supabaseClient.storage
+				.from('lesson-videos') // Assuming 'lessons' bucket
 				.upload(supabasePath, finalVideoBuffer, {
 					contentType: 'video/mp4',
 					upsert: true,
@@ -240,9 +237,8 @@ export class GenerateSectionVideoUseCase {
 			}
 
 			// Obtem a url publica do vído no Supabase
-			const { data: publicUrlData } = this.supabaseService
-				.getClient()
-				.storage.from('lesson-videos')
+			const { data: publicUrlData } = this.supabaseClient.storage
+				.from('lesson-videos')
 				.getPublicUrl(supabasePath);
 
 			section.videoPath = supabasePath;

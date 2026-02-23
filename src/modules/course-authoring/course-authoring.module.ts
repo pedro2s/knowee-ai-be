@@ -2,20 +2,18 @@ import { Module } from '@nestjs/common';
 import { GenerateLessonAudioUseCase } from './application/use-cases/generate-lesson-audio.usecase';
 import { DrizzleCourseRepository } from './infrastructure/persistence/drizzle/drizzle-course.repository';
 import { GenerateCourseUseCase } from './application/use-cases/generate-course.usecase';
-import { AIModule } from 'src/shared/infrastructure/ai/ai.module';
+import { AIProvidersModule } from 'src/shared/ai-providers/ai-providers.module';
 import { DrizzleLessonRepository } from './infrastructure/persistence/drizzle/drizzle-lesson.repository';
-import { MediaModule } from 'src/shared/infrastructure/media/media.module';
+import { MediaModule } from 'src/shared/media/media.module';
 import { LESSON_REPOSITORY } from './domain/ports/lesson-repository.port';
 import { COURSE_REPOSITORY } from './domain/ports/course-repository.port';
-import { DatabaseModule } from 'src/shared/infrastructure/database/database.module';
+import { DatabaseModule } from 'src/shared/database/database.module';
 import { CoursesController } from './infrastructure/controllers/courses.controller';
 import { LessonsController } from './infrastructure/controllers/lessons.controller';
 import { FetchCoursesUseCase } from './application/use-cases/fetch-courses.usecase';
 import { GetCourseUseCase } from './application/use-cases/get-course.usecase';
 import { ProviderRegistry } from './infrastructure/providers/provider.registry';
 import { OpenAICourseGeneratorAdapter } from './infrastructure/providers/openai/openai-course-generator.adapter';
-import { OpenAIAudioGeneratorAdapter } from './infrastructure/providers/openai/openai-audio-generator.adapter';
-import { OpenAIImageGeneratorAdapter } from './infrastructure/providers/openai/openai-image-generator.adapter';
 import { ModulesController } from './infrastructure/controllers/modules.controller';
 import { GetModuleUseCase } from './application/use-cases/get-module.usecase';
 import { GetLessonUseCase } from './application/use-cases/get-lesson.usecase';
@@ -25,10 +23,9 @@ import { FetchModulesUseCase } from './application/use-cases/fetch-modules.useca
 import { CreateModuleUseCase } from './application/use-cases/create-module.usecase';
 import { DeleteModuleUseCase } from './application/use-cases/delete-module.usecase';
 import { UpdateModuleUseCase } from './application/use-cases/update-module.usecase';
-import { HistoryModule } from '../history/history.module';
-import { FileProcessingModule } from 'src/shared/infrastructure/file-processing/file-processing.module';
-import { EmbeddingModule } from 'src/shared/infrastructure/embeddings/embedding.module';
-import { TokenUsageModule } from 'src/shared/infrastructure/token-usage/token-usage.module';
+import { HistoryModule } from '../../shared/history/history.module';
+import { StorageModule } from 'src/shared/storage/storage.module';
+import { TokenUsageModule } from 'src/shared/token-usage/token-usage.module';
 import { GeneratorLessonVideoUseCase } from './application/use-cases/generate-lesson-video.usecase';
 import { UpdateCourseWithModuleTreeUseCase } from './application/use-cases/update-course-with-module-tree.usecase';
 import { UpdateLessonUseCase } from './application/use-cases/update-lesson.usecase';
@@ -39,7 +36,7 @@ import { OpenAIArticleGeneratorAdapter } from './infrastructure/providers/openai
 import { GenerateArticleUseCase } from './application/use-cases/generate-article.usecase';
 import { OpenAILessonScriptGeneratorAdapter } from './infrastructure/providers/openai/openai-lesson-script-generator.adapter';
 import { GenerateLessonScriptUseCase } from './application/use-cases/generate-lesson-script.usecase';
-import { SupabaseModule } from 'src/shared/infrastructure/supabase/supabase.module';
+import { SupabaseModule } from 'src/shared/supabase/supabase.module';
 import { OpenAIStoryboardGeneratorAdapter } from './infrastructure/providers/openai/openai-storyboard-generator.adapter';
 import { STORYBOARD_GENERATOR } from './domain/ports/storyboard-generator.port';
 import { GenerateSectionVideoUseCase } from './application/use-cases/generate-section-video.usecase';
@@ -59,6 +56,18 @@ import { ExportCourseScormUseCase } from './application/use-cases/export-course-
 import { SCORM_PACKAGE_GENERATOR } from './domain/ports/scorm-package-generator.port';
 import { ScormPackageGeneratorAdapter } from './infrastructure/providers/scorm/scorm-package-generator.adapter';
 import { ScormManifestBuilder } from './infrastructure/providers/scorm/scorm-manifest.builder';
+import { StartCourseGenerationUseCase } from './application/use-cases/start-course-generation.usecase';
+import { CourseGenerationOrchestratorUseCase } from './application/use-cases/course-generation-orchestrator.usecase';
+import { GENERATION_JOB_REPOSITORY } from './domain/ports/generation-job-repository.port';
+import { DrizzleGenerationJobRepository } from './infrastructure/persistence/drizzle/drizzle-generation-job.repository';
+import { GenerationEventsService } from './application/services/generation-events.service';
+import { GetGenerationJobUseCase } from './application/use-cases/get-generation-job.usecase';
+import { GenerationController } from './infrastructure/controllers/generation.controller';
+import { GenerateLessonStoryboardUseCase } from './application/use-cases/generate-lesson-storyboard.usecase';
+import { ProviderPreferencesModule } from '../provider-preferences/provider-preferences.module';
+import { StartAssetsGenerationUseCase } from './application/use-cases/start-assets-generation.usecase';
+import { AssetsGenerationOrchestratorUseCase } from './application/use-cases/assets-generation-orchestrator.usecase';
+import { GetActiveGenerationJobByCourseUseCase } from './application/use-cases/get-active-generation-job-by-course.usecase';
 
 @Module({
 	controllers: [
@@ -66,22 +75,34 @@ import { ScormManifestBuilder } from './infrastructure/providers/scorm/scorm-man
 		ModulesController,
 		LessonsController,
 		QuickActionsController,
+		GenerationController,
 	],
 	imports: [
 		DatabaseModule,
-		AIModule,
+		AIProvidersModule,
 		MediaModule,
 		HistoryModule,
-		EmbeddingModule,
-		FileProcessingModule,
+		StorageModule,
 		TokenUsageModule,
 		SupabaseModule,
+		ProviderPreferencesModule,
 	],
 	providers: [
 		{ provide: COURSE_REPOSITORY, useClass: DrizzleCourseRepository },
 		{ provide: LESSON_REPOSITORY, useClass: DrizzleLessonRepository },
 		{ provide: MODULE_REPOSITORY, useClass: DrizzleModuleRepository },
+		{
+			provide: GENERATION_JOB_REPOSITORY,
+			useClass: DrizzleGenerationJobRepository,
+		},
 		GenerateCourseUseCase,
+		StartCourseGenerationUseCase,
+		CourseGenerationOrchestratorUseCase,
+		StartAssetsGenerationUseCase,
+		AssetsGenerationOrchestratorUseCase,
+		GetGenerationJobUseCase,
+		GetActiveGenerationJobByCourseUseCase,
+		GenerateLessonStoryboardUseCase,
 		GenerateModuleUseCase,
 		GenerateArticleUseCase,
 		GenerateLessonScriptUseCase,
@@ -108,8 +129,6 @@ import { ScormManifestBuilder } from './infrastructure/providers/scorm/scorm-man
 		ProviderRegistry,
 		OpenAICourseGeneratorAdapter,
 		OpenAIModuleGeneratorAdapter,
-		OpenAIAudioGeneratorAdapter,
-		OpenAIImageGeneratorAdapter,
 		OpenAIArticleGeneratorAdapter,
 		OpenAILessonScriptGeneratorAdapter,
 		{
@@ -131,6 +150,7 @@ import { ScormManifestBuilder } from './infrastructure/providers/scorm/scorm-man
 		},
 		OpenAIGenerateAssessmentsAgentAdapter,
 		ScormManifestBuilder,
+		GenerationEventsService,
 		{
 			provide: SCORM_PACKAGE_GENERATOR,
 			useClass: ScormPackageGeneratorAdapter,

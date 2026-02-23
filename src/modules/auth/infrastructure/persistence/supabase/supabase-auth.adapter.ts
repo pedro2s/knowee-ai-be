@@ -1,18 +1,15 @@
 import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { AuthServicePort } from '../../../domain/ports/auth.service.port';
-import {
-	SUPABASE_SERVICE,
-	type SupabasePort,
-} from 'src/shared/application/ports/supabase.port';
 import { SignInDto } from '../../../application/dtos/sign-in.dto';
 import { SignUpDto } from '../../../application/dtos/sign-up.dto';
-import { User, AuthError } from '@supabase/supabase-js';
+import { User, AuthError, SupabaseClient } from '@supabase/supabase-js';
+import { SUPABASE_CLIENT } from 'src/shared/supabase/subapase.constants';
 
 @Injectable()
 export class SupabaseAuthAdapter extends AuthServicePort {
 	constructor(
-		@Inject(SUPABASE_SERVICE)
-		private readonly supabaseService: SupabasePort
+		@Inject(SUPABASE_CLIENT)
+		private readonly supabaseClient: SupabaseClient
 	) {
 		super();
 	}
@@ -29,9 +26,7 @@ export class SupabaseAuthAdapter extends AuthServicePort {
 				session: { access_token: string; refresh_token: string } | null;
 			};
 			error: AuthError | null;
-		} = await this.supabaseService
-			.getClient()
-			.auth.signInWithPassword({ email, password });
+		} = await this.supabaseClient.auth.signInWithPassword({ email, password });
 
 		if (error) {
 			throw error;
@@ -51,7 +46,7 @@ export class SupabaseAuthAdapter extends AuthServicePort {
 			data,
 			error,
 		}: { data: { user: User | null }; error: AuthError | null } =
-			await this.supabaseService.getClient().auth.signUp({
+			await this.supabaseClient.auth.signUp({
 				email,
 				password,
 				options: fullName
@@ -81,9 +76,9 @@ export class SupabaseAuthAdapter extends AuthServicePort {
 		const {
 			data: { session },
 			error,
-		} = await this.supabaseService
-			.getClient()
-			.auth.refreshSession({ refresh_token: refreshToken });
+		} = await this.supabaseClient.auth.refreshSession({
+			refresh_token: refreshToken,
+		});
 
 		if (error) {
 			throw error;
@@ -103,22 +98,21 @@ export class SupabaseAuthAdapter extends AuthServicePort {
 		currentPassword: string;
 		newPassword: string;
 	}): Promise<void> {
-		const verify = await this.supabaseService
-			.getClient()
-			.auth.signInWithPassword({
-				email: input.email,
-				password: input.currentPassword,
-			});
+		const verify = await this.supabaseClient.auth.signInWithPassword({
+			email: input.email,
+			password: input.currentPassword,
+		});
 
 		if (verify.error || !verify.data.user) {
 			throw new UnauthorizedException('Senha atual inválida');
 		}
 
-		const update = await this.supabaseService
-			.getClient()
-			.auth.admin.updateUserById(input.userId, {
+		const update = await this.supabaseClient.auth.admin.updateUserById(
+			input.userId,
+			{
 				password: input.newPassword,
-			});
+			}
+		);
 
 		if (update.error) {
 			throw update.error;

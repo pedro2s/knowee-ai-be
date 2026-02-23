@@ -8,19 +8,17 @@ import {
 	LESSON_REPOSITORY,
 	type LessonRepositoryPort,
 } from '../../domain/ports/lesson-repository.port';
-import { AuthContext } from 'src/shared/application/ports/db-context.port';
-import {
-	SUPABASE_SERVICE,
-	type SupabasePort,
-} from 'src/shared/application/ports/supabase.port';
+import { AuthContext } from 'src/shared/database/domain/ports/db-context.port';
+import { SUPABASE_CLIENT } from 'src/shared/supabase/subapase.constants';
+import { SupabaseClient } from '@supabase/supabase-js';
 
 @Injectable()
 export class ManageLessonAssetsUseCase {
 	constructor(
 		@Inject(LESSON_REPOSITORY)
 		private readonly lessonRepository: LessonRepositoryPort,
-		@Inject(SUPABASE_SERVICE)
-		private readonly supabaseService: SupabasePort
+		@Inject(SUPABASE_CLIENT)
+		private readonly supabaseClient: SupabaseClient
 	) {}
 
 	async uploadAudio(input: {
@@ -93,17 +91,13 @@ export class ManageLessonAssetsUseCase {
 		const content = (lesson.content as Record<string, unknown>) || {};
 		const oldPath = content[config.pathKey] as string | undefined;
 		if (oldPath) {
-			await this.supabaseService
-				.getClient()
-				.storage.from(config.bucket)
-				.remove([oldPath]);
+			await this.supabaseClient.storage.from(config.bucket).remove([oldPath]);
 		}
 
 		const originalName = input.file.originalname.replace(/\s+/g, '-');
 		const uploadPath = `${input.userId}/${input.lessonId}/${Date.now()}-${originalName}`;
-		const upload = await this.supabaseService
-			.getClient()
-			.storage.from(config.bucket)
+		const upload = await this.supabaseClient.storage
+			.from(config.bucket)
 			.upload(uploadPath, input.file.buffer, {
 				contentType: input.file.mimetype,
 				upsert: true,
@@ -113,9 +107,8 @@ export class ManageLessonAssetsUseCase {
 			throw new PreconditionFailedException(upload.error.message);
 		}
 
-		const publicUrl = this.supabaseService
-			.getClient()
-			.storage.from(config.bucket)
+		const publicUrl = this.supabaseClient.storage
+			.from(config.bucket)
 			.getPublicUrl(uploadPath).data.publicUrl;
 
 		await this.lessonRepository.update(
@@ -156,10 +149,7 @@ export class ManageLessonAssetsUseCase {
 		const content = (lesson.content as Record<string, unknown>) || {};
 		const path = content[config.pathKey] as string | undefined;
 		if (path) {
-			await this.supabaseService
-				.getClient()
-				.storage.from(config.bucket)
-				.remove([path]);
+			await this.supabaseClient.storage.from(config.bucket).remove([path]);
 		}
 
 		const updatedContent = { ...content };

@@ -10,8 +10,8 @@ import {
 } from '@nestjs/common';
 import { CreateModuleUseCase } from '../../application/use-cases/create-module.usecase';
 import { GetModuleUseCase } from '../../application/use-cases/get-module.usecase';
-import { CurrentUser } from 'src/shared/infrastructure/decorators';
-import type { UserPayload } from 'src/shared/domain/types/user-payload';
+import { CurrentUser } from 'src/shared/decorators';
+import type { UserPayload } from 'src/shared/types/user-payload';
 import { SupabaseAuthGuard } from 'src/modules/auth/infrastructure/guards/supabase-auth.guard';
 import { ModuleResponseDto } from '../../application/dtos/module.response.dto';
 import { CreateModuleDto } from '../../application/dtos/create-module.dto';

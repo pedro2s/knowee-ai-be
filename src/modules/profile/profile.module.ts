@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { DatabaseModule } from 'src/shared/infrastructure/database/database.module';
+import { DatabaseModule } from 'src/shared/database/database.module';
 import { ProfileController } from './infrastructure/controllers/profile.controller';
 import { GetProfileUseCase } from './application/use-cases/get-profile.usecase';
 import { UpdateProfileUseCase } from './application/use-cases/update-profile.usecase';

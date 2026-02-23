@@ -8,6 +8,7 @@ import {
 	Param,
 	Patch,
 	Post,
+	Put,
 	Res,
 	StreamableFile,
 	UploadedFiles,
@@ -19,8 +20,8 @@ import { SupabaseAuthGuard } from 'src/modules/auth/infrastructure/guards/supaba
 import { FetchCoursesUseCase } from '../../application/use-cases/fetch-courses.usecase';
 import { CourseResponseDto } from '../../application/dtos/course.response.dto';
 import { GenerateCourseDto } from '../../application/dtos/generate-course.dto';
-import { CurrentUser } from 'src/shared/infrastructure/decorators';
-import type { UserPayload } from 'src/shared/domain/types/user-payload';
+import { CurrentUser } from 'src/shared/decorators';
+import type { UserPayload } from 'src/shared/types/user-payload';
 import { CourseSummaryResponseDto } from '../../application/dtos/course-summary.response.dto';
 import { GetCourseUseCase } from '../../application/use-cases/get-course.usecase';
 import { ModuleResponseDto } from '../../application/dtos/module.response.dto';
@@ -32,12 +33,21 @@ import { ExportCourseScormUseCase } from '../../application/use-cases/export-cou
 import { ExportScormDto } from '../../application/dtos/export-scorm.dto';
 import type { Response } from 'express';
 import { createReadStream } from 'fs';
+import { StartCourseGenerationUseCase } from '../../application/use-cases/start-course-generation.usecase';
+import { StartCourseGenerationResponseDto } from '../../application/dtos/start-course-generation.response.dto';
+import { UpdateProviderPreferencesUseCase } from 'src/modules/provider-preferences/application/use-cases/update-provider-preferences.usecase';
+import { UpdateProviderPreferencesDto } from 'src/modules/provider-preferences/application/dtos/update-provider-preferences.dto';
+import { EffectiveProviderPreferencesResponseDto } from 'src/modules/provider-preferences/application/dtos/provider-preferences.response.dto';
+import { GetProviderPreferencesUseCase } from 'src/modules/provider-preferences/application/use-cases/get-provider-preferences.usecase';
 
 @Controller('courses')
 @UseGuards(SupabaseAuthGuard)
 export class CoursesController {
 	constructor(
 		private readonly createCourse: GenerateCourseUseCase,
+		private readonly startCourseGenerationUseCase: StartCourseGenerationUseCase,
+		private readonly updateProviderPreferencesUseCase: UpdateProviderPreferencesUseCase,
+		private readonly getProviderPreferencesUseCase: GetProviderPreferencesUseCase,
 		private readonly fetchCourses: FetchCoursesUseCase,
 		private readonly getCourse: GetCourseUseCase,
 		private readonly fetchModules: FetchModulesUseCase,
@@ -80,6 +90,27 @@ export class CoursesController {
 		return CourseResponseDto.fromDomain(courseEntity);
 	}
 
+	@Post('/generate-async')
+	@UseInterceptors(FilesInterceptor('files'))
+	async createAsync(
+		@UploadedFiles() files: Express.Multer.File[],
+		@Body() body: GenerateCourseDto,
+		@CurrentUser() user: UserPayload
+	): Promise<StartCourseGenerationResponseDto> {
+		const job = await this.startCourseGenerationUseCase.execute({
+			data: body,
+			files: files ?? [],
+			userId: user.id,
+		});
+
+		return {
+			jobId: job.id,
+			status: job.status,
+			phase: job.phase,
+			progress: job.progress,
+		};
+	}
+
 	@Get()
 	async findAll(
 		@CurrentUser() user: UserPayload
@@ -108,6 +139,31 @@ export class CoursesController {
 	): Promise<CourseResponseDto> {
 		const course = await this.updateCourse.execute(id, data, user.id);
 		return CourseResponseDto.fromDomain(course);
+	}
+
+	@Put('/:id/provider-preferences')
+	async updateCourseProviderPreferences(
+		@Param('id') id: string,
+		@CurrentUser() user: UserPayload,
+		@Body() dto: UpdateProviderPreferencesDto
+	): Promise<EffectiveProviderPreferencesResponseDto> {
+		await this.updateProviderPreferencesUseCase.execute({
+			userId: user.id,
+			courseId: id,
+			selection: {
+				imageProvider: dto.imageProvider,
+				audioProvider: dto.audioProvider,
+				audioVoiceId: dto.audioVoiceId,
+				videoProvider: dto.videoProvider,
+				advancedSettings: dto.advancedSettings ?? {},
+			},
+		});
+
+		const prefs = await this.getProviderPreferencesUseCase.execute({
+			userId: user.id,
+			courseId: id,
+		});
+		return EffectiveProviderPreferencesResponseDto.fromDomain(prefs);
 	}
 
 	@Post('/:id/export/scorm')

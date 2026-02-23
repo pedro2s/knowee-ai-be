@@ -2,7 +2,7 @@ import { GeneratedModule } from '../entities/course.types';
 import {
 	InteractionContext,
 	InteractionResult,
-} from 'src/shared/domain/types/interaction';
+} from 'src/shared/types/interaction';
 
 export interface GenerateModuleInput {
 	currentCourseStructure: {

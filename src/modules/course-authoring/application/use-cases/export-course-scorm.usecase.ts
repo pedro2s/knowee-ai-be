@@ -8,7 +8,7 @@ import {
 	type ScormPackageGeneratorPort,
 	type ScormPackageGeneratorResult,
 } from '../../domain/ports/scorm-package-generator.port';
-import { AuthContext } from 'src/shared/application/ports/db-context.port';
+import { AuthContext } from 'src/shared/database/domain/ports/db-context.port';
 import type { ScormCourseExportInput } from '../../domain/entities/scorm-export.types';
 import type { ExportScormDto } from '../dtos/export-scorm.dto';
 
