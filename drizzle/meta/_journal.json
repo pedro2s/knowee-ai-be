@@ -36,6 +36,13 @@
 			"when": 1771767900000,
 			"tag": "0004_provider_preferences",
 			"breakpoints": true
+		},
+		{
+			"idx": 5,
+			"version": "7",
+			"when": 1771948800000,
+			"tag": "0005_freemium_sample_controls",
+			"breakpoints": true
 		}
 	]
 }

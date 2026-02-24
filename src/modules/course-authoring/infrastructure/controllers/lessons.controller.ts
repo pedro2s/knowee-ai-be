@@ -37,9 +37,11 @@ import { ManageLessonAssetsUseCase } from '../../application/use-cases/manage-le
 import { GenerateQuizDto } from '../../application/dtos/generate-quiz.dto';
 import { GeneratedQuizResponseDto } from '../../application/dtos/generated-quiz.response.dto';
 import { GenerateQuizUseCase } from '../../application/use-cases/generate-quiz.usecase';
+import { ProductAccessGuard } from 'src/modules/access-control/infrastructure/guards/product-access.guard';
+import { RequireAccess } from 'src/modules/access-control/infrastructure/decorators/require-access.decorator';
 
 @Controller('lessons')
-@UseGuards(SupabaseAuthGuard)
+@UseGuards(SupabaseAuthGuard, ProductAccessGuard)
 export class LessonsController {
 	constructor(
 		private readonly getLessonUseCase: GetLessonUseCase,
@@ -57,6 +59,7 @@ export class LessonsController {
 	// 1. Rotas Específicas (SEM ID) - Devem vir PRIMEIRO
 
 	@Post('/generate-article')
+	@RequireAccess('ai.interaction')
 	async generateArticle(
 		@Body() data: GenerateArticleDto,
 		@CurrentUser() user: UserPayload
@@ -69,6 +72,7 @@ export class LessonsController {
 	}
 
 	@Post('/generate-script')
+	@RequireAccess('ai.interaction')
 	async generateScriptContent(
 		@Body() body: GenerateLessonScriptDto,
 		@CurrentUser() user: UserPayload
@@ -81,6 +85,7 @@ export class LessonsController {
 	}
 
 	@Post('generate-video')
+	@RequireAccess('ai.interaction')
 	async generateVideo(
 		@Body() body: GenerateSectionVideoDto,
 		@CurrentUser() user: UserPayload
@@ -92,6 +97,7 @@ export class LessonsController {
 	}
 
 	@Post('/reorder')
+	@RequireAccess('lesson.reorder')
 	async reorderLessons(
 		@Body() dto: ReorderLessonsDto,
 		@CurrentUser() user: UserPayload
@@ -107,6 +113,7 @@ export class LessonsController {
 	}
 
 	@Post('/generate-quiz')
+	@RequireAccess('ai.interaction')
 	async generateQuiz(
 		@Body() data: GenerateQuizDto,
 		@CurrentUser() user: UserPayload
@@ -118,6 +125,7 @@ export class LessonsController {
 	// 2. Rotas Específicas (COM ID)
 
 	@Post('/:id/generate-audio')
+	@RequireAccess('ai.interaction')
 	generateLessonAudio(
 		@Param('id') lessonId: string,
 		@Body() data: GenerateLessonAudioDto,
@@ -132,6 +140,7 @@ export class LessonsController {
 	}
 
 	@Post('/:id/video')
+	@RequireAccess('ai.interaction')
 	generateLessonVideo(
 		@Param('id') lessonId: string,
 		@Body() body,
@@ -155,6 +164,7 @@ export class LessonsController {
 	}
 
 	@Post('/:id/merge-videos')
+	@RequireAccess('ai.interaction')
 	async mergeLessonSectionsVideo(
 		@Param('id') lessonId: string,
 		@CurrentUser() user: UserPayload
@@ -163,6 +173,7 @@ export class LessonsController {
 	}
 
 	@Post('/:id/assets/audio')
+	@RequireAccess('lesson.assets.manage')
 	@UseInterceptors(FileInterceptor('file'))
 	async uploadAudio(
 		@Param('id') lessonId: string,
@@ -177,6 +188,7 @@ export class LessonsController {
 	}
 
 	@Post('/:id/assets/pdf')
+	@RequireAccess('lesson.assets.manage')
 	@UseInterceptors(FileInterceptor('file'))
 	async uploadPdf(
 		@Param('id') lessonId: string,
@@ -191,6 +203,7 @@ export class LessonsController {
 	}
 
 	@Delete('/:id/assets/audio')
+	@RequireAccess('lesson.assets.manage')
 	@HttpCode(200)
 	async deleteAudio(
 		@Param('id') lessonId: string,
@@ -207,6 +220,7 @@ export class LessonsController {
 	}
 
 	@Delete('/:id/assets/pdf')
+	@RequireAccess('lesson.assets.manage')
 	@HttpCode(200)
 	async deletePdf(
 		@Param('id') lessonId: string,
@@ -225,6 +239,7 @@ export class LessonsController {
 	// 3. Rotas Genéricas (CRUD) - Devem vir POR ÚLTIMO
 
 	@Get('/:id')
+	@RequireAccess('lesson.read')
 	async getLesson(
 		@Param('id') lessonId: string,
 		@CurrentUser() user: UserPayload
@@ -234,6 +249,7 @@ export class LessonsController {
 	}
 
 	@Put('/:id')
+	@RequireAccess('lesson.update')
 	async updateLesson(
 		@Param('id') lessonId: string,
 		@Body() data: UpdateLessonDto,

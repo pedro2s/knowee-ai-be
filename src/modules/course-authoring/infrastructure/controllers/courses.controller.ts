@@ -39,15 +39,19 @@ import { UpdateProviderPreferencesUseCase } from 'src/modules/provider-preferenc
 import { UpdateProviderPreferencesDto } from 'src/modules/provider-preferences/application/dtos/update-provider-preferences.dto';
 import { EffectiveProviderPreferencesResponseDto } from 'src/modules/provider-preferences/application/dtos/provider-preferences.response.dto';
 import { GetProviderPreferencesUseCase } from 'src/modules/provider-preferences/application/use-cases/get-provider-preferences.usecase';
+import { ProductAccessGuard } from 'src/modules/access-control/infrastructure/guards/product-access.guard';
+import { RequireAccess } from 'src/modules/access-control/infrastructure/decorators/require-access.decorator';
+import { GetUserEntitlementsUseCase } from 'src/modules/access-control/application/use-cases/get-user-entitlements.usecase';
 
 @Controller('courses')
-@UseGuards(SupabaseAuthGuard)
+@UseGuards(SupabaseAuthGuard, ProductAccessGuard)
 export class CoursesController {
 	constructor(
 		private readonly createCourse: GenerateCourseUseCase,
 		private readonly startCourseGenerationUseCase: StartCourseGenerationUseCase,
 		private readonly updateProviderPreferencesUseCase: UpdateProviderPreferencesUseCase,
 		private readonly getProviderPreferencesUseCase: GetProviderPreferencesUseCase,
+		private readonly getUserEntitlementsUseCase: GetUserEntitlementsUseCase,
 		private readonly fetchCourses: FetchCoursesUseCase,
 		private readonly getCourse: GetCourseUseCase,
 		private readonly fetchModules: FetchModulesUseCase,
@@ -57,40 +61,8 @@ export class CoursesController {
 
 	// 1. Rotas Específicas (SEM ID) - Devem vir PRIMEIRO
 
-	// ...
-
-	// 2. Rotas Específicas (COM ID)
-
-	@Get('/:id/modules')
-	async findModules(
-		@Param('id') id: string,
-		@CurrentUser() user: UserPayload
-	): Promise<ModuleResponseDto[]> {
-		const modules = await this.fetchModules.execute(id, user.id);
-		return modules.map((module) => ModuleResponseDto.fromDomain(module));
-	}
-
-	// 3. Rotas Genéricas (CRUD) - Devem vir POR ÚLTIMO
-
-	@Post()
-	@UseInterceptors(FilesInterceptor('files'))
-	async create(
-		@UploadedFiles() files: Express.Multer.File[],
-		@Body() body: GenerateCourseDto,
-		@CurrentUser() user: UserPayload
-	): Promise<CourseResponseDto> {
-		// 1. Chama o Caso de Uso passando os dados validos
-		const courseEntity = await this.createCourse.execute({
-			...body,
-			files,
-			userId: user.id,
-		});
-
-		// 2. Converte a Entidade de Domínio para o Contrato da API (Response DTO)
-		return CourseResponseDto.fromDomain(courseEntity);
-	}
-
 	@Post('/generate-async')
+	@RequireAccess('course.generate_async')
 	@UseInterceptors(FilesInterceptor('files'))
 	async createAsync(
 		@UploadedFiles() files: Express.Multer.File[],
@@ -111,37 +83,29 @@ export class CoursesController {
 		};
 	}
 
-	@Get()
-	async findAll(
-		@CurrentUser() user: UserPayload
-	): Promise<CourseSummaryResponseDto[]> {
-		const courses = await this.fetchCourses.execute(user.id);
-		return courses.map((course) => CourseSummaryResponseDto.fromDomain(course));
-	}
+	// 2. Rotas Específicas (COM ID)
 
-	@Get('/:id')
-	async findOne(
+	@Get('/:id/modules')
+	@RequireAccess('course.read')
+	async findModules(
 		@Param('id') id: string,
 		@CurrentUser() user: UserPayload
-	): Promise<CourseResponseDto> {
-		const course = await this.getCourse.execute({
-			id,
-			userId: user.id,
-		});
-		return CourseResponseDto.fromDomain(course);
-	}
+	): Promise<ModuleResponseDto[]> {
+		const modules = await this.fetchModules.execute(id, user.id);
+		const entitlements = await this.getUserEntitlementsUseCase.execute(user.id);
+		const isFreemiumScoped =
+			!entitlements.hasActiveSubscription && entitlements.sampleConsumed;
+		const visibleModules = isFreemiumScoped
+			? modules.filter(
+					(module) => module.id === entitlements.freemiumScope.firstModuleId
+				)
+			: modules;
 
-	@Patch('/:id')
-	async update(
-		@Param('id') id: string,
-		@Body() data: UpdateCourseDto,
-		@CurrentUser() user: UserPayload
-	): Promise<CourseResponseDto> {
-		const course = await this.updateCourse.execute(id, data, user.id);
-		return CourseResponseDto.fromDomain(course);
+		return visibleModules.map((module) => ModuleResponseDto.fromDomain(module));
 	}
 
 	@Put('/:id/provider-preferences')
+	@RequireAccess('course.provider_preferences.update')
 	async updateCourseProviderPreferences(
 		@Param('id') id: string,
 		@CurrentUser() user: UserPayload,
@@ -167,6 +131,7 @@ export class CoursesController {
 	}
 
 	@Post('/:id/export/scorm')
+	@RequireAccess('course.export_scorm')
 	@HttpCode(200)
 	async exportScorm(
 		@Param(
@@ -202,5 +167,98 @@ export class CoursesController {
 		res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
 
 		return new StreamableFile(createReadStream(zipPath));
+	}
+
+	// 3. Rotas Genéricas (CRUD) - Devem vir POR ÚLTIMO
+
+	@Post()
+	@RequireAccess('course.create_manual')
+	@UseInterceptors(FilesInterceptor('files'))
+	async create(
+		@UploadedFiles() files: Express.Multer.File[],
+		@Body() body: GenerateCourseDto,
+		@CurrentUser() user: UserPayload
+	): Promise<CourseResponseDto> {
+		// 1. Chama o Caso de Uso passando os dados validos
+		const courseEntity = await this.createCourse.execute({
+			...body,
+			files,
+			userId: user.id,
+		});
+
+		// 2. Converte a Entidade de Domínio para o Contrato da API (Response DTO)
+		return CourseResponseDto.fromDomain(courseEntity);
+	}
+
+	@Get()
+	async findAll(
+		@CurrentUser() user: UserPayload
+	): Promise<CourseSummaryResponseDto[]> {
+		const courses = await this.fetchCourses.execute(user.id);
+		const entitlements = await this.getUserEntitlementsUseCase.execute(user.id);
+		const isFreemiumScoped =
+			!entitlements.hasActiveSubscription && entitlements.sampleConsumed;
+		const visibleCourses = isFreemiumScoped
+			? courses.filter(
+					(course) => course.id === entitlements.freemiumScope.sampleCourseId
+				)
+			: courses;
+		return visibleCourses.map((course) =>
+			CourseSummaryResponseDto.fromDomain(course)
+		);
+	}
+
+	@Get('/:id')
+	@RequireAccess('course.read')
+	async findOne(
+		@Param('id') id: string,
+		@CurrentUser() user: UserPayload
+	): Promise<CourseResponseDto> {
+		const course = await this.getCourse.execute({
+			id,
+			userId: user.id,
+		});
+		const entitlements = await this.getUserEntitlementsUseCase.execute(user.id);
+		const dto = CourseResponseDto.fromDomain(course);
+		return this.restrictCourseDtoForFreemium(dto, entitlements);
+	}
+
+	@Patch('/:id')
+	@RequireAccess('course.update')
+	async update(
+		@Param('id') id: string,
+		@Body() data: UpdateCourseDto,
+		@CurrentUser() user: UserPayload
+	): Promise<CourseResponseDto> {
+		const course = await this.updateCourse.execute(id, data, user.id);
+		return CourseResponseDto.fromDomain(course);
+	}
+
+	private restrictCourseDtoForFreemium(
+		course: CourseResponseDto,
+		entitlements: Awaited<ReturnType<GetUserEntitlementsUseCase['execute']>>
+	): CourseResponseDto {
+		const isFreemiumScoped =
+			!entitlements.hasActiveSubscription && entitlements.sampleConsumed;
+		if (!isFreemiumScoped) {
+			return course;
+		}
+
+		const firstModuleId = entitlements.freemiumScope.firstModuleId;
+		const firstLessonId = entitlements.freemiumScope.firstLessonId;
+		if (!firstModuleId) {
+			return { ...course, modules: [] };
+		}
+
+		const visibleModules = (course.modules ?? [])
+			.filter((module) => module.id === firstModuleId)
+			.map((module) => ({
+				...module,
+				lessons: (module.lessons ?? []).filter(
+					(lesson) => lesson.id === firstLessonId
+				),
+			}));
+
+		return { ...course, modules: visibleModules };
 	}
 }

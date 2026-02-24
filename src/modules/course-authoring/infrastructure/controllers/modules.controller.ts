@@ -18,18 +18,23 @@ import { CreateModuleDto } from '../../application/dtos/create-module.dto';
 import { DeleteModuleUseCase } from '../../application/use-cases/delete-module.usecase';
 import { UpdateModuleDto } from '../../application/dtos/update-module.dto';
 import { UpdateModuleUseCase } from '../../application/use-cases/update-module.usecase';
+import { ProductAccessGuard } from 'src/modules/access-control/infrastructure/guards/product-access.guard';
+import { RequireAccess } from 'src/modules/access-control/infrastructure/decorators/require-access.decorator';
+import { GetUserEntitlementsUseCase } from 'src/modules/access-control/application/use-cases/get-user-entitlements.usecase';
 
 @Controller('modules')
-@UseGuards(SupabaseAuthGuard)
+@UseGuards(SupabaseAuthGuard, ProductAccessGuard)
 export class ModulesController {
 	constructor(
 		private readonly createModule: CreateModuleUseCase,
 		private readonly getModule: GetModuleUseCase,
 		private readonly deleteModule: DeleteModuleUseCase,
-		private readonly updateModule: UpdateModuleUseCase
+		private readonly updateModule: UpdateModuleUseCase,
+		private readonly getUserEntitlementsUseCase: GetUserEntitlementsUseCase
 	) {}
 
 	@Post()
+	@RequireAccess('module.create', { courseIdBody: 'courseId' })
 	async create(
 		@Body() data: CreateModuleDto,
 		@CurrentUser() user: UserPayload
@@ -39,15 +44,19 @@ export class ModulesController {
 	}
 
 	@Get('/:id')
+	@RequireAccess('module.read')
 	async get(
 		@Param('id') id: string,
 		@CurrentUser() user: UserPayload
 	): Promise<ModuleResponseDto> {
 		const module = await this.getModule.execute(id, user.id);
-		return ModuleResponseDto.fromDomain(module);
+		const entitlements = await this.getUserEntitlementsUseCase.execute(user.id);
+		const dto = ModuleResponseDto.fromDomain(module);
+		return this.restrictModuleDtoForFreemium(dto, entitlements);
 	}
 
 	@Patch('/:id')
+	@RequireAccess('module.update')
 	async update(
 		@Param('id') id: string,
 		@Body() data: UpdateModuleDto,
@@ -58,11 +67,30 @@ export class ModulesController {
 	}
 
 	@Delete('/:id')
+	@RequireAccess('module.delete')
 	async delete(
 		@Param('id') id: string,
 		@CurrentUser() user: UserPayload
 	): Promise<{ deletedModule: ModuleResponseDto }> {
 		const { deletedModule } = await this.deleteModule.execute(id, user.id);
 		return { deletedModule: ModuleResponseDto.fromDomain(deletedModule) };
+	}
+
+	private restrictModuleDtoForFreemium(
+		module: ModuleResponseDto,
+		entitlements: Awaited<ReturnType<GetUserEntitlementsUseCase['execute']>>
+	): ModuleResponseDto {
+		const isFreemiumScoped =
+			!entitlements.hasActiveSubscription && entitlements.sampleConsumed;
+		if (!isFreemiumScoped) {
+			return module;
+		}
+
+		return {
+			...module,
+			lessons: (module.lessons ?? []).filter(
+				(lesson) => lesson.id === entitlements.freemiumScope.firstLessonId
+			),
+		};
 	}
 }

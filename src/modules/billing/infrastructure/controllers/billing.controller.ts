@@ -7,6 +7,8 @@ import { GetSubscriptionUseCase } from '../../application/use-cases/get-subscrip
 import { SubscriptionResponseDto } from '../../application/dtos/subscription.response.dto';
 import { Post } from '@nestjs/common';
 import { CreateFreeSubscriptionUseCase } from '../../application/use-cases/create-free-subscription.usecase';
+import { GetUserEntitlementsUseCase } from 'src/modules/access-control/application/use-cases/get-user-entitlements.usecase';
+import { UserEntitlementsResponseDto } from 'src/modules/access-control/application/dtos/user-entitlements.response.dto';
 
 @Controller('billing')
 @UseGuards(SupabaseAuthGuard)
@@ -14,7 +16,8 @@ export class BillingController {
 	constructor(
 		private readonly getUsageUseCase: GetUsageUseCase,
 		private readonly getSubscriptionUseCase: GetSubscriptionUseCase,
-		private readonly createFreeSubscriptionUseCase: CreateFreeSubscriptionUseCase
+		private readonly createFreeSubscriptionUseCase: CreateFreeSubscriptionUseCase,
+		private readonly getUserEntitlementsUseCase: GetUserEntitlementsUseCase
 	) {}
 
 	@Get('usage')
@@ -27,6 +30,14 @@ export class BillingController {
 		@CurrentUser() user: UserPayload
 	): Promise<SubscriptionResponseDto> {
 		return this.getSubscriptionUseCase.execute(user.id);
+	}
+
+	@Get('entitlements')
+	async getEntitlements(
+		@CurrentUser() user: UserPayload
+	): Promise<UserEntitlementsResponseDto> {
+		const entitlements = await this.getUserEntitlementsUseCase.execute(user.id);
+		return UserEntitlementsResponseDto.fromDomain(entitlements);
 	}
 
 	@Post('subscription/free')

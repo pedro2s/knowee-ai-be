@@ -6,9 +6,10 @@ import { USAGE_REPOSITORY } from './domain/ports/usage-repository.port';
 import { DrizzleUsageRepository } from './infrastructure/persistence/drizzle/drizzle-usage.repository';
 import { DatabaseModule } from 'src/shared/database/database.module';
 import { CreateFreeSubscriptionUseCase } from './application/use-cases/create-free-subscription.usecase';
+import { AccessControlModule } from '../access-control/access-control.module';
 
 @Module({
-	imports: [DatabaseModule],
+	imports: [DatabaseModule, AccessControlModule],
 	controllers: [BillingController],
 	providers: [
 		GetUsageUseCase,
