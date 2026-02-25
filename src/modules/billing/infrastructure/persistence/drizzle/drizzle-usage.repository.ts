@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { and, eq, gte, sql } from 'drizzle-orm';
+import { and, desc, eq, gte, sql } from 'drizzle-orm';
 import { DrizzleService } from 'src/shared/database/infrastructure/drizzle/drizzle.service';
 import {
 	subscribers,
@@ -21,7 +21,7 @@ export class DrizzleUsageRepository implements UsageRepositoryPort {
 		const result = await this.drizzle.db.query.subscribers.findFirst({
 			where: and(
 				eq(subscribers.userId, userId),
-				eq(subscribers.subscribed, true)
+				eq(subscribers.status, 'active')
 			),
 			columns: {
 				id: true,
@@ -30,6 +30,32 @@ export class DrizzleUsageRepository implements UsageRepositoryPort {
 		});
 
 		return result || null;
+	}
+
+	async getLatestSubscriptionSnapshot(userId: string): Promise<{
+		id: string;
+		createdAt: string;
+		status: 'free' | 'active' | 'past_due' | 'canceled';
+	} | null> {
+		const result = await this.drizzle.db.query.subscribers.findFirst({
+			where: eq(subscribers.userId, userId),
+			columns: {
+				id: true,
+				createdAt: true,
+				status: true,
+			},
+			orderBy: [desc(subscribers.createdAt)],
+		});
+
+		if (!result) {
+			return null;
+		}
+
+		return {
+			id: result.id,
+			createdAt: result.createdAt,
+			status: result.status as 'free' | 'active' | 'past_due' | 'canceled',
+		};
 	}
 
 	async getUsageInPeriod(
@@ -57,19 +83,17 @@ export class DrizzleUsageRepository implements UsageRepositoryPort {
 		userId: string
 	): Promise<SubscriptionResponseDto | null> {
 		const result = await this.drizzle.db.query.subscribers.findFirst({
-			where: and(
-				eq(subscribers.userId, userId),
-				eq(subscribers.subscribed, true)
-			),
+			where: eq(subscribers.userId, userId),
 			with: {
 				subscriptionTier: true,
 			},
+			orderBy: [desc(subscribers.createdAt)],
 		});
 
 		if (!result) return null;
 
 		return {
-			subscribed: result.subscribed,
+			status: result.status as SubscriptionResponseDto['status'],
 			subscription_tier: result.subscriptionTier
 				? {
 						id: result.subscriptionTier.id,
@@ -93,11 +117,12 @@ export class DrizzleUsageRepository implements UsageRepositoryPort {
 			with: {
 				subscriptionTier: true,
 			},
+			orderBy: [desc(subscribers.createdAt)],
 		});
 
 		if (existing) {
 			return {
-				subscribed: existing.subscribed,
+				status: existing.status as SubscriptionResponseDto['status'],
 				subscription_tier: existing.subscriptionTier
 					? {
 							id: existing.subscriptionTier.id,
@@ -124,12 +149,12 @@ export class DrizzleUsageRepository implements UsageRepositoryPort {
 		await this.drizzle.db.insert(subscribers).values({
 			userId,
 			email,
-			subscribed: false,
+			status: 'free',
 			subscriptionTierId: freeTier.id,
 		});
 
 		return {
-			subscribed: false,
+			status: 'free',
 			subscription_tier: {
 				id: freeTier.id,
 				name: freeTier.name,

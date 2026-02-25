@@ -33,7 +33,7 @@ export class DrizzleAccessControlRepository implements AccessControlRepositoryPo
 		return {
 			id: row.id,
 			createdAt: row.createdAt,
-			subscribed: row.subscribed,
+			status: row.status as SubscriberSnapshot['status'],
 			tierName: row.subscriptionTier?.name ?? null,
 			monthlyTokenLimit: row.subscriptionTier?.monthlyTokenLimit ?? null,
 			sampleCourseId: row.sampleCourseId,

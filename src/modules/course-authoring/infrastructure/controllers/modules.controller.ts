@@ -20,7 +20,6 @@ import { UpdateModuleDto } from '../../application/dtos/update-module.dto';
 import { UpdateModuleUseCase } from '../../application/use-cases/update-module.usecase';
 import { ProductAccessGuard } from 'src/modules/access-control/infrastructure/guards/product-access.guard';
 import { RequireAccess } from 'src/modules/access-control/infrastructure/decorators/require-access.decorator';
-import { GetUserEntitlementsUseCase } from 'src/modules/access-control/application/use-cases/get-user-entitlements.usecase';
 
 @Controller('modules')
 @UseGuards(SupabaseAuthGuard, ProductAccessGuard)
@@ -29,8 +28,7 @@ export class ModulesController {
 		private readonly createModule: CreateModuleUseCase,
 		private readonly getModule: GetModuleUseCase,
 		private readonly deleteModule: DeleteModuleUseCase,
-		private readonly updateModule: UpdateModuleUseCase,
-		private readonly getUserEntitlementsUseCase: GetUserEntitlementsUseCase
+		private readonly updateModule: UpdateModuleUseCase
 	) {}
 
 	@Post()
@@ -44,19 +42,17 @@ export class ModulesController {
 	}
 
 	@Get('/:id')
-	@RequireAccess('module.read')
+	@RequireAccess('module.read', { moduleIdParam: 'id' })
 	async get(
 		@Param('id') id: string,
 		@CurrentUser() user: UserPayload
 	): Promise<ModuleResponseDto> {
 		const module = await this.getModule.execute(id, user.id);
-		const entitlements = await this.getUserEntitlementsUseCase.execute(user.id);
-		const dto = ModuleResponseDto.fromDomain(module);
-		return this.restrictModuleDtoForFreemium(dto, entitlements);
+		return ModuleResponseDto.fromDomain(module);
 	}
 
 	@Patch('/:id')
-	@RequireAccess('module.update')
+	@RequireAccess('module.update', { moduleIdParam: 'id' })
 	async update(
 		@Param('id') id: string,
 		@Body() data: UpdateModuleDto,
@@ -67,30 +63,12 @@ export class ModulesController {
 	}
 
 	@Delete('/:id')
-	@RequireAccess('module.delete')
+	@RequireAccess('module.delete', { moduleIdParam: 'id' })
 	async delete(
 		@Param('id') id: string,
 		@CurrentUser() user: UserPayload
 	): Promise<{ deletedModule: ModuleResponseDto }> {
 		const { deletedModule } = await this.deleteModule.execute(id, user.id);
 		return { deletedModule: ModuleResponseDto.fromDomain(deletedModule) };
-	}
-
-	private restrictModuleDtoForFreemium(
-		module: ModuleResponseDto,
-		entitlements: Awaited<ReturnType<GetUserEntitlementsUseCase['execute']>>
-	): ModuleResponseDto {
-		const isFreemiumScoped =
-			!entitlements.hasActiveSubscription && entitlements.sampleConsumed;
-		if (!isFreemiumScoped) {
-			return module;
-		}
-
-		return {
-			...module,
-			lessons: (module.lessons ?? []).filter(
-				(lesson) => lesson.id === entitlements.freemiumScope.firstLessonId
-			),
-		};
 	}
 }

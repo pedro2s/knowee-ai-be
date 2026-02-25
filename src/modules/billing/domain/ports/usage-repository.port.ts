@@ -10,6 +10,11 @@ export interface UsageRepositoryPort {
 		id: string;
 		createdAt: string;
 	} | null>;
+	getLatestSubscriptionSnapshot(userId: string): Promise<{
+		id: string;
+		createdAt: string;
+		status: 'free' | 'active' | 'past_due' | 'canceled';
+	} | null>;
 	getSubscription(userId: string): Promise<SubscriptionResponseDto | null>;
 	createFreeSubscription(
 		userId: string,

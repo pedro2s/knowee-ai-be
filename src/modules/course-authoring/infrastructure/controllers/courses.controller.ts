@@ -41,7 +41,6 @@ import { EffectiveProviderPreferencesResponseDto } from 'src/modules/provider-pr
 import { GetProviderPreferencesUseCase } from 'src/modules/provider-preferences/application/use-cases/get-provider-preferences.usecase';
 import { ProductAccessGuard } from 'src/modules/access-control/infrastructure/guards/product-access.guard';
 import { RequireAccess } from 'src/modules/access-control/infrastructure/decorators/require-access.decorator';
-import { GetUserEntitlementsUseCase } from 'src/modules/access-control/application/use-cases/get-user-entitlements.usecase';
 
 @Controller('courses')
 @UseGuards(SupabaseAuthGuard, ProductAccessGuard)
@@ -51,7 +50,6 @@ export class CoursesController {
 		private readonly startCourseGenerationUseCase: StartCourseGenerationUseCase,
 		private readonly updateProviderPreferencesUseCase: UpdateProviderPreferencesUseCase,
 		private readonly getProviderPreferencesUseCase: GetProviderPreferencesUseCase,
-		private readonly getUserEntitlementsUseCase: GetUserEntitlementsUseCase,
 		private readonly fetchCourses: FetchCoursesUseCase,
 		private readonly getCourse: GetCourseUseCase,
 		private readonly fetchModules: FetchModulesUseCase,
@@ -92,16 +90,7 @@ export class CoursesController {
 		@CurrentUser() user: UserPayload
 	): Promise<ModuleResponseDto[]> {
 		const modules = await this.fetchModules.execute(id, user.id);
-		const entitlements = await this.getUserEntitlementsUseCase.execute(user.id);
-		const isFreemiumScoped =
-			!entitlements.hasActiveSubscription && entitlements.sampleConsumed;
-		const visibleModules = isFreemiumScoped
-			? modules.filter(
-					(module) => module.id === entitlements.freemiumScope.firstModuleId
-				)
-			: modules;
-
-		return visibleModules.map((module) => ModuleResponseDto.fromDomain(module));
+		return modules.map((module) => ModuleResponseDto.fromDomain(module));
 	}
 
 	@Put('/:id/provider-preferences')
@@ -195,17 +184,7 @@ export class CoursesController {
 		@CurrentUser() user: UserPayload
 	): Promise<CourseSummaryResponseDto[]> {
 		const courses = await this.fetchCourses.execute(user.id);
-		const entitlements = await this.getUserEntitlementsUseCase.execute(user.id);
-		const isFreemiumScoped =
-			!entitlements.hasActiveSubscription && entitlements.sampleConsumed;
-		const visibleCourses = isFreemiumScoped
-			? courses.filter(
-					(course) => course.id === entitlements.freemiumScope.sampleCourseId
-				)
-			: courses;
-		return visibleCourses.map((course) =>
-			CourseSummaryResponseDto.fromDomain(course)
-		);
+		return courses.map((course) => CourseSummaryResponseDto.fromDomain(course));
 	}
 
 	@Get('/:id')
@@ -218,9 +197,7 @@ export class CoursesController {
 			id,
 			userId: user.id,
 		});
-		const entitlements = await this.getUserEntitlementsUseCase.execute(user.id);
-		const dto = CourseResponseDto.fromDomain(course);
-		return this.restrictCourseDtoForFreemium(dto, entitlements);
+		return CourseResponseDto.fromDomain(course);
 	}
 
 	@Patch('/:id')
@@ -232,33 +209,5 @@ export class CoursesController {
 	): Promise<CourseResponseDto> {
 		const course = await this.updateCourse.execute(id, data, user.id);
 		return CourseResponseDto.fromDomain(course);
-	}
-
-	private restrictCourseDtoForFreemium(
-		course: CourseResponseDto,
-		entitlements: Awaited<ReturnType<GetUserEntitlementsUseCase['execute']>>
-	): CourseResponseDto {
-		const isFreemiumScoped =
-			!entitlements.hasActiveSubscription && entitlements.sampleConsumed;
-		if (!isFreemiumScoped) {
-			return course;
-		}
-
-		const firstModuleId = entitlements.freemiumScope.firstModuleId;
-		const firstLessonId = entitlements.freemiumScope.firstLessonId;
-		if (!firstModuleId) {
-			return { ...course, modules: [] };
-		}
-
-		const visibleModules = (course.modules ?? [])
-			.filter((module) => module.id === firstModuleId)
-			.map((module) => ({
-				...module,
-				lessons: (module.lessons ?? []).filter(
-					(lesson) => lesson.id === firstLessonId
-				),
-			}));
-
-		return { ...course, modules: visibleModules };
 	}
 }

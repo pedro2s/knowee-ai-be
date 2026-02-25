@@ -20,6 +20,10 @@ import { AccessControlModule } from '../access-control/access-control.module';
 			useClass: DrizzleUsageRepository,
 		},
 	],
-	exports: [GetUsageUseCase, GetSubscriptionUseCase],
+	exports: [
+		GetUsageUseCase,
+		GetSubscriptionUseCase,
+		CreateFreeSubscriptionUseCase,
+	],
 })
 export class BillingModule {}

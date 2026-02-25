@@ -26,7 +26,7 @@ export class AssistantController {
 	) {}
 
 	@Post('/generate-text')
-	@RequireAccess('ai.interaction')
+	@RequireAccess('ai.interaction', { courseIdBody: 'courseId' })
 	async generateText(
 		@Body() data: GenerateTextDto,
 		@CurrentUser() user: UserPayload
@@ -45,7 +45,7 @@ export class AssistantController {
 	}
 
 	@Post('chat')
-	@RequireAccess('ai.interaction')
+	@RequireAccess('ai.interaction', { courseIdBody: 'courseId' })
 	async question(
 		@Body() body: SubmitQuestionDto,
 		@CurrentUser() user: UserPayload
@@ -56,7 +56,7 @@ export class AssistantController {
 	}
 
 	@Get('chat/:courseId')
-	@RequireAccess('ai.interaction')
+	@RequireAccess('ai.interaction', { courseIdParam: 'courseId' })
 	async getChatHistoryByCourseId(
 		@Param('courseId') courseId: string,
 		@CurrentUser() user: UserPayload

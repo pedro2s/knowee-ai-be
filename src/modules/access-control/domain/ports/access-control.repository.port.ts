@@ -1,7 +1,7 @@
 export interface SubscriberSnapshot {
 	id: string;
 	createdAt: string;
-	subscribed: boolean;
+	status: 'free' | 'active' | 'past_due' | 'canceled';
 	tierName: string | null;
 	monthlyTokenLimit: number | null;
 	sampleCourseId: string | null;

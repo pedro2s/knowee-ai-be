@@ -41,19 +41,58 @@ export class ProductAccessGuard implements CanActivate {
 		const body = (req.body ?? {}) as Record<string, unknown>;
 		const routeParams = req.params ?? {};
 
+		const action = requirement.action;
+
+		const resolveParam = (
+			key: string | undefined,
+			source: Record<string, unknown>
+		) => {
+			if (!key) return undefined;
+			const value = source[key];
+			return typeof value === 'string' ? value : undefined;
+		};
+
+		let courseId =
+			resolveParam(params.courseIdParam, routeParams) ??
+			(action.startsWith('course.')
+				? resolveParam('id', routeParams)
+				: undefined);
+
+		let moduleId =
+			resolveParam(params.moduleIdParam, routeParams) ??
+			(action.startsWith('module.')
+				? resolveParam('id', routeParams)
+				: undefined);
+
+		let lessonId =
+			resolveParam(params.lessonIdParam, routeParams) ??
+			(action.startsWith('lesson.')
+				? resolveParam('id', routeParams)
+				: undefined);
+
+		if (!courseId) {
+			courseId =
+				resolveParam(params.courseIdBody, body) ??
+				(action.startsWith('course.') || action.startsWith('ai.')
+					? resolveParam('courseId', body)
+					: undefined);
+		}
+
+		if (!moduleId) {
+			moduleId = resolveParam(params.moduleIdBody, body);
+		}
+
+		if (!lessonId) {
+			lessonId = resolveParam(params.lessonIdBody, body);
+		}
+
 		const decision = await this.checkAccessUseCase.execute({
 			userId: user.id,
 			action: requirement.action,
 			context: {
-				courseId:
-					(routeParams[params.courseIdParam ?? 'id'] as string | undefined) ??
-					(body[params.courseIdBody ?? 'courseId'] as string | undefined),
-				moduleId:
-					(routeParams[params.moduleIdParam ?? 'id'] as string | undefined) ??
-					(body[params.moduleIdBody ?? 'moduleId'] as string | undefined),
-				lessonId:
-					(routeParams[params.lessonIdParam ?? 'id'] as string | undefined) ??
-					(body[params.lessonIdBody ?? 'lessonId'] as string | undefined),
+				courseId,
+				moduleId,
+				lessonId,
 			},
 		});
 

@@ -12,31 +12,40 @@ export class GetUserEntitlementsUseCase {
 
 	async execute(userId: string): Promise<UserEntitlements> {
 		const subscriber = await this.repository.getLatestSubscriber(userId);
-		const hasActiveSubscription = !!subscriber?.subscribed;
+		const status = subscriber?.status ?? 'free';
+		const hasActiveSubscription = status === 'active';
 		const planName = subscriber?.tierName ?? 'free';
 		const monthlyTokenLimit = subscriber?.monthlyTokenLimit ?? 0;
 
 		let usedTokensInPeriod = 0;
-		if (hasActiveSubscription && subscriber && monthlyTokenLimit > 0) {
-			const anchor = new Date(subscriber.createdAt);
-			const now = new Date();
+		if (subscriber && monthlyTokenLimit > 0) {
+			if (hasActiveSubscription) {
+				const anchor = new Date(subscriber.createdAt);
+				const now = new Date();
 
-			let monthsApplied =
-				(now.getFullYear() - anchor.getFullYear()) * 12 +
-				(now.getMonth() - anchor.getMonth());
-			if (now.getDate() < anchor.getDate()) {
-				monthsApplied--;
+				let monthsApplied =
+					(now.getFullYear() - anchor.getFullYear()) * 12 +
+					(now.getMonth() - anchor.getMonth());
+				if (now.getDate() < anchor.getDate()) {
+					monthsApplied--;
+				}
+
+				const startOfPeriod = new Date(anchor);
+				startOfPeriod.setMonth(anchor.getMonth() + monthsApplied);
+				startOfPeriod.setHours(0, 0, 0, 0);
+
+				usedTokensInPeriod = await this.repository.getUsageInPeriod(
+					userId,
+					subscriber.id,
+					startOfPeriod.toISOString()
+				);
+			} else {
+				usedTokensInPeriod = await this.repository.getUsageInPeriod(
+					userId,
+					subscriber.id,
+					new Date(0).toISOString()
+				);
 			}
-
-			const startOfPeriod = new Date(anchor);
-			startOfPeriod.setMonth(anchor.getMonth() + monthsApplied);
-			startOfPeriod.setHours(0, 0, 0, 0);
-
-			usedTokensInPeriod = await this.repository.getUsageInPeriod(
-				userId,
-				subscriber.id,
-				startOfPeriod.toISOString()
-			);
 		}
 
 		let sampleCourseId = subscriber?.sampleCourseId ?? null;
@@ -80,7 +89,7 @@ export class GetUserEntitlementsUseCase {
 			: {
 					canCreateCourse: !sampleConsumed,
 					canAccessPlatform: true,
-					canUseAI: !sampleConsumed,
+					canUseAI: remaining > 0 || monthlyTokenLimit === 0,
 					canGenerateAssets: false,
 					canExport: false,
 				};
@@ -102,11 +111,11 @@ export class GetUserEntitlementsUseCase {
 			capabilities,
 		};
 
-		if (!hasActiveSubscription && sampleConsumed) {
+		if (!hasActiveSubscription && monthlyTokenLimit > 0 && remaining <= 0) {
 			entitlements.primaryRestriction = {
-				code: 'SUBSCRIPTION_REQUIRED',
+				code: 'TOKEN_LIMIT_EXCEEDED',
 				message:
-					'Você utilizou a amostra gratuita. Assine para continuar com todos os recursos.',
+					'Você atingiu o limite de uso do plano gratuito. Faça upgrade para continuar.',
 				upgradeRequired: true,
 				nextStep: 'open_subscription_settings',
 			};
