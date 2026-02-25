@@ -57,6 +57,13 @@
 			"when": 1772121600000,
 			"tag": "0007_billing_public_plans",
 			"breakpoints": true
+		},
+		{
+			"idx": 8,
+			"version": "7",
+			"when": 1772208000000,
+			"tag": "0008_billing_annual_cycle",
+			"breakpoints": true
 		}
 	]
 }

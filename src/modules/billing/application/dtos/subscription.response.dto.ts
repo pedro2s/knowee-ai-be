@@ -3,7 +3,9 @@ export class SubscriptionTierDto {
 	name: string;
 	monthlyTokenLimit: number;
 	price: string | null;
+	annualPrice: string | null;
 	stripePriceId: string | null;
+	stripePriceIdAnnual: string | null;
 }
 
 export class SubscriptionResponseDto {

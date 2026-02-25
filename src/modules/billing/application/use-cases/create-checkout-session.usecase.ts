@@ -12,6 +12,8 @@ import {
 } from '../../domain/ports/usage-repository.port';
 import { ConfigService } from '@nestjs/config';
 
+export type BillingCycle = 'monthly' | 'annual';
+
 @Injectable()
 export class CreateCheckoutSessionUseCase {
 	constructor(
@@ -26,6 +28,7 @@ export class CreateCheckoutSessionUseCase {
 		userId: string;
 		email: string;
 		planName: string;
+		billingCycle: BillingCycle;
 	}): Promise<{ url: string }> {
 		const tier = await this.usageRepository.getSubscriptionTierByName(
 			input.planName
@@ -33,8 +36,17 @@ export class CreateCheckoutSessionUseCase {
 		if (!tier) {
 			throw new NotFoundException('Plano não encontrado.');
 		}
-		if (!tier.stripePriceId) {
-			throw new BadRequestException('Plano sem price_id Stripe.');
+		const stripePriceId =
+			input.billingCycle === 'annual'
+				? tier.stripePriceIdAnnual
+				: tier.stripePriceId;
+
+		if (!stripePriceId) {
+			throw new BadRequestException(
+				input.billingCycle === 'annual'
+					? 'Plano sem price_id Stripe anual.'
+					: 'Plano sem price_id Stripe.'
+			);
 		}
 
 		const subscriber = await this.usageRepository.getLatestSubscriberForUser(
@@ -73,7 +85,7 @@ export class CreateCheckoutSessionUseCase {
 			line_items: [
 				{
 					quantity: 1,
-					price: tier.stripePriceId,
+					price: stripePriceId,
 				},
 			],
 			success_url: `${appUrl}/billing/success`,

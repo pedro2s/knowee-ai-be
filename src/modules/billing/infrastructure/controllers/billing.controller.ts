@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
 import { SupabaseAuthGuard } from 'src/modules/auth/infrastructure/guards/supabase-auth.guard';
 import { CurrentUser } from 'src/shared/decorators';
 import { type UserPayload } from 'src/shared/types/user-payload';
@@ -9,6 +9,7 @@ import { CreateFreeSubscriptionUseCase } from '../../application/use-cases/creat
 import { GetUserEntitlementsUseCase } from 'src/modules/access-control/application/use-cases/get-user-entitlements.usecase';
 import { UserEntitlementsResponseDto } from 'src/modules/access-control/application/dtos/user-entitlements.response.dto';
 import { CreateCheckoutSessionUseCase } from '../../application/use-cases/create-checkout-session.usecase';
+import { CreateCheckoutSessionRequestDto } from './dtos/create-checkout-session.request.dto';
 
 @Controller('billing')
 @UseGuards(SupabaseAuthGuard)
@@ -59,12 +60,14 @@ export class BillingController {
 	@Post('checkout/:plan')
 	async checkout(
 		@CurrentUser() user: UserPayload,
-		@Param('plan') plan: string
+		@Param('plan') plan: string,
+		@Body() body: CreateCheckoutSessionRequestDto
 	): Promise<{ url: string }> {
 		return this.createCheckoutSessionUseCase.execute({
 			userId: user.id,
 			email: user.email,
 			planName: plan,
+			billingCycle: body?.billingCycle ?? 'monthly',
 		});
 	}
 }

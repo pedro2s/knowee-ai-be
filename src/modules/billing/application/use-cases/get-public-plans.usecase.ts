@@ -21,6 +21,12 @@ export class GetPublicPlansUseCase {
 				displayName: tier.displayName,
 				displayPrice: this.formatDisplayPrice(tier.price),
 				billingPeriod: tier.billingPeriod,
+				monthlyPrice: this.toNumberOrNull(tier.price),
+				annualPrice: this.toNumberOrNull(tier.annualPrice),
+				annualDiscountPercent: this.getAnnualDiscountPercent(
+					tier.price,
+					tier.annualPrice
+				),
 				description: tier.description,
 				features: tier.features,
 				monthlyTokenLimit: tier.monthlyTokenLimit,
@@ -47,5 +53,35 @@ export class GetPublicPlansUseCase {
 		}
 
 		return `R$ ${normalized.toFixed(0)}`;
+	}
+
+	private toNumberOrNull(value: string | null): number | null {
+		if (!value) {
+			return null;
+		}
+
+		const numericValue = Number(value);
+		return Number.isNaN(numericValue) ? null : numericValue;
+	}
+
+	private getAnnualDiscountPercent(
+		monthlyPriceRaw: string | null,
+		annualPriceRaw: string | null
+	): number | null {
+		const monthlyPrice = this.toNumberOrNull(monthlyPriceRaw);
+		const annualPrice = this.toNumberOrNull(annualPriceRaw);
+
+		if (!monthlyPrice || !annualPrice || monthlyPrice <= 0) {
+			return null;
+		}
+
+		const annualizedMonthly = monthlyPrice * 12;
+		if (annualizedMonthly <= 0 || annualPrice >= annualizedMonthly) {
+			return 0;
+		}
+
+		return Math.round(
+			((annualizedMonthly - annualPrice) / annualizedMonthly) * 100
+		);
 	}
 }

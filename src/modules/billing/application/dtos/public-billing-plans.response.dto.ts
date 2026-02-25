@@ -3,6 +3,9 @@ export class PublicBillingPlanDto {
 	displayName: string;
 	displayPrice: string;
 	billingPeriod: string | null;
+	monthlyPrice: number | null;
+	annualPrice: number | null;
+	annualDiscountPercent: number | null;
 	description: string | null;
 	features: string[];
 	monthlyTokenLimit: number;

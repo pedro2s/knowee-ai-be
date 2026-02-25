@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { and, desc, eq, gte, sql } from 'drizzle-orm';
+import { and, desc, eq, gte, or, sql } from 'drizzle-orm';
 import { DrizzleService } from 'src/shared/database/infrastructure/drizzle/drizzle.service';
 import {
 	subscribers,
@@ -103,7 +103,9 @@ export class DrizzleUsageRepository implements UsageRepositoryPort {
 						name: result.subscriptionTier.name,
 						monthlyTokenLimit: result.subscriptionTier.monthlyTokenLimit,
 						price: result.subscriptionTier.price,
+						annualPrice: result.subscriptionTier.annualPrice,
 						stripePriceId: result.subscriptionTier.stripePriceId,
+						stripePriceIdAnnual: result.subscriptionTier.stripePriceIdAnnual,
 					}
 				: null,
 			subscription_end: result.subscriptionEnd,
@@ -132,7 +134,10 @@ export class DrizzleUsageRepository implements UsageRepositoryPort {
 							name: existing.subscriptionTier.name,
 							monthlyTokenLimit: existing.subscriptionTier.monthlyTokenLimit,
 							price: existing.subscriptionTier.price,
+							annualPrice: existing.subscriptionTier.annualPrice,
 							stripePriceId: existing.subscriptionTier.stripePriceId,
+							stripePriceIdAnnual:
+								existing.subscriptionTier.stripePriceIdAnnual,
 						}
 					: null,
 				subscription_end: existing.subscriptionEnd,
@@ -163,7 +168,9 @@ export class DrizzleUsageRepository implements UsageRepositoryPort {
 				name: freeTier.name,
 				monthlyTokenLimit: freeTier.monthlyTokenLimit,
 				price: freeTier.price,
+				annualPrice: freeTier.annualPrice,
 				stripePriceId: freeTier.stripePriceId,
+				stripePriceIdAnnual: freeTier.stripePriceIdAnnual,
 			},
 			subscription_end: null,
 			stripe_customer_id: null,
@@ -176,6 +183,7 @@ export class DrizzleUsageRepository implements UsageRepositoryPort {
 		monthlyTokenLimit: number;
 		price: string | null;
 		stripePriceId: string | null;
+		stripePriceIdAnnual: string | null;
 	} | null> {
 		const tier = await this.drizzle.db.query.subscriptionTier.findFirst({
 			where: eq(subscriptionTier.name, name),
@@ -190,6 +198,7 @@ export class DrizzleUsageRepository implements UsageRepositoryPort {
 			monthlyTokenLimit: tier.monthlyTokenLimit,
 			price: tier.price,
 			stripePriceId: tier.stripePriceId,
+			stripePriceIdAnnual: tier.stripePriceIdAnnual,
 		};
 	}
 
@@ -199,9 +208,13 @@ export class DrizzleUsageRepository implements UsageRepositoryPort {
 		monthlyTokenLimit: number;
 		price: string | null;
 		stripePriceId: string | null;
+		stripePriceIdAnnual: string | null;
 	} | null> {
 		const tier = await this.drizzle.db.query.subscriptionTier.findFirst({
-			where: eq(subscriptionTier.stripePriceId, priceId),
+			where: or(
+				eq(subscriptionTier.stripePriceId, priceId),
+				eq(subscriptionTier.stripePriceIdAnnual, priceId)
+			),
 			orderBy: [asc(subscriptionTier.id)],
 		});
 
@@ -213,6 +226,7 @@ export class DrizzleUsageRepository implements UsageRepositoryPort {
 			monthlyTokenLimit: tier.monthlyTokenLimit,
 			price: tier.price,
 			stripePriceId: tier.stripePriceId,
+			stripePriceIdAnnual: tier.stripePriceIdAnnual,
 		};
 	}
 
@@ -227,6 +241,7 @@ export class DrizzleUsageRepository implements UsageRepositoryPort {
 			displayName: tier.displayName,
 			monthlyTokenLimit: tier.monthlyTokenLimit,
 			price: tier.price,
+			annualPrice: tier.annualPrice,
 			billingPeriod: tier.billingPeriod,
 			description: tier.description,
 			features: Array.isArray(tier.features)

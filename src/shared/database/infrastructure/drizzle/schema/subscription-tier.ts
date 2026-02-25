@@ -27,6 +27,8 @@ export const subscriptionTier = pgTable(
 		supportChannel: text('support_channel').notNull().default('email'),
 		supportSlaHours: integer('support_sla_hours').notNull().default(72),
 		stripePriceId: text('stripe_price_id'),
+		stripePriceIdAnnual: text('stripe_price_id_annual'),
+		annualPrice: numeric('annual_price', { precision: 8, scale: 2 }),
 	},
 	(table) => [uniqueIndex('subscription_tier_name_uidx').on(table.name)]
 );

@@ -30,6 +30,7 @@ describe('GetPublicPlansUseCase', () => {
 				displayName: 'Gratuito',
 				monthlyTokenLimit: 20000,
 				price: '0.00',
+				annualPrice: null,
 				billingPeriod: null,
 				description: 'Plano de entrada',
 				features: ['1 curso de amostra'],
@@ -44,6 +45,7 @@ describe('GetPublicPlansUseCase', () => {
 				displayName: 'Empresarial',
 				monthlyTokenLimit: 2000000,
 				price: null,
+				annualPrice: null,
 				billingPeriod: null,
 				description: 'Sob consulta',
 				features: ['White-label'],
@@ -66,11 +68,46 @@ describe('GetPublicPlansUseCase', () => {
 			id: 'free',
 			displayName: 'Gratuito',
 			displayPrice: 'R$ 0',
+			monthlyPrice: 0,
+			annualPrice: null,
+			annualDiscountPercent: null,
 		});
 		expect(result.plans[1]).toMatchObject({
 			id: 'enterprise',
 			displayPrice: 'Sob consulta',
 			isContactOnly: true,
+			monthlyPrice: null,
+			annualPrice: null,
+			annualDiscountPercent: null,
+		});
+	});
+
+	it('calcula percentual de desconto anual quando ha preco mensal e anual', async () => {
+		usageRepository.listPublicSubscriptionTiers.mockResolvedValue([
+			{
+				name: 'premium',
+				displayName: 'Premium',
+				monthlyTokenLimit: 100000,
+				price: '100.00',
+				annualPrice: '960.00',
+				billingPeriod: '/mes',
+				description: 'Plano recomendado',
+				features: ['Cursos ilimitados'],
+				isHighlighted: true,
+				isContactOnly: false,
+				sortOrder: 2,
+				supportChannel: 'email',
+				supportSlaHours: 72,
+			},
+		]);
+
+		const result = await useCase.execute();
+
+		expect(result.plans[0]).toMatchObject({
+			id: 'premium',
+			monthlyPrice: 100,
+			annualPrice: 960,
+			annualDiscountPercent: 20,
 		});
 	});
 });

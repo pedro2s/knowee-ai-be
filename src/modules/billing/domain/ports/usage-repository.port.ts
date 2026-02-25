@@ -5,6 +5,7 @@ export interface PublicSubscriptionTierData {
 	displayName: string;
 	monthlyTokenLimit: number;
 	price: string | null;
+	annualPrice: string | null;
 	billingPeriod: string | null;
 	description: string | null;
 	features: string[];
@@ -41,6 +42,7 @@ export interface UsageRepositoryPort {
 		monthlyTokenLimit: number;
 		price: string | null;
 		stripePriceId: string | null;
+		stripePriceIdAnnual: string | null;
 	} | null>;
 	getSubscriptionTierByStripePriceId(priceId: string): Promise<{
 		id: number;
@@ -48,6 +50,7 @@ export interface UsageRepositoryPort {
 		monthlyTokenLimit: number;
 		price: string | null;
 		stripePriceId: string | null;
+		stripePriceIdAnnual: string | null;
 	} | null>;
 	listPublicSubscriptionTiers(): Promise<PublicSubscriptionTierData[]>;
 	getLatestSubscriberForUser(userId: string): Promise<{
