@@ -15,9 +15,11 @@ import { GenerateModuleDto } from '../../application/dtos/generate-module.dto';
 import { SupabaseAuthGuard } from 'src/modules/auth/infrastructure/guards/supabase-auth.guard';
 import { ReorderContentUseCase } from '../../application/use-cases/quick-actions/georder-content.usecase';
 import { GenerateAssessmentsUseCase } from '../../application/use-cases/quick-actions/generate-assessments.usecase';
+import { ProductAccessGuard } from 'src/modules/access-control/infrastructure/guards/product-access.guard';
+import { RequireAccess } from 'src/modules/access-control/infrastructure/decorators/require-access.decorator';
 
 @Controller('quick-actions')
-@UseGuards(SupabaseAuthGuard)
+@UseGuards(SupabaseAuthGuard, ProductAccessGuard)
 export class QuickActionsController {
 	constructor(
 		private readonly generateModuleUseCase: GenerateModuleUseCase,
@@ -26,6 +28,7 @@ export class QuickActionsController {
 	) {}
 
 	@Post('generate-module')
+	@RequireAccess('quick_actions.execute')
 	async generateModule(
 		@Body() data: GenerateModuleDto,
 		@CurrentUser() user: UserPayload
@@ -39,6 +42,7 @@ export class QuickActionsController {
 	}
 
 	@Post('reorder-content')
+	@RequireAccess('quick_actions.execute')
 	@HttpCode(200)
 	async reorderContent(
 		@Body(
@@ -56,6 +60,7 @@ export class QuickActionsController {
 	}
 
 	@Post('generate-assessments')
+	@RequireAccess('quick_actions.execute')
 	@HttpCode(200)
 	async generateAssessments(
 		@Body(

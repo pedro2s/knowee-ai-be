@@ -18,6 +18,8 @@ import { StartAssetsGenerationUseCase } from '../../application/use-cases/start-
 import { StartAssetsGenerationDto } from '../../application/dtos/start-assets-generation.dto';
 import { StartAssetsGenerationResponseDto } from '../../application/dtos/start-assets-generation.response.dto';
 import { GetActiveGenerationJobByCourseUseCase } from '../../application/use-cases/get-active-generation-job-by-course.usecase';
+import { ProductAccessGuard } from 'src/modules/access-control/infrastructure/guards/product-access.guard';
+import { RequireAccess } from 'src/modules/access-control/infrastructure/decorators/require-access.decorator';
 
 interface SseMessage {
 	type: string;
@@ -25,7 +27,7 @@ interface SseMessage {
 }
 
 @Controller('generation')
-@UseGuards(SupabaseAuthGuard)
+@UseGuards(SupabaseAuthGuard, ProductAccessGuard)
 export class GenerationController {
 	constructor(
 		private readonly getGenerationJobUseCase: GetGenerationJobUseCase,
@@ -35,6 +37,7 @@ export class GenerationController {
 	) {}
 
 	@Post('/assets/start')
+	@RequireAccess('assets.generate', { courseIdBody: 'courseId' })
 	async startAssets(
 		@Body() body: StartAssetsGenerationDto,
 		@CurrentUser() user: UserPayload

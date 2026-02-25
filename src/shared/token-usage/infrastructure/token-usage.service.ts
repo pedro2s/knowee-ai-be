@@ -4,7 +4,7 @@ import {
 	subscribers,
 	tokenUsage,
 } from '../../database/infrastructure/drizzle/schema';
-import { and, eq } from 'drizzle-orm';
+import { desc, eq } from 'drizzle-orm';
 import { TokenUsagePort } from '../domain/ports/token-usage.port';
 
 @Injectable()
@@ -29,18 +29,16 @@ export class TokenUsageService implements TokenUsagePort {
 
 			// Find the user's active subscription
 			const subscription = await this.drizzle.db.query.subscribers.findFirst({
-				where: and(
-					eq(subscribers.userId, userId),
-					eq(subscribers.subscribed, true)
-				),
+				where: eq(subscribers.userId, userId),
 				columns: {
 					id: true,
 				},
+				orderBy: [desc(subscribers.createdAt)],
 			});
 
 			if (!subscription) {
 				this.logger.warn(
-					`Nenhuma assinatura ativa encontrada para o usuário ${userId}. O uso de tokens não será registrado.`
+					`Nenhuma assinatura encontrada para o usuário ${userId}. O uso de tokens não será registrado.`
 				);
 				return;
 			}

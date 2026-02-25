@@ -17,6 +17,7 @@ import {
 	LESSON_REPOSITORY,
 	type LessonRepositoryPort,
 } from '../../domain/ports/lesson-repository.port';
+import { MarkFreemiumSampleConsumedUseCase } from 'src/modules/access-control/application/use-cases/mark-freemium-sample-consumed.usecase';
 
 interface CourseGenerationInput {
 	jobId: string;
@@ -42,7 +43,8 @@ export class CourseGenerationOrchestratorUseCase {
 		@Inject(COURSE_REPOSITORY)
 		private readonly courseRepository: CourseRepositoryPort,
 		@Inject(LESSON_REPOSITORY)
-		private readonly lessonRepository: LessonRepositoryPort
+		private readonly lessonRepository: LessonRepositoryPort,
+		private readonly markFreemiumSampleConsumedUseCase: MarkFreemiumSampleConsumedUseCase
 	) {}
 
 	async run(input: CourseGenerationInput): Promise<void> {
@@ -72,6 +74,10 @@ export class CourseGenerationOrchestratorUseCase {
 				userId: input.userId,
 				files: input.files,
 			});
+			await this.markFreemiumSampleConsumedUseCase.execute(
+				input.userId,
+				savedCourse.id
+			);
 
 			await this.generationJobRepository.update(
 				input.jobId,

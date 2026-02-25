@@ -6,6 +6,7 @@ import { AssistantModule } from './modules/assistant/assistant.module';
 import { BillingModule } from './modules/billing/billing.module';
 import { ProfileModule } from './modules/profile/profile.module';
 import { ProviderPreferencesModule } from './modules/provider-preferences/provider-preferences.module';
+import { AccessControlModule } from './modules/access-control/access-control.module';
 
 @Module({
 	imports: [
@@ -18,6 +19,7 @@ import { ProviderPreferencesModule } from './modules/provider-preferences/provid
 		BillingModule,
 		ProfileModule,
 		ProviderPreferencesModule,
+		AccessControlModule,
 	],
 })
 export class AppModule {}

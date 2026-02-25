@@ -10,10 +10,12 @@ import { SupabaseStrategy } from './infrastructure/strategy/supabase.strategy';
 import { JwtStrategy } from './infrastructure/strategy/jwt.strategy';
 import { RefreshTokenUseCase } from './application/use-cases/refresh-token.usecase';
 import { ChangePasswordUseCase } from './application/use-cases/change-password.usecase';
+import { BillingModule } from '../billing/billing.module';
 
 @Module({
 	imports: [
 		SupabaseModule,
+		BillingModule,
 		PassportModule.register({ defaultStrategy: 'jwt' }),
 	],
 	controllers: [AuthController],

@@ -15,10 +15,17 @@ import { TokenUsageModule } from 'src/shared/token-usage/token-usage.module';
 import { OpenAIAnalyticsAdapter } from './infrastructure/providers/openai/openai-analytics.adapter';
 import { AnalyticsUseCase } from './application/use-cases/analytics.usecase';
 import { GenAIAnalyticsAdapter } from './infrastructure/providers/genai/gemini-analytics.adapter';
+import { AccessControlModule } from '../access-control/access-control.module';
 
 @Module({
 	controllers: [AssistantController],
-	imports: [DatabaseModule, HistoryModule, AIProvidersModule, TokenUsageModule],
+	imports: [
+		DatabaseModule,
+		HistoryModule,
+		AIProvidersModule,
+		TokenUsageModule,
+		AccessControlModule,
+	],
 	providers: [
 		{
 			provide: QUESTION_ANSWER_REPOSITORY,
