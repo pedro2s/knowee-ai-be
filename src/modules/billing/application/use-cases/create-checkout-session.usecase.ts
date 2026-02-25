@@ -49,11 +49,27 @@ export class CreateCheckoutSessionUseCase {
 			);
 		}
 
-		const subscriber = await this.usageRepository.getLatestSubscriberForUser(
+		let subscriber = await this.usageRepository.getLatestSubscriberForUser(
 			input.userId
 		);
 		if (!subscriber) {
-			throw new NotFoundException('Assinatura não encontrada.');
+			// throw new NotFoundException('Assinatura não encontrada.');
+			subscriber = (await this.usageRepository.createFreeSubscription(
+				input.userId,
+				input.email
+			)) as unknown as {
+				id: string;
+				status: 'free' | 'active' | 'past_due' | 'canceled';
+				subscriptionTierId: number | null;
+				stripeCustomerId: string | null;
+				stripeSubscriptionId: string | null;
+			} | null;
+
+			if (!subscriber) {
+				throw new BadRequestException(
+					'Não foi possível criar assinatura gratuita.'
+				);
+			}
 		}
 
 		if (

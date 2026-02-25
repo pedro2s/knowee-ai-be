@@ -57,16 +57,15 @@ export class BillingController {
 		};
 	}
 
-	@Post('checkout/:plan')
+	@Post('checkout')
 	async checkout(
 		@CurrentUser() user: UserPayload,
-		@Param('plan') plan: string,
 		@Body() body: CreateCheckoutSessionRequestDto
 	): Promise<{ url: string }> {
 		return this.createCheckoutSessionUseCase.execute({
 			userId: user.id,
 			email: user.email,
-			planName: plan,
+			planName: body.plan,
 			billingCycle: body?.billingCycle ?? 'monthly',
 		});
 	}
