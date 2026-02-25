@@ -12,9 +12,11 @@ import { GeneratedTextResponseDto } from '../../application/dtos/generated-text.
 import { GenerateTextUseCase } from '../../application/use-cases/generate-text.usecase';
 import { AnalyticsUseCase } from '../../application/use-cases/analytics.usecase';
 import { AnalysisOutput } from '../../domain/ports/ai-analyze.port';
+import { ProductAccessGuard } from 'src/modules/access-control/infrastructure/guards/product-access.guard';
+import { RequireAccess } from 'src/modules/access-control/infrastructure/decorators/require-access.decorator';
 
 @Controller('assistant')
-@UseGuards(SupabaseAuthGuard)
+@UseGuards(SupabaseAuthGuard, ProductAccessGuard)
 export class AssistantController {
 	constructor(
 		private readonly getChatHistory: GetChatHistoryUseCase,
@@ -24,6 +26,7 @@ export class AssistantController {
 	) {}
 
 	@Post('/generate-text')
+	@RequireAccess('ai.interaction', { courseIdBody: 'courseId' })
 	async generateText(
 		@Body() data: GenerateTextDto,
 		@CurrentUser() user: UserPayload
@@ -33,6 +36,7 @@ export class AssistantController {
 	}
 
 	@Post('/analyze')
+	@RequireAccess('ai.interaction')
 	async analyze(
 		@Body() data: { title: string; description: string }
 	): Promise<AnalysisOutput> {
@@ -41,6 +45,7 @@ export class AssistantController {
 	}
 
 	@Post('chat')
+	@RequireAccess('ai.interaction', { courseIdBody: 'courseId' })
 	async question(
 		@Body() body: SubmitQuestionDto,
 		@CurrentUser() user: UserPayload
@@ -51,6 +56,7 @@ export class AssistantController {
 	}
 
 	@Get('chat/:courseId')
+	@RequireAccess('ai.interaction', { courseIdParam: 'courseId' })
 	async getChatHistoryByCourseId(
 		@Param('courseId') courseId: string,
 		@CurrentUser() user: UserPayload

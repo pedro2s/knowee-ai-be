@@ -68,6 +68,7 @@ import { ProviderPreferencesModule } from '../provider-preferences/provider-pref
 import { StartAssetsGenerationUseCase } from './application/use-cases/start-assets-generation.usecase';
 import { AssetsGenerationOrchestratorUseCase } from './application/use-cases/assets-generation-orchestrator.usecase';
 import { GetActiveGenerationJobByCourseUseCase } from './application/use-cases/get-active-generation-job-by-course.usecase';
+import { AccessControlModule } from '../access-control/access-control.module';
 
 @Module({
 	controllers: [
@@ -86,6 +87,7 @@ import { GetActiveGenerationJobByCourseUseCase } from './application/use-cases/g
 		TokenUsageModule,
 		SupabaseModule,
 		ProviderPreferencesModule,
+		AccessControlModule,
 	],
 	providers: [
 		{ provide: COURSE_REPOSITORY, useClass: DrizzleCourseRepository },

@@ -6,7 +6,6 @@ import {
 	foreignKey,
 	integer,
 	timestamp,
-	boolean,
 } from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm';
 import { users } from './auth';
@@ -19,7 +18,7 @@ export const subscribers = pgTable(
 		userId: uuid('user_id'),
 		email: text().notNull(),
 		stripeCustomerId: text('stripe_customer_id'),
-		subscribed: boolean().default(false).notNull(),
+		status: text().default('free').notNull(),
 		subscriptionEnd: timestamp('subscription_end', {
 			withTimezone: true,
 			mode: 'string',
@@ -38,6 +37,14 @@ export const subscribers = pgTable(
 			.notNull(),
 		subscriptionTierId: integer('subscription_tier_id').notNull(),
 		stripeSubscriptionId: text('stripe_subscription_id'),
+		sampleCourseId: uuid('sample_course_id'),
+		sampleConsumedAt: timestamp('sample_consumed_at', {
+			withTimezone: true,
+			mode: 'string',
+		}),
+		sampleGenerationCount: integer('sample_generation_count')
+			.default(0)
+			.notNull(),
 	},
 	(table) => [
 		foreignKey({

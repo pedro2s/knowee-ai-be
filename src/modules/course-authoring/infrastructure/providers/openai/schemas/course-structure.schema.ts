@@ -14,6 +14,16 @@ export const courseStructureSchemaAsObject = {
 		category: {
 			type: 'string',
 			description: 'The category under which the course is listed.',
+			enum: [
+				'Tecnologia',
+				'Marketing',
+				'Negócios',
+				'Design',
+				'Idiomas',
+				'Saúde e Bem-estar',
+				'Finanças',
+				'Outros',
+			],
 		},
 		level: {
 			type: 'string',

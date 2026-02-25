@@ -1,12 +1,15 @@
 import { Injectable } from '@nestjs/common';
-import { and, eq, gte, sql } from 'drizzle-orm';
+import { and, desc, eq, gte, or, sql } from 'drizzle-orm';
 import { DrizzleService } from 'src/shared/database/infrastructure/drizzle/drizzle.service';
 import {
 	subscribers,
 	subscriptionTier,
 	tokenUsage,
 } from 'src/shared/database/infrastructure/drizzle/schema';
-import type { UsageRepositoryPort } from '../../../domain/ports/usage-repository.port';
+import type {
+	PublicSubscriptionTierData,
+	UsageRepositoryPort,
+} from '../../../domain/ports/usage-repository.port';
 import { SubscriptionResponseDto } from '../../../application/dtos/subscription.response.dto';
 import { asc } from 'drizzle-orm';
 
@@ -21,7 +24,7 @@ export class DrizzleUsageRepository implements UsageRepositoryPort {
 		const result = await this.drizzle.db.query.subscribers.findFirst({
 			where: and(
 				eq(subscribers.userId, userId),
-				eq(subscribers.subscribed, true)
+				eq(subscribers.status, 'active')
 			),
 			columns: {
 				id: true,
@@ -30,6 +33,32 @@ export class DrizzleUsageRepository implements UsageRepositoryPort {
 		});
 
 		return result || null;
+	}
+
+	async getLatestSubscriptionSnapshot(userId: string): Promise<{
+		id: string;
+		createdAt: string;
+		status: 'free' | 'active' | 'past_due' | 'canceled';
+	} | null> {
+		const result = await this.drizzle.db.query.subscribers.findFirst({
+			where: eq(subscribers.userId, userId),
+			columns: {
+				id: true,
+				createdAt: true,
+				status: true,
+			},
+			orderBy: [desc(subscribers.createdAt)],
+		});
+
+		if (!result) {
+			return null;
+		}
+
+		return {
+			id: result.id,
+			createdAt: result.createdAt,
+			status: result.status as 'free' | 'active' | 'past_due' | 'canceled',
+		};
 	}
 
 	async getUsageInPeriod(
@@ -57,26 +86,26 @@ export class DrizzleUsageRepository implements UsageRepositoryPort {
 		userId: string
 	): Promise<SubscriptionResponseDto | null> {
 		const result = await this.drizzle.db.query.subscribers.findFirst({
-			where: and(
-				eq(subscribers.userId, userId),
-				eq(subscribers.subscribed, true)
-			),
+			where: eq(subscribers.userId, userId),
 			with: {
 				subscriptionTier: true,
 			},
+			orderBy: [desc(subscribers.createdAt)],
 		});
 
 		if (!result) return null;
 
 		return {
-			subscribed: result.subscribed,
+			status: result.status as SubscriptionResponseDto['status'],
 			subscription_tier: result.subscriptionTier
 				? {
 						id: result.subscriptionTier.id,
 						name: result.subscriptionTier.name,
 						monthlyTokenLimit: result.subscriptionTier.monthlyTokenLimit,
 						price: result.subscriptionTier.price,
+						annualPrice: result.subscriptionTier.annualPrice,
 						stripePriceId: result.subscriptionTier.stripePriceId,
+						stripePriceIdAnnual: result.subscriptionTier.stripePriceIdAnnual,
 					}
 				: null,
 			subscription_end: result.subscriptionEnd,
@@ -93,18 +122,22 @@ export class DrizzleUsageRepository implements UsageRepositoryPort {
 			with: {
 				subscriptionTier: true,
 			},
+			orderBy: [desc(subscribers.createdAt)],
 		});
 
 		if (existing) {
 			return {
-				subscribed: existing.subscribed,
+				status: existing.status as SubscriptionResponseDto['status'],
 				subscription_tier: existing.subscriptionTier
 					? {
 							id: existing.subscriptionTier.id,
 							name: existing.subscriptionTier.name,
 							monthlyTokenLimit: existing.subscriptionTier.monthlyTokenLimit,
 							price: existing.subscriptionTier.price,
+							annualPrice: existing.subscriptionTier.annualPrice,
 							stripePriceId: existing.subscriptionTier.stripePriceId,
+							stripePriceIdAnnual:
+								existing.subscriptionTier.stripePriceIdAnnual,
 						}
 					: null,
 				subscription_end: existing.subscriptionEnd,
@@ -124,21 +157,185 @@ export class DrizzleUsageRepository implements UsageRepositoryPort {
 		await this.drizzle.db.insert(subscribers).values({
 			userId,
 			email,
-			subscribed: false,
+			status: 'free',
 			subscriptionTierId: freeTier.id,
 		});
 
 		return {
-			subscribed: false,
+			status: 'free',
 			subscription_tier: {
 				id: freeTier.id,
 				name: freeTier.name,
 				monthlyTokenLimit: freeTier.monthlyTokenLimit,
 				price: freeTier.price,
+				annualPrice: freeTier.annualPrice,
 				stripePriceId: freeTier.stripePriceId,
+				stripePriceIdAnnual: freeTier.stripePriceIdAnnual,
 			},
 			subscription_end: null,
 			stripe_customer_id: null,
 		};
+	}
+
+	async getSubscriptionTierByName(name: string): Promise<{
+		id: number;
+		name: string;
+		monthlyTokenLimit: number;
+		price: string | null;
+		stripePriceId: string | null;
+		stripePriceIdAnnual: string | null;
+	} | null> {
+		const tier = await this.drizzle.db.query.subscriptionTier.findFirst({
+			where: eq(subscriptionTier.name, name),
+			orderBy: [asc(subscriptionTier.id)],
+		});
+
+		if (!tier) return null;
+
+		return {
+			id: tier.id,
+			name: tier.name,
+			monthlyTokenLimit: tier.monthlyTokenLimit,
+			price: tier.price,
+			stripePriceId: tier.stripePriceId,
+			stripePriceIdAnnual: tier.stripePriceIdAnnual,
+		};
+	}
+
+	async getSubscriptionTierByStripePriceId(priceId: string): Promise<{
+		id: number;
+		name: string;
+		monthlyTokenLimit: number;
+		price: string | null;
+		stripePriceId: string | null;
+		stripePriceIdAnnual: string | null;
+	} | null> {
+		const tier = await this.drizzle.db.query.subscriptionTier.findFirst({
+			where: or(
+				eq(subscriptionTier.stripePriceId, priceId),
+				eq(subscriptionTier.stripePriceIdAnnual, priceId)
+			),
+			orderBy: [asc(subscriptionTier.id)],
+		});
+
+		if (!tier) return null;
+
+		return {
+			id: tier.id,
+			name: tier.name,
+			monthlyTokenLimit: tier.monthlyTokenLimit,
+			price: tier.price,
+			stripePriceId: tier.stripePriceId,
+			stripePriceIdAnnual: tier.stripePriceIdAnnual,
+		};
+	}
+
+	async listPublicSubscriptionTiers(): Promise<PublicSubscriptionTierData[]> {
+		const tiers = await this.drizzle.db.query.subscriptionTier.findMany({
+			where: eq(subscriptionTier.isPublic, true),
+			orderBy: [asc(subscriptionTier.sortOrder), asc(subscriptionTier.id)],
+		});
+
+		return tiers.map((tier) => ({
+			name: tier.name,
+			displayName: tier.displayName,
+			monthlyTokenLimit: tier.monthlyTokenLimit,
+			price: tier.price,
+			annualPrice: tier.annualPrice,
+			billingPeriod: tier.billingPeriod,
+			description: tier.description,
+			features: Array.isArray(tier.features)
+				? tier.features.filter(
+						(item): item is string => typeof item === 'string'
+					)
+				: [],
+			isHighlighted: tier.isHighlighted,
+			isContactOnly: tier.isContactOnly,
+			sortOrder: tier.sortOrder,
+			supportChannel: tier.supportChannel,
+			supportSlaHours: tier.supportSlaHours,
+		}));
+	}
+
+	async getLatestSubscriberForUser(userId: string): Promise<{
+		id: string;
+		status: 'free' | 'active' | 'past_due' | 'canceled';
+		subscriptionTierId: number | null;
+		stripeCustomerId: string | null;
+		stripeSubscriptionId: string | null;
+	} | null> {
+		const subscriber = await this.drizzle.db.query.subscribers.findFirst({
+			where: eq(subscribers.userId, userId),
+			columns: {
+				id: true,
+				status: true,
+				subscriptionTierId: true,
+				stripeCustomerId: true,
+				stripeSubscriptionId: true,
+			},
+			orderBy: [desc(subscribers.createdAt)],
+		});
+
+		if (!subscriber) return null;
+
+		return {
+			id: subscriber.id,
+			status: subscriber.status as 'free' | 'active' | 'past_due' | 'canceled',
+			subscriptionTierId: subscriber.subscriptionTierId ?? null,
+			stripeCustomerId: subscriber.stripeCustomerId ?? null,
+			stripeSubscriptionId: subscriber.stripeSubscriptionId ?? null,
+		};
+	}
+
+	async updateSubscriberById(
+		id: string,
+		patch: {
+			status?: 'free' | 'active' | 'past_due' | 'canceled';
+			subscriptionTierId?: number;
+			stripeCustomerId?: string | null;
+			stripeSubscriptionId?: string | null;
+			subscriptionEnd?: string | null;
+		}
+	): Promise<void> {
+		await this.drizzle.db
+			.update(subscribers)
+			.set(
+				Object.fromEntries(
+					Object.entries({
+						status: patch.status,
+						subscriptionTierId: patch.subscriptionTierId,
+						stripeCustomerId: patch.stripeCustomerId,
+						stripeSubscriptionId: patch.stripeSubscriptionId,
+						subscriptionEnd: patch.subscriptionEnd,
+						updatedAt: new Date().toISOString(),
+					}).filter(([, value]) => value !== undefined)
+				)
+			)
+			.where(eq(subscribers.id, id));
+	}
+
+	async updateSubscriberByStripeSubscriptionId(
+		stripeSubscriptionId: string,
+		patch: {
+			status?: 'free' | 'active' | 'past_due' | 'canceled';
+			subscriptionTierId?: number;
+			stripeCustomerId?: string | null;
+			subscriptionEnd?: string | null;
+		}
+	): Promise<void> {
+		await this.drizzle.db
+			.update(subscribers)
+			.set(
+				Object.fromEntries(
+					Object.entries({
+						status: patch.status,
+						subscriptionTierId: patch.subscriptionTierId,
+						stripeCustomerId: patch.stripeCustomerId,
+						subscriptionEnd: patch.subscriptionEnd,
+						updatedAt: new Date().toISOString(),
+					}).filter(([, value]) => value !== undefined)
+				)
+			)
+			.where(eq(subscribers.stripeSubscriptionId, stripeSubscriptionId));
 	}
 }

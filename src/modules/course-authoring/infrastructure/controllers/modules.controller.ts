@@ -18,9 +18,11 @@ import { CreateModuleDto } from '../../application/dtos/create-module.dto';
 import { DeleteModuleUseCase } from '../../application/use-cases/delete-module.usecase';
 import { UpdateModuleDto } from '../../application/dtos/update-module.dto';
 import { UpdateModuleUseCase } from '../../application/use-cases/update-module.usecase';
+import { ProductAccessGuard } from 'src/modules/access-control/infrastructure/guards/product-access.guard';
+import { RequireAccess } from 'src/modules/access-control/infrastructure/decorators/require-access.decorator';
 
 @Controller('modules')
-@UseGuards(SupabaseAuthGuard)
+@UseGuards(SupabaseAuthGuard, ProductAccessGuard)
 export class ModulesController {
 	constructor(
 		private readonly createModule: CreateModuleUseCase,
@@ -30,6 +32,7 @@ export class ModulesController {
 	) {}
 
 	@Post()
+	@RequireAccess('module.create', { courseIdBody: 'courseId' })
 	async create(
 		@Body() data: CreateModuleDto,
 		@CurrentUser() user: UserPayload
@@ -39,6 +42,7 @@ export class ModulesController {
 	}
 
 	@Get('/:id')
+	@RequireAccess('module.read', { moduleIdParam: 'id' })
 	async get(
 		@Param('id') id: string,
 		@CurrentUser() user: UserPayload
@@ -48,6 +52,7 @@ export class ModulesController {
 	}
 
 	@Patch('/:id')
+	@RequireAccess('module.update', { moduleIdParam: 'id' })
 	async update(
 		@Param('id') id: string,
 		@Body() data: UpdateModuleDto,
@@ -58,6 +63,7 @@ export class ModulesController {
 	}
 
 	@Delete('/:id')
+	@RequireAccess('module.delete', { moduleIdParam: 'id' })
 	async delete(
 		@Param('id') id: string,
 		@CurrentUser() user: UserPayload
