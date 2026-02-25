@@ -20,6 +20,46 @@ export interface UsageRepositoryPort {
 		userId: string,
 		email: string
 	): Promise<SubscriptionResponseDto>;
+	getSubscriptionTierByName(name: string): Promise<{
+		id: number;
+		name: string;
+		monthlyTokenLimit: number;
+		price: string | null;
+		stripePriceId: string | null;
+	} | null>;
+	getSubscriptionTierByStripePriceId(priceId: string): Promise<{
+		id: number;
+		name: string;
+		monthlyTokenLimit: number;
+		price: string | null;
+		stripePriceId: string | null;
+	} | null>;
+	getLatestSubscriberForUser(userId: string): Promise<{
+		id: string;
+		status: 'free' | 'active' | 'past_due' | 'canceled';
+		subscriptionTierId: number | null;
+		stripeCustomerId: string | null;
+		stripeSubscriptionId: string | null;
+	} | null>;
+	updateSubscriberById(
+		id: string,
+		patch: {
+			status?: 'free' | 'active' | 'past_due' | 'canceled';
+			subscriptionTierId?: number;
+			stripeCustomerId?: string | null;
+			stripeSubscriptionId?: string | null;
+			subscriptionEnd?: string | null;
+		}
+	): Promise<void>;
+	updateSubscriberByStripeSubscriptionId(
+		stripeSubscriptionId: string,
+		patch: {
+			status?: 'free' | 'active' | 'past_due' | 'canceled';
+			subscriptionTierId?: number;
+			stripeCustomerId?: string | null;
+			subscriptionEnd?: string | null;
+		}
+	): Promise<void>;
 }
 
 export const USAGE_REPOSITORY = 'USAGE_REPOSITORY';

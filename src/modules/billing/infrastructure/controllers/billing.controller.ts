@@ -1,14 +1,14 @@
-import { Controller, Get, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
 import { SupabaseAuthGuard } from 'src/modules/auth/infrastructure/guards/supabase-auth.guard';
 import { CurrentUser } from 'src/shared/decorators';
 import { type UserPayload } from 'src/shared/types/user-payload';
 import { GetUsageUseCase } from '../../application/use-cases/get-usage.usecase';
 import { GetSubscriptionUseCase } from '../../application/use-cases/get-subscription.usecase';
 import { SubscriptionResponseDto } from '../../application/dtos/subscription.response.dto';
-import { Post } from '@nestjs/common';
 import { CreateFreeSubscriptionUseCase } from '../../application/use-cases/create-free-subscription.usecase';
 import { GetUserEntitlementsUseCase } from 'src/modules/access-control/application/use-cases/get-user-entitlements.usecase';
 import { UserEntitlementsResponseDto } from 'src/modules/access-control/application/dtos/user-entitlements.response.dto';
+import { CreateCheckoutSessionUseCase } from '../../application/use-cases/create-checkout-session.usecase';
 
 @Controller('billing')
 @UseGuards(SupabaseAuthGuard)
@@ -17,7 +17,8 @@ export class BillingController {
 		private readonly getUsageUseCase: GetUsageUseCase,
 		private readonly getSubscriptionUseCase: GetSubscriptionUseCase,
 		private readonly createFreeSubscriptionUseCase: CreateFreeSubscriptionUseCase,
-		private readonly getUserEntitlementsUseCase: GetUserEntitlementsUseCase
+		private readonly getUserEntitlementsUseCase: GetUserEntitlementsUseCase,
+		private readonly createCheckoutSessionUseCase: CreateCheckoutSessionUseCase
 	) {}
 
 	@Get('usage')
@@ -53,5 +54,17 @@ export class BillingController {
 			message: 'Plano gratuito ativado',
 			subscription,
 		};
+	}
+
+	@Post('checkout/:plan')
+	async checkout(
+		@CurrentUser() user: UserPayload,
+		@Param('plan') plan: string
+	): Promise<{ url: string }> {
+		return this.createCheckoutSessionUseCase.execute({
+			userId: user.id,
+			email: user.email,
+			planName: plan,
+		});
 	}
 }
