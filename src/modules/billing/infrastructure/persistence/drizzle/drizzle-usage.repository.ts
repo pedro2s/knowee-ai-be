@@ -6,7 +6,10 @@ import {
 	subscriptionTier,
 	tokenUsage,
 } from 'src/shared/database/infrastructure/drizzle/schema';
-import type { UsageRepositoryPort } from '../../../domain/ports/usage-repository.port';
+import type {
+	PublicSubscriptionTierData,
+	UsageRepositoryPort,
+} from '../../../domain/ports/usage-repository.port';
 import { SubscriptionResponseDto } from '../../../application/dtos/subscription.response.dto';
 import { asc } from 'drizzle-orm';
 
@@ -211,6 +214,32 @@ export class DrizzleUsageRepository implements UsageRepositoryPort {
 			price: tier.price,
 			stripePriceId: tier.stripePriceId,
 		};
+	}
+
+	async listPublicSubscriptionTiers(): Promise<PublicSubscriptionTierData[]> {
+		const tiers = await this.drizzle.db.query.subscriptionTier.findMany({
+			where: eq(subscriptionTier.isPublic, true),
+			orderBy: [asc(subscriptionTier.sortOrder), asc(subscriptionTier.id)],
+		});
+
+		return tiers.map((tier) => ({
+			name: tier.name,
+			displayName: tier.displayName,
+			monthlyTokenLimit: tier.monthlyTokenLimit,
+			price: tier.price,
+			billingPeriod: tier.billingPeriod,
+			description: tier.description,
+			features: Array.isArray(tier.features)
+				? tier.features.filter(
+						(item): item is string => typeof item === 'string'
+					)
+				: [],
+			isHighlighted: tier.isHighlighted,
+			isContactOnly: tier.isContactOnly,
+			sortOrder: tier.sortOrder,
+			supportChannel: tier.supportChannel,
+			supportSlaHours: tier.supportSlaHours,
+		}));
 	}
 
 	async getLatestSubscriberForUser(userId: string): Promise<{

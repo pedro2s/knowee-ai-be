@@ -1,5 +1,20 @@
 import { SubscriptionResponseDto } from '../../application/dtos/subscription.response.dto';
 
+export interface PublicSubscriptionTierData {
+	name: string;
+	displayName: string;
+	monthlyTokenLimit: number;
+	price: string | null;
+	billingPeriod: string | null;
+	description: string | null;
+	features: string[];
+	isHighlighted: boolean;
+	isContactOnly: boolean;
+	sortOrder: number;
+	supportChannel: string;
+	supportSlaHours: number;
+}
+
 export interface UsageRepositoryPort {
 	getUsageInPeriod(
 		userId: string,
@@ -34,6 +49,7 @@ export interface UsageRepositoryPort {
 		price: string | null;
 		stripePriceId: string | null;
 	} | null>;
+	listPublicSubscriptionTiers(): Promise<PublicSubscriptionTierData[]>;
 	getLatestSubscriberForUser(userId: string): Promise<{
 		id: string;
 		status: 'free' | 'active' | 'past_due' | 'canceled';
