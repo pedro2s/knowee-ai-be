@@ -64,6 +64,13 @@
 			"when": 1772208000000,
 			"tag": "0008_billing_annual_cycle",
 			"breakpoints": true
+		},
+		{
+			"idx": 9,
+			"version": "7",
+			"when": 1774800000000,
+			"tag": "0009_queue_generation_infra",
+			"breakpoints": true
 		}
 	]
 }

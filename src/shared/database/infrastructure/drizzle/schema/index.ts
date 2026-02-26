@@ -13,4 +13,5 @@ export * from './token-usage';
 export * from './pgmigrations';
 export * from './relations';
 export * from './generation-jobs';
+export * from './generation-job-payloads';
 export * from './provider-preferences';

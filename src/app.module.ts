@@ -7,12 +7,14 @@ import { BillingModule } from './modules/billing/billing.module';
 import { ProfileModule } from './modules/profile/profile.module';
 import { ProviderPreferencesModule } from './modules/provider-preferences/provider-preferences.module';
 import { AccessControlModule } from './modules/access-control/access-control.module';
+import { QueueModule } from './shared/queue/queue.module';
 
 @Module({
 	imports: [
 		ConfigModule.forRoot({
 			isGlobal: true,
 		}),
+		QueueModule,
 		AuthModule,
 		CourseAuthoringModule,
 		AssistantModule,

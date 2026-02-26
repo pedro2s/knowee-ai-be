@@ -371,6 +371,7 @@ export class AssetsGenerationOrchestratorUseCase {
 			this.generationEventsService.publish(input.jobId, 'generation.failed', {
 				error: message,
 			});
+			throw error;
 		}
 	}
 }
