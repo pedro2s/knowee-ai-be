@@ -14,8 +14,13 @@ import {
 	type GenerationJobRepositoryPort,
 } from '../../domain/ports/generation-job-repository.port';
 import { StartAssetsGenerationResponseDto } from '../dtos/start-assets-generation.response.dto';
-import { AssetsGenerationOrchestratorUseCase } from './assets-generation-orchestrator.usecase';
 import { GenerationEventsService } from '../services/generation-events.service';
+import {
+	GENERATION_JOB_PAYLOAD_REPOSITORY,
+	type GenerationJobPayloadRepositoryPort,
+} from '../../domain/ports/generation-job-payload-repository.port';
+import { GenerationQueueProducer } from '../../infrastructure/queue/generation-queue.producer';
+import { GENERATION_QUEUE } from 'src/shared/queue/queue.constants';
 
 @Injectable()
 export class StartAssetsGenerationUseCase {
@@ -24,7 +29,9 @@ export class StartAssetsGenerationUseCase {
 		private readonly courseRepository: CourseRepositoryPort,
 		@Inject(GENERATION_JOB_REPOSITORY)
 		private readonly generationJobRepository: GenerationJobRepositoryPort,
-		private readonly assetsOrchestratorUseCase: AssetsGenerationOrchestratorUseCase,
+		@Inject(GENERATION_JOB_PAYLOAD_REPOSITORY)
+		private readonly generationJobPayloadRepository: GenerationJobPayloadRepositoryPort,
+		private readonly generationQueueProducer: GenerationQueueProducer,
 		private readonly generationEventsService: GenerationEventsService
 	) {}
 
@@ -85,14 +92,48 @@ export class StartAssetsGenerationUseCase {
 				userId: input.userId,
 				courseId: input.data.courseId,
 				status: 'pending',
+				jobType: 'assets_generation',
 				phase: 'assets_prepare',
 				progress: 0,
+				queueName: GENERATION_QUEUE,
+				maxAttempts: 3,
 				metadata: {
 					jobType: 'assets_generation',
 					strategy: input.data.strategy,
 					providerSelection: input.data.providerSelection,
 					selectedLessonIds,
 				},
+			},
+			auth
+		);
+
+		await this.generationJobPayloadRepository.save(
+			{
+				jobId: job.id,
+				userId: input.userId,
+				payload: {
+					type: 'assets_generation',
+					data: {
+						courseId: input.data.courseId,
+						strategy: input.data.strategy,
+						lessonIds: selectedLessonIds,
+						providerSelection: input.data.providerSelection,
+					},
+				},
+			},
+			auth
+		);
+
+		const queueJobId =
+			await this.generationQueueProducer.enqueueAssetsGeneration({
+				jobId: job.id,
+				userId: input.userId,
+			});
+		await this.generationJobRepository.update(
+			job.id,
+			{
+				queueJobId,
+				queueName: GENERATION_QUEUE,
 			},
 			auth
 		);
@@ -105,15 +146,6 @@ export class StartAssetsGenerationUseCase {
 			courseId: input.data.courseId,
 			metadata: job.metadata,
 			error: job.error,
-		});
-
-		void this.assetsOrchestratorUseCase.run({
-			jobId: job.id,
-			userId: input.userId,
-			courseId: input.data.courseId,
-			lessonIds: selectedLessonIds,
-			strategy: input.data.strategy,
-			providerSelection: input.data.providerSelection,
 		});
 
 		return {

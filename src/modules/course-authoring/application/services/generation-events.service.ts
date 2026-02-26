@@ -1,4 +1,6 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import Redis from 'ioredis';
 import { Observable, Subject } from 'rxjs';
 
 export type GenerationEventType =
@@ -25,11 +27,90 @@ export interface GenerationEvent<T = Record<string, unknown>> {
 }
 
 @Injectable()
-export class GenerationEventsService {
+export class GenerationEventsService implements OnModuleDestroy {
+	private readonly logger = new Logger(GenerationEventsService.name);
 	private readonly channels = new Map<string, Subject<GenerationEvent>>();
+	private readonly redisChannelSubscribers = new Map<string, number>();
+	private readonly redisUrl?: string;
+	private publisher: Redis | null = null;
+	private subscriber: Redis | null = null;
+
+	constructor(private readonly configService: ConfigService) {
+		this.redisUrl = this.configService.get<string>('REDIS_URL');
+	}
+
+	private getChannelName(jobId: string): string {
+		return `generation-events:${jobId}`;
+	}
+
+	private initRedisClients() {
+		if (!this.redisUrl || (this.publisher && this.subscriber)) {
+			return;
+		}
+
+		this.publisher = new Redis(this.redisUrl, {
+			maxRetriesPerRequest: null,
+		});
+		this.subscriber = new Redis(this.redisUrl, {
+			maxRetriesPerRequest: null,
+		});
+
+		this.subscriber.on('message', (channel, message) => {
+			try {
+				const parsed = JSON.parse(message) as GenerationEvent;
+				const jobId = channel.replace('generation-events:', '');
+				this.getChannel(jobId).next(parsed);
+			} catch (error) {
+				this.logger.warn(
+					`Erro ao parsear evento redis no canal ${channel}: ${
+						error instanceof Error ? error.message : String(error)
+					}`
+				);
+			}
+		});
+
+		const onRedisError = (error: unknown) => {
+			this.logger.warn(
+				`Redis indisponível para eventos de geração: ${
+					error instanceof Error ? error.message : String(error)
+				}`
+			);
+		};
+
+		this.publisher.on('error', onRedisError);
+		this.subscriber.on('error', onRedisError);
+	}
 
 	stream(jobId: string): Observable<GenerationEvent> {
-		return this.getChannel(jobId).asObservable();
+		this.initRedisClients();
+		const channel = this.getChannel(jobId);
+		const redisChannelName = this.getChannelName(jobId);
+
+		const current = this.redisChannelSubscribers.get(redisChannelName) ?? 0;
+		this.redisChannelSubscribers.set(redisChannelName, current + 1);
+		if (current === 0 && this.subscriber) {
+			void this.subscriber.subscribe(redisChannelName);
+		}
+
+		return new Observable<GenerationEvent>((subscriber) => {
+			const subscription = channel.subscribe((event) => {
+				subscriber.next(event);
+			});
+
+			return () => {
+				subscription.unsubscribe();
+				const left =
+					(this.redisChannelSubscribers.get(redisChannelName) ?? 1) - 1;
+				if (left <= 0) {
+					this.redisChannelSubscribers.delete(redisChannelName);
+					if (this.subscriber) {
+						void this.subscriber.unsubscribe(redisChannelName);
+					}
+				} else {
+					this.redisChannelSubscribers.set(redisChannelName, left);
+				}
+			};
+		});
 	}
 
 	publish<T extends Record<string, unknown>>(
@@ -37,12 +118,22 @@ export class GenerationEventsService {
 		type: GenerationEventType,
 		data: T
 	) {
-		this.getChannel(jobId).next({
+		const event: GenerationEvent<T> = {
 			type,
 			jobId,
 			timestamp: new Date().toISOString(),
 			data,
-		});
+		};
+
+		// Emite localmente para o próprio processo.
+		this.getChannel(jobId).next(event);
+		this.initRedisClients();
+		if (this.publisher) {
+			void this.publisher.publish(
+				this.getChannelName(jobId),
+				JSON.stringify(event)
+			);
+		}
 	}
 
 	private getChannel(jobId: string): Subject<GenerationEvent> {
@@ -54,5 +145,14 @@ export class GenerationEventsService {
 		const channel = new Subject<GenerationEvent>();
 		this.channels.set(jobId, channel);
 		return channel;
+	}
+
+	async onModuleDestroy() {
+		if (this.publisher) {
+			await this.publisher.quit();
+		}
+		if (this.subscriber) {
+			await this.subscriber.quit();
+		}
 	}
 }

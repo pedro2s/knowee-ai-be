@@ -115,8 +115,9 @@ export class GenerateLessonAudioUseCase {
 					this.logger.error(
 						`[AudioJob] Erro no upload para o Supabase: ${uploadError.message}`
 					);
-					// decide if I should throw, for now just logging. The job is async.
-					return;
+					throw new Error(
+						`Erro no upload para o Supabase: ${uploadError.message}`
+					);
 				}
 
 				const { data: publicUrlData } = this.supabaseClient.storage
@@ -146,6 +147,7 @@ export class GenerateLessonAudioUseCase {
 					`[AudioJob] Falha na geração de áudio para a aula: ${lesson.title}`,
 					error
 				);
+				throw error;
 			} finally {
 				await fs.rm(tempDir, { recursive: true, force: true });
 			}

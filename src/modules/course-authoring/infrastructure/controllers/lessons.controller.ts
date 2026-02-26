@@ -27,9 +27,6 @@ import { GeneratedLessonScriptResponseDto } from '../../application/dtos/generat
 import { GenerateLessonScriptUseCase } from '../../application/use-cases/generate-lesson-script.usecase';
 import { GenerateLessonAudioDto } from '../../application/dtos/generate-lesson-audio.dto';
 import { GenerateSectionVideoDto } from '../../application/dtos/generate-section-video.dto';
-import { GenerateSectionVideoUseCase } from '../../application/use-cases/generate-section-video.usecase';
-import { GeneratedSectionVideoResponseDto } from '../../application/dtos/generated-section-video.response.dto';
-import { MergeLessonSectionsVideoUseCase } from '../../application/use-cases/merge-lesson-sections-video.usecase';
 import { ReorderLessonsDto } from '../../application/dtos/reorder-lessons.dto';
 import { ReorderLessonsUseCase } from '../../application/use-cases/reorder-lessons.usecase';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -39,6 +36,10 @@ import { GeneratedQuizResponseDto } from '../../application/dtos/generated-quiz.
 import { GenerateQuizUseCase } from '../../application/use-cases/generate-quiz.usecase';
 import { ProductAccessGuard } from 'src/modules/access-control/infrastructure/guards/product-access.guard';
 import { RequireAccess } from 'src/modules/access-control/infrastructure/decorators/require-access.decorator';
+import { StartLessonAudioGenerationUseCase } from '../../application/use-cases/start-lesson-audio-generation.usecase';
+import { StartSectionVideoGenerationUseCase } from '../../application/use-cases/start-section-video-generation.usecase';
+import { StartLessonMergeVideoGenerationUseCase } from '../../application/use-cases/start-lesson-merge-video-generation.usecase';
+import { StartCourseGenerationResponseDto } from '../../application/dtos/start-course-generation.response.dto';
 
 @Controller('lessons')
 @UseGuards(SupabaseAuthGuard, ProductAccessGuard)
@@ -46,11 +47,12 @@ export class LessonsController {
 	constructor(
 		private readonly getLessonUseCase: GetLessonUseCase,
 		private readonly generateAudio: GenerateLessonAudioUseCase,
+		private readonly startLessonAudioGenerationUseCase: StartLessonAudioGenerationUseCase,
 		private readonly updateLessonUseCase: UpdateLessonUseCase,
 		private readonly generateArticleUseCase: GenerateArticleUseCase,
 		private readonly generateLessonScriptUseCase: GenerateLessonScriptUseCase,
-		private readonly generateSectionVideoUseCase: GenerateSectionVideoUseCase,
-		private readonly mergeLessonSectionsVideoUseCase: MergeLessonSectionsVideoUseCase,
+		private readonly startSectionVideoGenerationUseCase: StartSectionVideoGenerationUseCase,
+		private readonly startLessonMergeVideoGenerationUseCase: StartLessonMergeVideoGenerationUseCase,
 		private readonly reorderLessonsUseCase: ReorderLessonsUseCase,
 		private readonly manageLessonAssetsUseCase: ManageLessonAssetsUseCase,
 		private readonly generateQuizUseCase: GenerateQuizUseCase
@@ -85,15 +87,22 @@ export class LessonsController {
 	}
 
 	@Post('generate-video')
+	@HttpCode(202)
 	@RequireAccess('ai.interaction', { courseIdBody: 'courseId' })
 	async generateVideo(
 		@Body() body: GenerateSectionVideoDto,
 		@CurrentUser() user: UserPayload
-	): Promise<GeneratedSectionVideoResponseDto> {
-		const generatedVideoSection =
-			await this.generateSectionVideoUseCase.execute(body, user.id);
-
-		return GeneratedSectionVideoResponseDto.fromDomain(generatedVideoSection);
+	): Promise<StartCourseGenerationResponseDto> {
+		const job = await this.startSectionVideoGenerationUseCase.execute({
+			userId: user.id,
+			data: body,
+		});
+		return {
+			jobId: job.id,
+			status: job.status,
+			phase: job.phase,
+			progress: job.progress,
+		};
 	}
 
 	@Post('/reorder')
@@ -125,18 +134,25 @@ export class LessonsController {
 	// 2. Rotas Específicas (COM ID)
 
 	@Post('/:id/generate-audio')
+	@HttpCode(202)
 	@RequireAccess('ai.interaction', { lessonIdParam: 'id' })
-	generateLessonAudio(
+	async generateLessonAudio(
 		@Param('id') lessonId: string,
 		@Body() data: GenerateLessonAudioDto,
 		@CurrentUser() user: UserPayload
-	) {
-		return this.generateAudio.execute({
+	): Promise<StartCourseGenerationResponseDto> {
+		const job = await this.startLessonAudioGenerationUseCase.execute({
 			lessonId,
 			audioProvider: data.ai?.provider || 'openai',
 			audioVoiceId: data.audioVoiceId,
 			userId: user.id,
 		});
+		return {
+			jobId: job.id,
+			status: job.status,
+			phase: job.phase,
+			progress: job.progress,
+		};
 	}
 
 	@Post('/:id/video')
@@ -164,12 +180,22 @@ export class LessonsController {
 	}
 
 	@Post('/:id/merge-videos')
+	@HttpCode(202)
 	@RequireAccess('ai.interaction', { lessonIdParam: 'id' })
-	async mergeLessonSectionsVideo(
+	async startMergeLessonSectionsVideo(
 		@Param('id') lessonId: string,
 		@CurrentUser() user: UserPayload
-	) {
-		return this.mergeLessonSectionsVideoUseCase.execute(lessonId, user.id);
+	): Promise<StartCourseGenerationResponseDto> {
+		const job = await this.startLessonMergeVideoGenerationUseCase.execute({
+			lessonId,
+			userId: user.id,
+		});
+		return {
+			jobId: job.id,
+			status: job.status,
+			phase: job.phase,
+			progress: job.progress,
+		};
 	}
 
 	@Post('/:id/assets/audio')
