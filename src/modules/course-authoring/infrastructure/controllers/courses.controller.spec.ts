@@ -4,11 +4,14 @@ import path from 'path';
 import { StreamableFile } from '@nestjs/common';
 import { CoursesController } from './courses.controller';
 import type { GenerateCourseUseCase } from '../../application/use-cases/generate-course.usecase';
+import type { StartCourseGenerationUseCase } from '../../application/use-cases/start-course-generation.usecase';
 import type { FetchCoursesUseCase } from '../../application/use-cases/fetch-courses.usecase';
 import type { GetCourseUseCase } from '../../application/use-cases/get-course.usecase';
 import type { FetchModulesUseCase } from '../../application/use-cases/fetch-modules.usecase';
 import type { UpdateCourseWithModuleTreeUseCase } from '../../application/use-cases/update-course-with-module-tree.usecase';
 import type { ExportCourseScormUseCase } from '../../application/use-cases/export-course-scorm.usecase';
+import type { UpdateProviderPreferencesUseCase } from 'src/modules/provider-preferences/application/use-cases/update-provider-preferences.usecase';
+import type { GetProviderPreferencesUseCase } from 'src/modules/provider-preferences/application/use-cases/get-provider-preferences.usecase';
 import type { Response } from 'express';
 
 describe('CoursesController', () => {
@@ -30,6 +33,9 @@ describe('CoursesController', () => {
 
 		const controller = new CoursesController(
 			{ execute: jest.fn() } as unknown as GenerateCourseUseCase,
+			{ execute: jest.fn() } as unknown as StartCourseGenerationUseCase,
+			{ execute: jest.fn() } as unknown as UpdateProviderPreferencesUseCase,
+			{ execute: jest.fn() } as unknown as GetProviderPreferencesUseCase,
 			{ execute: jest.fn() } as unknown as FetchCoursesUseCase,
 			{ execute: jest.fn() } as unknown as GetCourseUseCase,
 			{ execute: jest.fn() } as unknown as FetchModulesUseCase,

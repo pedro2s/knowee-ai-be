@@ -20,10 +20,23 @@ export const generationJobs = pgTable(
 		userId: uuid('user_id').notNull(),
 		courseId: uuid('course_id'),
 		status: text().notNull().default('pending'),
+		jobType: text('job_type').notNull().default('course_generation'),
 		phase: text().notNull().default('structure'),
 		progress: integer().notNull().default(0),
+		queueName: text('queue_name').notNull().default('generation'),
+		queueJobId: text('queue_job_id'),
+		attempts: integer().notNull().default(0),
+		maxAttempts: integer('max_attempts').notNull().default(3),
 		metadata: jsonb().notNull().default({}),
 		error: text(),
+		startedAt: timestamp('started_at', {
+			withTimezone: true,
+			mode: 'string',
+		}),
+		heartbeatAt: timestamp('heartbeat_at', {
+			withTimezone: true,
+			mode: 'string',
+		}),
 		createdAt: timestamp('created_at', {
 			withTimezone: true,
 			mode: 'string',
@@ -44,6 +57,11 @@ export const generationJobs = pgTable(
 	(table) => [
 		index('idx_generation_jobs_user_id').on(table.userId),
 		index('idx_generation_jobs_course_id').on(table.courseId),
+		index('idx_generation_jobs_queue_job_id').on(table.queueJobId),
+		index('idx_generation_jobs_status_updated_at').on(
+			table.status,
+			table.updatedAt
+		),
 		foreignKey({
 			columns: [table.userId],
 			foreignColumns: [users.id],

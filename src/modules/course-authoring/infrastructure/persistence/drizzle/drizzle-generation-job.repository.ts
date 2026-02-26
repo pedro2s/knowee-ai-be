@@ -32,9 +32,18 @@ export class DrizzleGenerationJobRepository implements GenerationJobRepositoryPo
 					userId: input.userId,
 					courseId: input.courseId ?? null,
 					status: input.status ?? 'pending',
+					jobType: input.jobType ?? 'course_generation',
 					phase: input.phase ?? 'structure',
 					progress: input.progress ?? 0,
+					queueName: input.queueName ?? 'generation',
+					queueJobId: input.queueJobId ?? null,
+					attempts: input.attempts ?? 0,
+					maxAttempts: input.maxAttempts ?? 3,
 					metadata: input.metadata ?? {},
+					startedAt: input.startedAt ? input.startedAt.toISOString() : null,
+					heartbeatAt: input.heartbeatAt
+						? input.heartbeatAt.toISOString()
+						: null,
 				})
 				.returning();
 
@@ -82,6 +91,10 @@ export class DrizzleGenerationJobRepository implements GenerationJobRepositoryPo
 				.update(schema.generationJobs)
 				.set({
 					...input,
+					startedAt: input.startedAt ? input.startedAt.toISOString() : null,
+					heartbeatAt: input.heartbeatAt
+						? input.heartbeatAt.toISOString()
+						: null,
 					completedAt: input.completedAt
 						? input.completedAt.toISOString()
 						: input.completedAt,
@@ -102,10 +115,17 @@ export class DrizzleGenerationJobRepository implements GenerationJobRepositoryPo
 			userId: raw.userId,
 			courseId: raw.courseId,
 			status: raw.status as GenerationJob['status'],
+			jobType: raw.jobType as GenerationJob['jobType'],
 			phase: raw.phase as GenerationJob['phase'],
 			progress: raw.progress,
+			queueName: raw.queueName,
+			queueJobId: raw.queueJobId,
+			attempts: raw.attempts,
+			maxAttempts: raw.maxAttempts,
 			metadata: (raw.metadata ?? {}) as GenerationJob['metadata'],
 			error: raw.error,
+			startedAt: raw.startedAt ? new Date(raw.startedAt) : null,
+			heartbeatAt: raw.heartbeatAt ? new Date(raw.heartbeatAt) : null,
 			createdAt: new Date(raw.createdAt),
 			updatedAt: new Date(raw.updatedAt),
 			completedAt: raw.completedAt ? new Date(raw.completedAt) : null,

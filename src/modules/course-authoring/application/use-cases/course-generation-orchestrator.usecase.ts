@@ -282,6 +282,7 @@ export class CourseGenerationOrchestratorUseCase {
 			this.generationEventsService.publish(input.jobId, 'generation.failed', {
 				error: message,
 			});
+			throw error;
 		}
 	}
 }

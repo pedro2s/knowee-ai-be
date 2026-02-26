@@ -60,6 +60,7 @@ import { StartCourseGenerationUseCase } from './application/use-cases/start-cour
 import { CourseGenerationOrchestratorUseCase } from './application/use-cases/course-generation-orchestrator.usecase';
 import { GENERATION_JOB_REPOSITORY } from './domain/ports/generation-job-repository.port';
 import { DrizzleGenerationJobRepository } from './infrastructure/persistence/drizzle/drizzle-generation-job.repository';
+import { DrizzleGenerationJobPayloadRepository } from './infrastructure/persistence/drizzle/drizzle-generation-job-payload.repository';
 import { GenerationEventsService } from './application/services/generation-events.service';
 import { GetGenerationJobUseCase } from './application/use-cases/get-generation-job.usecase';
 import { GenerationController } from './infrastructure/controllers/generation.controller';
@@ -69,6 +70,15 @@ import { StartAssetsGenerationUseCase } from './application/use-cases/start-asse
 import { AssetsGenerationOrchestratorUseCase } from './application/use-cases/assets-generation-orchestrator.usecase';
 import { GetActiveGenerationJobByCourseUseCase } from './application/use-cases/get-active-generation-job-by-course.usecase';
 import { AccessControlModule } from '../access-control/access-control.module';
+import { GENERATION_JOB_PAYLOAD_REPOSITORY } from './domain/ports/generation-job-payload-repository.port';
+import { GenerationQueueProducer } from './infrastructure/queue/generation-queue.producer';
+import { GenerationQueueProcessor } from './infrastructure/queue/generation-queue.processor';
+import { StartLessonAudioGenerationUseCase } from './application/use-cases/start-lesson-audio-generation.usecase';
+import { StartSectionVideoGenerationUseCase } from './application/use-cases/start-section-video-generation.usecase';
+import { StartLessonMergeVideoGenerationUseCase } from './application/use-cases/start-lesson-merge-video-generation.usecase';
+
+const workerProviders =
+	process.env.ENABLE_QUEUE_WORKERS === 'true' ? [GenerationQueueProcessor] : [];
 
 @Module({
 	controllers: [
@@ -97,10 +107,17 @@ import { AccessControlModule } from '../access-control/access-control.module';
 			provide: GENERATION_JOB_REPOSITORY,
 			useClass: DrizzleGenerationJobRepository,
 		},
+		{
+			provide: GENERATION_JOB_PAYLOAD_REPOSITORY,
+			useClass: DrizzleGenerationJobPayloadRepository,
+		},
 		GenerateCourseUseCase,
 		StartCourseGenerationUseCase,
 		CourseGenerationOrchestratorUseCase,
 		StartAssetsGenerationUseCase,
+		StartLessonAudioGenerationUseCase,
+		StartSectionVideoGenerationUseCase,
+		StartLessonMergeVideoGenerationUseCase,
 		AssetsGenerationOrchestratorUseCase,
 		GetGenerationJobUseCase,
 		GetActiveGenerationJobByCourseUseCase,
@@ -153,11 +170,13 @@ import { AccessControlModule } from '../access-control/access-control.module';
 		OpenAIGenerateAssessmentsAgentAdapter,
 		ScormManifestBuilder,
 		GenerationEventsService,
+		GenerationQueueProducer,
 		{
 			provide: SCORM_PACKAGE_GENERATOR,
 			useClass: ScormPackageGeneratorAdapter,
 		},
 		ScormPackageGeneratorAdapter,
+		...workerProviders,
 	],
 	exports: [
 		{ provide: COURSE_REPOSITORY, useClass: DrizzleCourseRepository },

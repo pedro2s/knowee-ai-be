@@ -1,21 +1,32 @@
-import { Inject, Injectable } from '@nestjs/common';
-import { GenerateCourseDto } from '../dtos/generate-course.dto';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import {
+	LESSON_REPOSITORY,
+	type LessonRepositoryPort,
+} from '../../domain/ports/lesson-repository.port';
+import {
+	MODULE_REPOSITORY,
+	type ModuleRepositoryPort,
+} from '../../domain/ports/module-repository.port';
 import {
 	GENERATION_JOB_REPOSITORY,
 	type GenerationJobRepositoryPort,
 } from '../../domain/ports/generation-job-repository.port';
-import { GenerationEventsService } from '../services/generation-events.service';
-import { GenerationJob } from '../../domain/entities/generation-job.types';
 import {
 	GENERATION_JOB_PAYLOAD_REPOSITORY,
 	type GenerationJobPayloadRepositoryPort,
 } from '../../domain/ports/generation-job-payload-repository.port';
 import { GenerationQueueProducer } from '../../infrastructure/queue/generation-queue.producer';
+import { GenerationEventsService } from '../services/generation-events.service';
 import { GENERATION_QUEUE } from 'src/shared/queue/queue.constants';
+import { GenerationJob } from '../../domain/entities/generation-job.types';
 
 @Injectable()
-export class StartCourseGenerationUseCase {
+export class StartLessonMergeVideoGenerationUseCase {
 	constructor(
+		@Inject(LESSON_REPOSITORY)
+		private readonly lessonRepository: LessonRepositoryPort,
+		@Inject(MODULE_REPOSITORY)
+		private readonly moduleRepository: ModuleRepositoryPort,
 		@Inject(GENERATION_JOB_REPOSITORY)
 		private readonly generationJobRepository: GenerationJobRepositoryPort,
 		@Inject(GENERATION_JOB_PAYLOAD_REPOSITORY)
@@ -26,19 +37,32 @@ export class StartCourseGenerationUseCase {
 
 	async execute(input: {
 		userId: string;
-		data: GenerateCourseDto;
-		files: Express.Multer.File[];
+		lessonId: string;
 	}): Promise<GenerationJob> {
 		const auth = { userId: input.userId, role: 'authenticated' as const };
+		const lesson = await this.lessonRepository.findById(input.lessonId, auth);
+		if (!lesson) {
+			throw new NotFoundException('Aula não encontrada');
+		}
+		const module = await this.moduleRepository.findById(lesson.moduleId, auth);
+		if (!module) {
+			throw new NotFoundException('Módulo da aula não encontrado');
+		}
+
 		const job = await this.generationJobRepository.create(
 			{
 				userId: input.userId,
+				courseId: module.courseId,
 				status: 'pending',
-				jobType: 'course_generation',
-				phase: 'structure',
+				jobType: 'lesson_merge_video_generation',
+				phase: 'lesson_merge_video',
 				progress: 0,
 				queueName: GENERATION_QUEUE,
 				maxAttempts: 3,
+				metadata: {
+					jobType: 'lesson_merge_video_generation',
+					lessonId: lesson.id,
+				},
 			},
 			auth
 		);
@@ -48,20 +72,15 @@ export class StartCourseGenerationUseCase {
 				jobId: job.id,
 				userId: input.userId,
 				payload: {
-					type: 'course_generation',
-					data: input.data,
-					files: input.files.map((file) => ({
-						originalname: file.originalname,
-						mimetype: file.mimetype,
-						bufferBase64: file.buffer.toString('base64'),
-					})),
+					type: 'lesson_merge_video_generation',
+					lessonId: lesson.id,
 				},
 			},
 			auth
 		);
 
 		const queueJobId =
-			await this.generationQueueProducer.enqueueCourseGeneration({
+			await this.generationQueueProducer.enqueueLessonMergeVideoGeneration({
 				jobId: job.id,
 				userId: input.userId,
 			});
