@@ -2,6 +2,10 @@ import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import Redis from 'ioredis';
 import { Observable, Subject } from 'rxjs';
+import {
+	buildRedisConnectionConfig,
+	RedisConnectionConfig,
+} from '../../../../shared/queue/redis-connection.util';
 
 export type GenerationEventType =
 	| 'generation.snapshot'
@@ -31,12 +35,14 @@ export class GenerationEventsService implements OnModuleDestroy {
 	private readonly logger = new Logger(GenerationEventsService.name);
 	private readonly channels = new Map<string, Subject<GenerationEvent>>();
 	private readonly redisChannelSubscribers = new Map<string, number>();
-	private readonly redisUrl?: string;
+	private readonly redisConfig: RedisConnectionConfig;
 	private publisher: Redis | null = null;
 	private subscriber: Redis | null = null;
 
 	constructor(private readonly configService: ConfigService) {
-		this.redisUrl = this.configService.get<string>('REDIS_URL');
+		this.redisConfig = buildRedisConnectionConfig(
+			this.configService.get<string>('REDIS_URL')
+		);
 	}
 
 	private getChannelName(jobId: string): string {
@@ -44,15 +50,21 @@ export class GenerationEventsService implements OnModuleDestroy {
 	}
 
 	private initRedisClients() {
-		if (!this.redisUrl || (this.publisher && this.subscriber)) {
+		if (this.publisher && this.subscriber) {
 			return;
 		}
 
-		this.publisher = new Redis(this.redisUrl, {
-			maxRetriesPerRequest: null,
+		this.logger.log(
+			this.redisConfig.source === 'REDIS_URL'
+				? 'Events Redis via REDIS_URL'
+				: 'Events Redis via fallback 127.0.0.1:6379'
+		);
+
+		this.publisher = new Redis({
+			...this.redisConfig.connection,
 		});
-		this.subscriber = new Redis(this.redisUrl, {
-			maxRetriesPerRequest: null,
+		this.subscriber = new Redis({
+			...this.redisConfig.connection,
 		});
 
 		this.subscriber.on('message', (channel, message) => {
