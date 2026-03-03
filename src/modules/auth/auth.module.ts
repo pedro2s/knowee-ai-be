@@ -16,13 +16,16 @@ import { DatabaseModule } from 'src/shared/database/database.module';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 
-const authProvider: Provider<AuthServicePort> =
+const authProviders: Provider[] =
 	process.env.AUTH_PROVIDER === 'jwt'
-		? { provide: AuthServicePort, useClass: JwtAuthAdapter }
-		: {
-				provide: AuthServicePort,
-				useClass: SupabaseAuthAdapter,
-			};
+		? [{ provide: AuthServicePort, useClass: JwtAuthAdapter }, JwtStrategy]
+		: [
+				{
+					provide: AuthServicePort,
+					useClass: SupabaseAuthAdapter,
+				},
+				SupabaseStrategy,
+			];
 
 @Module({
 	imports: [
@@ -43,9 +46,8 @@ const authProvider: Provider<AuthServicePort> =
 		SignUpUseCase,
 		RefreshTokenUseCase,
 		ChangePasswordUseCase,
-		authProvider,
-		SupabaseStrategy,
-		JwtStrategy,
+		...authProviders,
 	],
+	exports: [...authProviders],
 })
 export class AuthModule {}

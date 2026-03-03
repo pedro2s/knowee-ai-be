@@ -16,7 +16,7 @@ import {
 	UseInterceptors,
 } from '@nestjs/common';
 import { GenerateCourseUseCase } from '../../application/use-cases/generate-course.usecase';
-import { SupabaseAuthGuard } from 'src/modules/auth/infrastructure/guards/supabase-auth.guard';
+import { JwtAuthGuard } from 'src/modules/auth/infrastructure/guards/jwt-auth.guard';
 import { FetchCoursesUseCase } from '../../application/use-cases/fetch-courses.usecase';
 import { CourseResponseDto } from '../../application/dtos/course.response.dto';
 import { GenerateCourseDto } from '../../application/dtos/generate-course.dto';
@@ -43,7 +43,7 @@ import { ProductAccessGuard } from 'src/modules/access-control/infrastructure/gu
 import { RequireAccess } from 'src/modules/access-control/infrastructure/decorators/require-access.decorator';
 
 @Controller('courses')
-@UseGuards(SupabaseAuthGuard, ProductAccessGuard)
+@UseGuards(JwtAuthGuard, ProductAccessGuard)
 export class CoursesController {
 	constructor(
 		private readonly createCourse: GenerateCourseUseCase,

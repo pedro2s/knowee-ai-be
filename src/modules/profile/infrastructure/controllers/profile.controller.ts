@@ -1,14 +1,14 @@
 import { Body, Controller, Get, Patch, UseGuards } from '@nestjs/common';
 import type { UserPayload } from 'src/shared/types/user-payload';
 import { CurrentUser } from 'src/shared/decorators';
-import { SupabaseAuthGuard } from 'src/modules/auth/infrastructure/guards/supabase-auth.guard';
+import { JwtAuthGuard } from 'src/modules/auth/infrastructure/guards/jwt-auth.guard';
 import { GetProfileUseCase } from '../../application/use-cases/get-profile.usecase';
 import { UpdateProfileUseCase } from '../../application/use-cases/update-profile.usecase';
 import { ProfileResponseDto } from '../../application/dtos/profile.response.dto';
 import { UpdateProfileDto } from '../../application/dtos/update-profile.dto';
 
 @Controller('profile')
-@UseGuards(SupabaseAuthGuard)
+@UseGuards(JwtAuthGuard)
 export class ProfileController {
 	constructor(
 		private readonly getProfileUseCase: GetProfileUseCase,

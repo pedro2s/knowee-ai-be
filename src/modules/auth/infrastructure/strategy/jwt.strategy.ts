@@ -9,20 +9,22 @@ interface JwtPayload {
 }
 
 @Injectable()
-export class JwtStrategy extends PassportStrategy(Strategy) {
+export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
 	constructor(private readonly configService: ConfigService) {
-		const secret = configService.get<string>('SUPABASE_JWT_SECRET');
+		const secret = configService.get<string>('JWT_SECRET');
 		if (!secret) {
-			throw new Error('SUPABASE_JWT_SECRET is not defined');
+			throw new Error('JWT_SECRET is not defined');
 		}
 		super({
 			jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
 			ignoreExpiration: false,
 			secretOrKey: secret,
+			passReqToCallback: true,
 		});
 	}
 
 	validate(payload: JwtPayload) {
+		console.log('Payload:');
 		return { userId: payload.sub, email: payload.email };
 	}
 }

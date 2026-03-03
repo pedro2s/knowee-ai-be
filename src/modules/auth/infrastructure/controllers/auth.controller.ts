@@ -4,7 +4,7 @@ import { SignUpUseCase } from '../../application/use-cases/sign-up.usecase';
 import { SignInDto } from '../../application/dtos/sign-in.dto';
 import { SignUpDto } from '../../application/dtos/sign-up.dto';
 import { CurrentUser } from 'src/shared/decorators'; // Importar o novo decorator
-import { SupabaseAuthGuard } from '../guards/supabase-auth.guard'; // Importar o guard
+import { JwtAuthGuard } from '../guards/jwt-auth.guard'; // Importar o guard
 import type { UserPayload } from 'src/shared/types/user-payload';
 import { RefreshTokenUseCase } from '../../application/use-cases/refresh-token.usecase';
 import { RefreshTokenDto } from '../../application/dtos/refresh-token.dto';
@@ -36,7 +36,7 @@ export class AuthController {
 	}
 
 	@Get('profile')
-	@UseGuards(SupabaseAuthGuard)
+	@UseGuards(JwtAuthGuard)
 	getProfile(@CurrentUser() user: UserPayload) {
 		// O objeto 'user' agora contém as informações do usuário logado,
 		// tipadas de acordo com a interface UserPayload.
@@ -45,7 +45,7 @@ export class AuthController {
 	}
 
 	@Post('change-password')
-	@UseGuards(SupabaseAuthGuard)
+	@UseGuards(JwtAuthGuard)
 	async changePassword(
 		@CurrentUser() user: UserPayload,
 		@Body() dto: ChangePasswordDto

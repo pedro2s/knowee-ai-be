@@ -12,14 +12,14 @@ import { ModuleResponseDto } from '../../application/dtos/module.response.dto';
 import type { UserPayload } from 'src/shared/types/user-payload';
 import { CurrentUser } from 'src/shared/decorators';
 import { GenerateModuleDto } from '../../application/dtos/generate-module.dto';
-import { SupabaseAuthGuard } from 'src/modules/auth/infrastructure/guards/supabase-auth.guard';
+import { JwtAuthGuard } from 'src/modules/auth/infrastructure/guards/jwt-auth.guard';
 import { ReorderContentUseCase } from '../../application/use-cases/quick-actions/georder-content.usecase';
 import { GenerateAssessmentsUseCase } from '../../application/use-cases/quick-actions/generate-assessments.usecase';
 import { ProductAccessGuard } from 'src/modules/access-control/infrastructure/guards/product-access.guard';
 import { RequireAccess } from 'src/modules/access-control/infrastructure/decorators/require-access.decorator';
 
 @Controller('quick-actions')
-@UseGuards(SupabaseAuthGuard, ProductAccessGuard)
+@UseGuards(JwtAuthGuard, ProductAccessGuard)
 export class QuickActionsController {
 	constructor(
 		private readonly generateModuleUseCase: GenerateModuleUseCase,
