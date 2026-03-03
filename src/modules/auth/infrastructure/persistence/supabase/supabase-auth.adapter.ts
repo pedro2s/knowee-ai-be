@@ -4,6 +4,7 @@ import { SignInDto } from '../../../application/dtos/sign-in.dto';
 import { SignUpDto } from '../../../application/dtos/sign-up.dto';
 import { User, AuthError, SupabaseClient } from '@supabase/supabase-js';
 import { SUPABASE_CLIENT } from 'src/shared/supabase/subapase.constants';
+import { UserPayload } from 'src/shared/types/user-payload';
 
 @Injectable()
 export class SupabaseAuthAdapter extends AuthServicePort {
@@ -40,7 +41,7 @@ export class SupabaseAuthAdapter extends AuthServicePort {
 		return { access_token, refresh_token };
 	}
 
-	async signUp(dto: SignUpDto): Promise<{ user: User }> {
+	async signUp(dto: SignUpDto): Promise<{ user: UserPayload }> {
 		const { email, password, fullName } = dto;
 		const {
 			data,
@@ -66,7 +67,15 @@ export class SupabaseAuthAdapter extends AuthServicePort {
 			throw new Error('User not found');
 		}
 
-		return { user: data.user };
+		return {
+			user: {
+				id: data.user.id,
+				email: data.user.email!,
+				rawUserMetaData: data.user.user_metadata,
+				createdAt: data.user.created_at,
+				updatedAt: data.user.updated_at,
+			},
+		};
 	}
 
 	async refreshSession(refreshToken: string): Promise<{
