@@ -1,5 +1,5 @@
 import { Body, Controller, Get, Put, Query, UseGuards } from '@nestjs/common';
-import { SupabaseAuthGuard } from 'src/modules/auth/infrastructure/guards/supabase-auth.guard';
+import { JwtAuthGuard } from 'src/modules/auth/infrastructure/guards/jwt-auth.guard';
 import { CurrentUser } from 'src/shared/decorators';
 import type { UserPayload } from 'src/shared/types/user-payload';
 import { GetProviderCatalogUseCase } from '../../application/use-cases/get-provider-catalog.usecase';
@@ -12,7 +12,7 @@ import {
 import { UpdateProviderPreferencesDto } from '../../application/dtos/update-provider-preferences.dto';
 
 @Controller('providers')
-@UseGuards(SupabaseAuthGuard)
+@UseGuards(JwtAuthGuard)
 export class ProviderPreferencesController {
 	constructor(
 		private readonly getProviderCatalogUseCase: GetProviderCatalogUseCase,

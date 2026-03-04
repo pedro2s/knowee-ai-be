@@ -1,3 +1,172 @@
+-- SCRIPT COMPLETO - SUPABASE STYLE RLS
+-- Remova se já existirem
+DO $$
+BEGIN
+   IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'anon') THEN
+      CREATE ROLE anon NOINHERIT;
+   END IF;
+
+   IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'authenticated') THEN
+      CREATE ROLE authenticated NOINHERIT;
+   END IF;
+
+   IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'service_role') THEN
+      CREATE ROLE service_role NOINHERIT;
+   END IF;
+END
+$$;
+
+-- Permitir que service_role ignore RLS
+ALTER ROLE service_role BYPASSRLS;
+
+-- Criar Schema auth se não existir
+CREATE SCHEMA IF NOT EXISTS auth;
+
+-- Criar funções helper JWT
+-- auth.uuid()
+CREATE OR REPLACE FUNCTION auth.uid()
+RETURNS uuid
+LANGUAGE sql
+STABLE
+AS $$
+  SELECT NULLIF(current_setting('request.jwt.claim.sub', true), '')::uuid;
+$$;
+
+-- auth.role()
+CREATE OR REPLACE FUNCTION auth.role()
+RETURNS text
+LANGUAGE sql
+STABLE
+AS $$
+  SELECT NULLIF(current_setting('request.jwt.claim.role', true), '');
+$$;
+
+-- auth.email()
+CREATE OR REPLACE FUNCTION auth.email()
+RETURNS text
+LANGUAGE sql
+STABLE
+AS $$
+  SELECT NULLIF(current_setting('request.jwt.claim.email', true), '');
+$$;
+
+-- auth.jwt() - retorna JSON completo)
+CREATE OR REPLACE FUNCTION auth.jwt()
+RETURNS jsonb
+LANGUAGE plpgsql
+STABLE
+AS $$
+DECLARE
+  result jsonb := '{}'::jsonb;
+BEGIN
+  BEGIN
+    result := result || jsonb_build_object(
+      'sub', current_setting('request.jwt.claim.sub', true),
+      'role', current_setting('request.jwt.claim.role', true)
+    );
+  EXCEPTION WHEN OTHERS THEN
+    RETURN '{}'::jsonb;
+  END;
+
+  RETURN result;
+END;
+$$;
+
+-- Permissões básicas no schema public
+GRANT USAGE ON SCHEMA public TO anon, authenticated;
+GRANT USAGE ON SCHEMA auth TO anon, authenticated;
+
+GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA auth TO anon, authenticated;
+
+-- Garantir extensões necessárias
+CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+CREATE EXTENSION IF NOT EXISTS "btree_gin";
+CREATE EXTENSION IF NOT EXISTS "vector";
+
+-- Criar tabela auth.users se não existir
+CREATE TABLE IF NOT EXISTS auth.users (
+	id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+
+	-- Login
+	email text UNIQUE,
+	encrypted_password text,
+
+	-- Status
+	email_confirmed_at timestamptz,
+	invited_at timestamptz,
+	confirmation_token text,
+	recovery_token text,
+	email_change_token text,
+	email_change text,
+
+	-- Role
+	role text DEFAULT 'authenticated',
+
+	-- Metadata
+	raw_app_meta_data jsonb DEFAULT '{}'::jsonb NOT NULL,
+	raw_user_meta_data jsonb DEFAULT '{}'::jsonb NOT NULL,
+
+	-- Tracking
+	last_sign_in_at timestamptz,
+	created_at timestamptz DEFAULT now() NOT NULL,
+	updated_at timestamptz DEFAULT now() NOT NULL
+);
+
+-- Índices para auth.users
+CREATE INDEX IF NOT EXISTS users_email_idx ON auth.users(email);
+CREATE INDEX IF NOT EXISTS users_role_idx ON auth.users(role);
+CREATE INDEX IF NOT EXISTS users_created_at_idx ON auth.users(created_at);
+
+-- Trigger para updated_at automático
+CREATE OR REPLACE FUNCTION auth.handle_updated_at()
+RETURNS trigger
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  NEW.updated_at = now();
+  RETURN NEW;
+END;
+$$;
+
+CREATE TRIGGER users_updated_at
+BEFORE UPDATE ON auth.users
+FOR EACH ROW
+EXECUTE FUNCTION auth.handle_updated_at();
+
+-- RLS em auth.users?
+ALTER TABLE auth.users DISABLE ROW LEVEL SECURITY;
+
+-- Trigger automático para criar perfil ao criar usuário
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+BEGIN
+  INSERT INTO public.profiles (id, email, full_name, avatar_url)
+  VALUES (
+    NEW.id,
+    NEW.email,
+    NEW.raw_user_meta_data->>'full_name',
+    NEW.raw_user_meta_data->>'avatar_url'
+  );
+  RETURN NEW;
+END;
+$$;
+
+CREATE TRIGGER on_auth_user_created
+AFTER INSERT ON auth.users
+FOR EACH ROW
+EXECUTE FUNCTION public.handle_new_user();
+
+-- Permissões finais
+GRANT USAGE ON SCHEMA auth TO authenticated;
+GRANT SELECT ON auth.users TO service_role;
+GRANT ALL ON auth.users TO service_role;
+
+-- END SUPABASE STYLE RLS
+
 -- Current sql file was generated after introspecting the database
 -- If you want to run this migration please uncomment this code before executing migrations
 CREATE TABLE "documents" (
@@ -158,11 +327,11 @@ ALTER TABLE "history_summary" ADD CONSTRAINT "history_summary_course_id_fkey" FO
 ALTER TABLE "history_summary" ADD CONSTRAINT "history_summary_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "auth"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 CREATE INDEX "documents_embedding_idx" ON "documents" USING ivfflat ("embedding" vector_cosine_ops) WITH (lists=100);--> statement-breakpoint
 CREATE INDEX "idx_modules_course_id" ON "modules" USING btree ("course_id" uuid_ops);--> statement-breakpoint
-CREATE INDEX "idx_modules_order" ON "modules" USING btree ("course_id" int4_ops,"order_index" int4_ops);--> statement-breakpoint
+CREATE INDEX "idx_modules_order" ON "modules" USING btree ("course_id" uuid_ops,"order_index" int4_ops);--> statement-breakpoint
 CREATE INDEX "history_user_id_idx" ON "history" USING btree ("user_id" uuid_ops);--> statement-breakpoint
 CREATE INDEX "idx_lessons_course_id" ON "lessons" USING btree ("course_id" uuid_ops);--> statement-breakpoint
 CREATE INDEX "idx_lessons_module_id" ON "lessons" USING btree ("module_id" uuid_ops);--> statement-breakpoint
-CREATE INDEX "idx_lessons_order" ON "lessons" USING btree ("course_id" int4_ops,"module_id" uuid_ops,"order_index" uuid_ops);--> statement-breakpoint
+CREATE INDEX "idx_lessons_order" ON "lessons" USING btree ("course_id" uuid_ops,"module_id" uuid_ops,"order_index" int4_ops);--> statement-breakpoint
 CREATE POLICY "Usuário pode ver seus próprios documentos" ON "documents" AS PERMISSIVE FOR SELECT TO public USING ((user_id = auth.uid()));--> statement-breakpoint
 CREATE POLICY "Usuário pode inserir documentos seus próprios documentos" ON "documents" AS PERMISSIVE FOR INSERT TO public;--> statement-breakpoint
 CREATE POLICY "Usuário pode atualizar seus próprios documentos" ON "documents" AS PERMISSIVE FOR UPDATE TO public;--> statement-breakpoint

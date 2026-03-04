@@ -39,7 +39,7 @@ export const modules = pgTable(
 		),
 		index('idx_modules_order').using(
 			'btree',
-			table.courseId.asc().nullsLast().op('int4_ops'),
+			table.courseId.asc().nullsLast().op('uuid_ops'),
 			table.orderIndex.asc().nullsLast().op('int4_ops')
 		),
 		foreignKey({

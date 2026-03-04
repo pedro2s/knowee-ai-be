@@ -7,7 +7,7 @@ import {
 	Sse,
 	UseGuards,
 } from '@nestjs/common';
-import { SupabaseAuthGuard } from 'src/modules/auth/infrastructure/guards/supabase-auth.guard';
+import { JwtAuthGuard } from 'src/modules/auth/infrastructure/guards/jwt-auth.guard';
 import { CurrentUser } from 'src/shared/decorators';
 import type { UserPayload } from 'src/shared/types/user-payload';
 import { GetGenerationJobUseCase } from '../../application/use-cases/get-generation-job.usecase';
@@ -27,7 +27,7 @@ interface SseMessage {
 }
 
 @Controller('generation')
-@UseGuards(SupabaseAuthGuard, ProductAccessGuard)
+@UseGuards(JwtAuthGuard, ProductAccessGuard)
 export class GenerationController {
 	constructor(
 		private readonly getGenerationJobUseCase: GetGenerationJobUseCase,

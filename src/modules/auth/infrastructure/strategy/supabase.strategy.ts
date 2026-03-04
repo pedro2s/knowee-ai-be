@@ -7,7 +7,7 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 import { SUPABASE_CLIENT } from 'src/shared/supabase/subapase.constants';
 
 @Injectable()
-export class SupabaseStrategy extends PassportStrategy(Strategy, 'supabase') {
+export class SupabaseStrategy extends PassportStrategy(Strategy, 'jwt') {
 	constructor(
 		@Inject(SUPABASE_CLIENT)
 		private readonly supabaseClient: SupabaseClient,

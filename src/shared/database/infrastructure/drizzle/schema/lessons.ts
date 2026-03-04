@@ -53,9 +53,9 @@ export const lessons = pgTable(
 		),
 		index('idx_lessons_order').using(
 			'btree',
-			table.courseId.asc().nullsLast().op('int4_ops'),
+			table.courseId.asc().nullsLast().op('uuid_ops'),
 			table.moduleId.asc().nullsLast().op('uuid_ops'),
-			table.orderIndex.asc().nullsLast().op('uuid_ops')
+			table.orderIndex.asc().nullsLast().op('int4_ops')
 		),
 		foreignKey({
 			columns: [table.courseId],
