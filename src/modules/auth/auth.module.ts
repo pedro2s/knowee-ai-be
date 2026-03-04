@@ -36,7 +36,7 @@ const authProviders: Provider[] =
 		JwtModule.registerAsync({
 			inject: [ConfigService],
 			useFactory: (configService: ConfigService) => ({
-				secret: configService.getOrThrow<string>('SUPABASE_JWT_SECRET'),
+				secret: configService.getOrThrow<string>('JWT_SECRET'),
 			}),
 		}),
 	],

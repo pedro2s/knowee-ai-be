@@ -9,6 +9,7 @@ import bcrypt from 'bcryptjs';
 import { users } from 'src/shared/database/infrastructure/drizzle/schema/auth';
 import { eq } from 'drizzle-orm';
 import { UserPayload } from 'src/shared/types/user-payload';
+import { JwtPayload } from 'src/modules/auth/domain/domain/jwt-payload';
 
 @Injectable()
 export class JwtAuthAdapter extends AuthServicePort {
@@ -36,9 +37,10 @@ export class JwtAuthAdapter extends AuthServicePort {
 			throw new UnauthorizedException('Credenciais inválidas');
 		}
 
-		const payload = {
+		const payload: JwtPayload = {
 			sub: user.id,
-			role: user.role,
+			email: user.email,
+			role: user.role as unknown as JwtPayload['role'],
 		};
 
 		const access_token = await this.jwt.signAsync(payload, { expiresIn: '1d' });
@@ -78,10 +80,26 @@ export class JwtAuthAdapter extends AuthServicePort {
 		refreshToken: string
 	): Promise<{ access_token: string; refresh_token: string }> {
 		try {
-			const payload = await this.jwt.verifyAsync(refreshToken);
+			const payload = await this.jwt.verifyAsync<JwtPayload>(refreshToken);
+			const userId = payload.sub;
+			if (!userId) {
+				throw new UnauthorizedException('Refresh token inválido');
+			}
+			const email =
+				payload.email ??
+				(
+					await this.drizzle.db.query.users.findFirst({
+						where: eq(users.id, userId),
+						columns: { email: true },
+					})
+				)?.email;
+			if (!email) {
+				throw new UnauthorizedException('Refresh token inválido');
+			}
 
-			const newAccess = await this.jwt.signAsync({
-				sub: payload.sub,
+			const newAccess = await this.jwt.signAsync<JwtPayload>({
+				sub: userId,
+				email,
 				role: payload.role,
 			});
 
