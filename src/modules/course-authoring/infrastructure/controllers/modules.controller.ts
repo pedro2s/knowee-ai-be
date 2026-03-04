@@ -12,7 +12,7 @@ import { CreateModuleUseCase } from '../../application/use-cases/create-module.u
 import { GetModuleUseCase } from '../../application/use-cases/get-module.usecase';
 import { CurrentUser } from 'src/shared/decorators';
 import type { UserPayload } from 'src/shared/types/user-payload';
-import { SupabaseAuthGuard } from 'src/modules/auth/infrastructure/guards/supabase-auth.guard';
+import { JwtAuthGuard } from 'src/modules/auth/infrastructure/guards/jwt-auth.guard';
 import { ModuleResponseDto } from '../../application/dtos/module.response.dto';
 import { CreateModuleDto } from '../../application/dtos/create-module.dto';
 import { DeleteModuleUseCase } from '../../application/use-cases/delete-module.usecase';
@@ -22,7 +22,7 @@ import { ProductAccessGuard } from 'src/modules/access-control/infrastructure/gu
 import { RequireAccess } from 'src/modules/access-control/infrastructure/decorators/require-access.decorator';
 
 @Controller('modules')
-@UseGuards(SupabaseAuthGuard, ProductAccessGuard)
+@UseGuards(JwtAuthGuard, ProductAccessGuard)
 export class ModulesController {
 	constructor(
 		private readonly createModule: CreateModuleUseCase,

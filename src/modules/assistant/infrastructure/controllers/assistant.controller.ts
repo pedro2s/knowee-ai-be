@@ -3,7 +3,7 @@ import { GetChatHistoryUseCase } from '../../application/use-cases/get-chat-hist
 import { CurrentUser } from 'src/shared/decorators';
 import type { UserPayload } from 'src/shared/types/user-payload';
 import { ChatHistoryResponseDto } from '../../application/dtos/chat-history.response.dto';
-import { SupabaseAuthGuard } from 'src/modules/auth/infrastructure/guards/supabase-auth.guard';
+import { JwtAuthGuard } from 'src/modules/auth/infrastructure/guards/jwt-auth.guard';
 import { SubmitQuestionUseCase } from '../../application/use-cases/submit-question.usecase';
 import { SubmitQuestionDto } from '../../application/dtos/submit-question.dto';
 import { QuestionAnsweredResponseDto } from '../../application/dtos/question-answered.response.dto';
@@ -16,7 +16,7 @@ import { ProductAccessGuard } from 'src/modules/access-control/infrastructure/gu
 import { RequireAccess } from 'src/modules/access-control/infrastructure/decorators/require-access.decorator';
 
 @Controller('assistant')
-@UseGuards(SupabaseAuthGuard, ProductAccessGuard)
+@UseGuards(JwtAuthGuard, ProductAccessGuard)
 export class AssistantController {
 	constructor(
 		private readonly getChatHistory: GetChatHistoryUseCase,

@@ -1,5 +1,8 @@
 export interface UserPayload {
 	id: string;
 	email: string;
-	// Adicione outras propriedades do usuário conforme necessário
+	role?: string;
+	rawUserMetaData?: unknown;
+	createdAt?: string;
+	updatedAt?: string;
 }

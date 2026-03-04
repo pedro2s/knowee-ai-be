@@ -1,5 +1,5 @@
 import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
-import { SupabaseAuthGuard } from 'src/modules/auth/infrastructure/guards/supabase-auth.guard';
+import { JwtAuthGuard } from 'src/modules/auth/infrastructure/guards/jwt-auth.guard';
 import { CurrentUser } from 'src/shared/decorators';
 import { type UserPayload } from 'src/shared/types/user-payload';
 import { GetUsageUseCase } from '../../application/use-cases/get-usage.usecase';
@@ -12,7 +12,7 @@ import { CreateCheckoutSessionUseCase } from '../../application/use-cases/create
 import { CreateCheckoutSessionRequestDto } from './dtos/create-checkout-session.request.dto';
 
 @Controller('billing')
-@UseGuards(SupabaseAuthGuard)
+@UseGuards(JwtAuthGuard)
 export class BillingController {
 	constructor(
 		private readonly getUsageUseCase: GetUsageUseCase,
