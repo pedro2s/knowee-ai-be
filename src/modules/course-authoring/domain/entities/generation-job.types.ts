@@ -8,6 +8,7 @@ export type GenerationJobPhase =
 	| 'structure'
 	| 'demo_script'
 	| 'demo_storyboard'
+	| 'demo_section_video'
 	| 'assets_prepare'
 	| 'assets_processing'
 	| 'assets_finalize'

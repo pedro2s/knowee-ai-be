@@ -41,7 +41,7 @@ export class GenerationEventsService implements OnModuleDestroy {
 
 	constructor(private readonly configService: ConfigService) {
 		this.redisConfig = buildRedisConnectionConfig(
-			this.configService.get<string>('REDIS_URL')
+			this.configService.getOrThrow<string>('REDIS_URL')
 		);
 	}
 

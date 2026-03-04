@@ -154,7 +154,7 @@ export class CourseGenerationOrchestratorUseCase {
 				input.jobId,
 				{
 					phase: 'demo_storyboard',
-					progress: 65,
+					progress: 70,
 				},
 				auth
 			);
@@ -184,6 +184,16 @@ export class CourseGenerationOrchestratorUseCase {
 				userId: input.userId,
 			});
 
+			this.generationEventsService.publish(
+				input.jobId,
+				'generation.phase.completed',
+				{
+					phase: 'demo_storyboard',
+					progress: 75,
+					courseId: savedCourse.id,
+				}
+			);
+
 			let demoSectionId: string | undefined;
 			let demoSectionVideoUrl: string | undefined;
 			let demoSectionVideoStatus: 'ready' | 'missing' | 'failed' = 'missing';
@@ -202,6 +212,23 @@ export class CourseGenerationOrchestratorUseCase {
 			} else {
 				demoSectionId = firstSection.id;
 				try {
+					await this.generationJobRepository.update(
+						input.jobId,
+						{
+							phase: 'demo_section_video',
+							progress: 75,
+						},
+						auth
+					);
+					this.generationEventsService.publish(
+						input.jobId,
+						'generation.phase.started',
+						{
+							phase: 'demo_section_video',
+							progress: 75,
+							courseId: savedCourse.id,
+						}
+					);
 					const generatedSection =
 						await this.generateSectionVideoUseCase.execute(
 							{
@@ -223,6 +250,25 @@ export class CourseGenerationOrchestratorUseCase {
 					);
 				}
 			}
+
+			await this.generationJobRepository.update(
+				input.jobId,
+				{
+					phase: 'demo_section_video',
+					progress: 95,
+				},
+				auth
+			);
+			this.generationEventsService.publish(
+				input.jobId,
+				'generation.phase.completed',
+				{
+					phase: 'demo_section_video',
+					progress: 95,
+					courseId: savedCourse.id,
+					demoSectionVideoStatus,
+				}
+			);
 
 			await this.generationJobRepository.update(
 				input.jobId,
