@@ -10,7 +10,7 @@ permissions:
   contents: read
 
 jobs:
-  job1:
+  build:
     name: Build
     runs-on: ubuntu-latest
     steps:
@@ -27,13 +27,46 @@ jobs:
         uses: aws-actions/amazon-ecr-login@v2
 
       - name: Build Image
+        id: build
         run: |
-          docker build -t knowee-api .
+          IMAGE_TAG=${{ github.sha }}
+          docker buildx build -t knowee-api:$IMAGE_TAG .
+          echo "image_tag=$IMAGE_TAG" >> $GITHUB_OUTPUT
 
       - name: Tag Image
         run: |
-          docker tag knowee-api 988982273343.dkr.ecr.us-east-2.amazonaws.com/knowee-api:latest
+          IMAGE_TAG=${{steps.build.outputs.image_tag}}
+          docker tag knowee-api:$IMAGE_TAG 988982273343.dkr.ecr.us-east-2.amazonaws.com/knowee-api:$IMAGE_TAG
+          docker tag knowee-api:$IMAGE_TAG 988982273343.dkr.ecr.us-east-2.amazonaws.com/knowee-api:latest
 
       - name: Push Image
         run: |
+          IMAGE_TAG=${{steps.build.outputs.image_tag}}
+          docker push 988982273343.dkr.ecr.us-east-2.amazonaws.com/knowee-api:$IMAGE_TAG
           docker push 988982273343.dkr.ecr.us-east-2.amazonaws.com/knowee-api:latest
+
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+      - name: Configure AWS Credentials for China region audience
+        uses: aws-actions/configure-aws-credentials@v6.0.0
+        with:
+          aws-region: us-east-2
+          role-to-assume: arn:aws:iam::988982273343:role/GitHubActionsKnoweeBackend
+
+      - name: Update API Service
+        run: |
+          aws ecs update-service \
+            --cluster knowee-prod \
+            --service knowee-prod-api \
+            --force-new-deployment
+
+      - name: Update Worker Service
+        run: |
+          aws ecs update-service \
+            --cluster knowee-prod \
+            --service knowee-prod-worker \
+            --force-new-deployment
