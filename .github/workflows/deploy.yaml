@@ -1,0 +1,39 @@
+name: Pipeline CI/CD
+
+on:
+  push:
+    branches:
+      - 'main'
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  job1:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials for China region audience
+        uses: aws-actions/configure-aws-credentials@v6.0.0
+        with:
+          aws-region: us-east-2
+          role-to-assume: arn:aws:iam::988982273343:role/GitHubActionsKnoweeBackend
+
+      - name: Login to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build Image
+        run: |
+          docker build -t knowee-api .
+
+      - name: Tag Image
+        run: |
+          docker tag knowee-api 988982273343.dkr.ecr.us-east-2.amazonaws.com/knowee-api:latest
+
+      - name: Push Image
+        run: |
+          docker push 988982273343.dkr.ecr.us-east-2.amazonaws.com/knowee-api:latest
