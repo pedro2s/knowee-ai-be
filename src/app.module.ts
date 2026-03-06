@@ -8,8 +8,10 @@ import { ProfileModule } from './modules/profile/profile.module';
 import { ProviderPreferencesModule } from './modules/provider-preferences/provider-preferences.module';
 import { AccessControlModule } from './modules/access-control/access-control.module';
 import { QueueModule } from './shared/queue/queue.module';
+import { AppController } from './app.controller';
 
 @Module({
+	controllers: [AppController],
 	imports: [
 		ConfigModule.forRoot({
 			isGlobal: true,
