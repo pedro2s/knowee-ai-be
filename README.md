@@ -70,6 +70,29 @@ $ mau deploy
 
 With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
 
+## Database TLS on ECS/RDS
+
+If your PostgreSQL instance requires TLS, set `DATABASE_URL` with `sslmode=require`, for example:
+
+```bash
+DATABASE_URL=postgresql://user:password@host:5432/knowee?sslmode=require
+```
+
+If the secret cannot be changed immediately, the API and `drizzle-kit` also honor:
+
+```bash
+DATABASE_REQUIRE_SSL=true
+```
+
+Optional variables for stricter certificate handling:
+
+```bash
+DATABASE_SSL_REJECT_UNAUTHORIZED=true
+DATABASE_SSL_CA="-----BEGIN CERTIFICATE-----\n...\n-----END CERTIFICATE-----"
+```
+
+On AWS, verify whether TLS is being enforced by the RDS parameter group (`rds.force_ssl=1`) or by an RDS Proxy with `Require TLS` enabled.
+
 ## Resources
 
 Check out a few resources that may come in handy when working with NestJS:
