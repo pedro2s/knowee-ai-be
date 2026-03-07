@@ -1,15 +1,34 @@
-export interface SaveFileParams {
+export interface UploadObjectParams {
+	bucket: string;
+	path: string;
 	buffer: Buffer;
-	fileName: string;
-	mimetype: string;
-	folder?: string; // ex: 'courses/lessons/audio'
+	contentType: string;
+	upsert?: boolean;
+}
+
+export interface DeleteObjectParams {
+	bucket: string;
+	path: string;
+}
+
+export interface DownloadObjectParams {
+	bucket: string;
+	path: string;
+}
+
+export interface GetObjectUrlParams {
+	bucket: string;
+	path: string;
+}
+
+export interface UploadObjectResult {
+	path: string;
+	url: string;
 }
 
 export abstract class StoragePort {
-	abstract save(params: SaveFileParams): Promise<string>;
-	abstract delete(fileUrl: string): Promise<void>;
-	abstract getSignedUrl(
-		fileName: string,
-		expiresInSeconds?: number
-	): Promise<string>;
+	abstract upload(params: UploadObjectParams): Promise<UploadObjectResult>;
+	abstract deleteObject(params: DeleteObjectParams): Promise<void>;
+	abstract download(params: DownloadObjectParams): Promise<Buffer>;
+	abstract getPublicUrl(params: GetObjectUrlParams): string;
 }

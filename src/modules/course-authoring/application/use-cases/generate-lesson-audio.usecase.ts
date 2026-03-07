@@ -18,8 +18,7 @@ import {
 import { ProviderRegistry } from 'src/shared/ai-providers/infrastructure/registry/provider.registry';
 import { ScriptSection } from '../../domain/entities/lesson-script.types';
 import { AuthContext } from 'src/shared/database/domain/ports/db-context.port';
-import { SupabaseClient } from '@supabase/supabase-js';
-import { SUPABASE_CLIENT } from 'src/shared/supabase/subapase.constants';
+import { StoragePort } from 'src/shared/storage/domain/ports/storage.port';
 
 @Injectable()
 export class GenerateLessonAudioUseCase {
@@ -32,8 +31,7 @@ export class GenerateLessonAudioUseCase {
 		private readonly registry: ProviderRegistry,
 		@Inject(MEDIA_SERVICE)
 		private readonly mediaService: MediaPort,
-		@Inject(SUPABASE_CLIENT)
-		private readonly supabaseClient: SupabaseClient
+		private readonly storage: StoragePort
 	) {}
 
 	async execute(input: {
@@ -88,8 +86,8 @@ export class GenerateLessonAudioUseCase {
 					await this.mediaService.getAudioDuration(mergedAudioPath);
 				const durationInMinutes = Math.ceil(durationInSeconds / 60);
 
-				// Upload para Supabase Storage
-				const supabasePath = `${input.userId}/${
+				// Upload para object storage
+				const storagePath = `${input.userId}/${
 					input.lessonId
 				}/${Date.now()}-audio.mp3`;
 
@@ -97,37 +95,26 @@ export class GenerateLessonAudioUseCase {
 				const previousAudioPath = (lesson.content as { audioPath?: string })
 					?.audioPath;
 				if (previousAudioPath) {
-					await this.supabaseClient.storage
-						.from('lesson-audios')
-						.remove([previousAudioPath]);
+					await this.storage.deleteObject({
+						bucket: 'lesson-audios',
+						path: previousAudioPath,
+					});
 				}
 
 				const mergedAudioBuffer = await fs.readFile(mergedAudioPath);
 
-				const { error: uploadError } = await this.supabaseClient.storage
-					.from('lesson-audios') // Assuming 'lessons' bucket
-					.upload(supabasePath, mergedAudioBuffer, {
-						contentType: 'audio/mpeg',
-						upsert: true,
-					});
-
-				if (uploadError) {
-					this.logger.error(
-						`[AudioJob] Erro no upload para o Supabase: ${uploadError.message}`
-					);
-					throw new Error(
-						`Erro no upload para o Supabase: ${uploadError.message}`
-					);
-				}
-
-				const { data: publicUrlData } = this.supabaseClient.storage
-					.from('lesson-audios')
-					.getPublicUrl(supabasePath);
+				const upload = await this.storage.upload({
+					bucket: 'lesson-audios',
+					path: storagePath,
+					buffer: mergedAudioBuffer,
+					contentType: 'audio/mpeg',
+					upsert: true,
+				});
 
 				const updatedContent = {
 					...(lesson.content as object),
-					audioPath: supabasePath,
-					audioUrl: publicUrlData.publicUrl,
+					audioPath: upload.path,
+					audioUrl: upload.url,
 				};
 
 				await this.lessonRepository.update(

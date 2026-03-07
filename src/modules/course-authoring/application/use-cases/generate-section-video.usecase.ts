@@ -32,9 +32,8 @@ import {
 } from '../../domain/ports/module-repository.port';
 import fs from 'fs/promises';
 import path from 'path';
-import { SUPABASE_CLIENT } from 'src/shared/supabase/subapase.constants';
-import { SupabaseClient } from '@supabase/supabase-js';
 import { ProviderRegistry as SharedProviderRegistry } from 'src/shared/ai-providers/infrastructure/registry/provider.registry';
+import { StoragePort } from 'src/shared/storage/domain/ports/storage.port';
 
 @Injectable()
 export class GenerateSectionVideoUseCase {
@@ -61,8 +60,7 @@ export class GenerateSectionVideoUseCase {
 		private readonly storyboardGenerator: StoryboardGeneratorPort,
 		@Inject(MEDIA_SERVICE)
 		private readonly mediaService: MediaPort,
-		@Inject(SUPABASE_CLIENT)
-		private readonly supabaseClient: SupabaseClient,
+		private readonly storage: StoragePort,
 		private readonly providerRegistry: ProviderRegistry,
 		private readonly sharedProviderRegistry: SharedProviderRegistry
 	) {}
@@ -145,7 +143,6 @@ export class GenerateSectionVideoUseCase {
 		const tempFilePaths: string[] = [];
 
 		const storyboard = section.storyboard as Scene[];
-		console.log('Storyboard:', storyboard);
 
 		try {
 			for (const [i, scene] of storyboard.entries()) {
@@ -207,42 +204,39 @@ export class GenerateSectionVideoUseCase {
 			const durationInSeconds =
 				await this.mediaService.getAudioDuration(finalVideoPath);
 
-			// Upload para Supabase Storage
-			const supabasePath = `${userId}/${lesson.id}/${Date.now()}-video.mp4`;
+			// Upload para object storage
+			const storagePath = `${userId}/${lesson.id}/${Date.now()}-video.mp4`;
 
 			// Remove vídeo anterior se existir
 			const previousVideoPath = (lesson.content as { videoPath?: string })
 				?.videoPath;
 			if (previousVideoPath) {
-				await this.supabaseClient.storage
-					.from('lesson-videos')
-					.remove([previousVideoPath]);
+				await this.storage.deleteObject({
+					bucket: 'lesson-videos',
+					path: previousVideoPath,
+				});
 			}
 
 			const finalVideoBuffer = await fs.readFile(finalVideoPath);
 
-			const { error: uploadError } = await this.supabaseClient.storage
-				.from('lesson-videos') // Assuming 'lessons' bucket
-				.upload(supabasePath, finalVideoBuffer, {
+			let upload;
+			try {
+				upload = await this.storage.upload({
+					bucket: 'lesson-videos',
+					path: storagePath,
+					buffer: finalVideoBuffer,
 					contentType: 'video/mp4',
 					upsert: true,
 				});
-
-			if (uploadError) {
+			} catch (error) {
 				this.logger.error(
-					`[GenerateSectionVideoUseCase] Erro no upload para o Supabase: ${uploadError.message}`
+					`[GenerateSectionVideoUseCase] Erro no upload para o storage: ${error.message}`
 				);
-				// decide if I should throw
 				throw new PreconditionFailedException('Erro no upload para o storage');
 			}
 
-			// Obtem a url publica do vído no Supabase
-			const { data: publicUrlData } = this.supabaseClient.storage
-				.from('lesson-videos')
-				.getPublicUrl(supabasePath);
-
-			section.videoPath = supabasePath;
-			section.videoUrl = publicUrlData.publicUrl;
+			section.videoPath = upload.path;
+			section.videoUrl = upload.url;
 			section.videoDuration = Math.trunc(durationInSeconds);
 			section.videoStatus = 'ready';
 			section.isRecorded = true;

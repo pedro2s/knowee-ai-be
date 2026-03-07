@@ -1,0 +1,4 @@
+interface:
+  display_name: "Knowee NestJS Module Scaffold"
+  short_description: "Padroes de scaffold para modulos NestJS do repo Knowee"
+  default_prompt: "Crie ou ajuste modulos NestJS seguindo a arquitetura do repo Knowee."

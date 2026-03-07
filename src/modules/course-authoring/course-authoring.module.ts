@@ -36,7 +36,6 @@ import { OpenAIArticleGeneratorAdapter } from './infrastructure/providers/openai
 import { GenerateArticleUseCase } from './application/use-cases/generate-article.usecase';
 import { OpenAILessonScriptGeneratorAdapter } from './infrastructure/providers/openai/openai-lesson-script-generator.adapter';
 import { GenerateLessonScriptUseCase } from './application/use-cases/generate-lesson-script.usecase';
-import { SupabaseModule } from 'src/shared/supabase/supabase.module';
 import { OpenAIStoryboardGeneratorAdapter } from './infrastructure/providers/openai/openai-storyboard-generator.adapter';
 import { STORYBOARD_GENERATOR } from './domain/ports/storyboard-generator.port';
 import { GenerateSectionVideoUseCase } from './application/use-cases/generate-section-video.usecase';
@@ -95,7 +94,6 @@ const workerProviders =
 		HistoryModule,
 		StorageModule,
 		TokenUsageModule,
-		SupabaseModule,
 		ProviderPreferencesModule,
 		AccessControlModule,
 	],
