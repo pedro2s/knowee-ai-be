@@ -1,4 +1,8 @@
-import { buildPgPoolConfig, normalizeDatabaseUrl } from './database-connection';
+import {
+	buildDrizzleConfig,
+	buildPgPoolConfig,
+	normalizeDatabaseUrl,
+} from './database-connection';
 
 describe('database connection helpers', () => {
 	it('mantem a url original quando ssl nao e exigido', () => {
@@ -48,6 +52,46 @@ describe('database connection helpers', () => {
 		).toEqual({
 			connectionString:
 				'postgresql://user:secret@db.internal:5432/knowee?sslmode=verify-full',
+			ssl: {
+				rejectUnauthorized: true,
+				ca: 'line1\nline2',
+			},
+		});
+	});
+
+	it('prioriza validacao de certificado quando a CA e fornecida', () => {
+		expect(
+			buildPgPoolConfig(
+				'postgresql://user:secret@db.internal:5432/knowee?sslmode=require',
+				{
+					DATABASE_SSL_CA: 'line1\\nline2',
+					DATABASE_SSL_REJECT_UNAUTHORIZED: 'false',
+				} as NodeJS.ProcessEnv
+			)
+		).toEqual({
+			connectionString:
+				'postgresql://user:secret@db.internal:5432/knowee?sslmode=require',
+			ssl: {
+				rejectUnauthorized: true,
+				ca: 'line1\nline2',
+			},
+		});
+	});
+
+	it('gera credenciais do drizzle com ssl explicito quando necessario', () => {
+		expect(
+			buildDrizzleConfig(
+				'postgresql://user%40mail:sec%3Aret@db.internal:5432/knowee?sslmode=require',
+				{
+					DATABASE_SSL_CA: 'line1\\nline2',
+				} as NodeJS.ProcessEnv
+			)
+		).toEqual({
+			host: 'db.internal',
+			port: 5432,
+			user: 'user@mail',
+			password: 'sec:ret',
+			database: 'knowee',
 			ssl: {
 				rejectUnauthorized: true,
 				ca: 'line1\nline2',
