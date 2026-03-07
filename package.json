@@ -10,7 +10,7 @@
 		"format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
 		"format:check": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
 		"start": "nest start",
-		"start:dev": "cross-env AUTH_PROVIDER=jwt nest start --watch",
+		"start:dev": "nest start --watch",
 		"start:debug": "nest start --debug --watch",
 		"start:prod": "node dist/src/main.js",
 		"start:worker": "cross-env ENABLE_QUEUE_WORKERS=true nest start --entryFile main-worker",
