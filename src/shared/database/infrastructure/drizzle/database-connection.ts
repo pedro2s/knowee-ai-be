@@ -69,16 +69,21 @@ export function normalizeDatabaseUrl(
 export function buildPgPoolConfig(
 	rawDatabaseUrl: string,
 	env: NodeJS.ProcessEnv = process.env
-): Pick<PoolConfig, 'connectionString' | 'ssl'> {
+): PoolConfig {
 	const connectionString = normalizeDatabaseUrl(rawDatabaseUrl, env);
 	const ssl = buildSslConfig(connectionString, env);
+	const parsed = safeParseDatabaseUrl(connectionString);
 
-	if (!ssl) {
+	if (!parsed || !ssl) {
 		return { connectionString };
 	}
 
 	return {
-		connectionString,
+		host: parsed.hostname,
+		port: parsed.port ? Number(parsed.port) : 5432,
+		user: decodeURIComponent(parsed.username),
+		password: decodeURIComponent(parsed.password),
+		database: parsed.pathname.replace(/^\//, ''),
 		ssl,
 	};
 }

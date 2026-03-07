@@ -33,8 +33,11 @@ describe('database connection helpers', () => {
 				{} as NodeJS.ProcessEnv
 			)
 		).toEqual({
-			connectionString:
-				'postgresql://user:secret@db.internal:5432/knowee?sslmode=require',
+			host: 'db.internal',
+			port: 5432,
+			user: 'user',
+			password: 'secret',
+			database: 'knowee',
 			ssl: {
 				rejectUnauthorized: false,
 			},
@@ -50,8 +53,11 @@ describe('database connection helpers', () => {
 				} as NodeJS.ProcessEnv
 			)
 		).toEqual({
-			connectionString:
-				'postgresql://user:secret@db.internal:5432/knowee?sslmode=verify-full',
+			host: 'db.internal',
+			port: 5432,
+			user: 'user',
+			password: 'secret',
+			database: 'knowee',
 			ssl: {
 				rejectUnauthorized: true,
 				ca: 'line1\nline2',
@@ -69,13 +75,25 @@ describe('database connection helpers', () => {
 				} as NodeJS.ProcessEnv
 			)
 		).toEqual({
-			connectionString:
-				'postgresql://user:secret@db.internal:5432/knowee?sslmode=require',
+			host: 'db.internal',
+			port: 5432,
+			user: 'user',
+			password: 'secret',
+			database: 'knowee',
 			ssl: {
 				rejectUnauthorized: true,
 				ca: 'line1\nline2',
 			},
 		});
+	});
+
+	it('nao retorna connectionString no runtime quando ssl esta ativo', () => {
+		expect(
+			buildPgPoolConfig(
+				'postgresql://user:secret@db.internal:5432/knowee?sslmode=require',
+				{} as NodeJS.ProcessEnv
+			)
+		).not.toHaveProperty('connectionString');
 	});
 
 	it('gera credenciais do drizzle com ssl explicito quando necessario', () => {
