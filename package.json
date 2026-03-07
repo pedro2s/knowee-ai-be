@@ -24,6 +24,7 @@
 		"test:e2e": "jest --config ./test/jest-e2e.json",
 		"migration:generate": "drizzle-kit generate",
 		"migration:run": "drizzle-kit migrate",
+		"db:seed": "npx tsx src/shared/database/infrastructure/drizzle/seed.ts",
 		"prepare": "husky"
 	},
 	"dependencies": {
