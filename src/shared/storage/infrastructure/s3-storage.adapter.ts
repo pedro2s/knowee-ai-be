@@ -10,10 +10,7 @@ import {
 	PutObjectCommand,
 	S3Client,
 } from '@aws-sdk/client-s3';
-import { SignatureV4MultiRegion } from '@aws-sdk/signature-v4-multi-region';
-import { Hash } from '@smithy/hash-node';
-import { HttpRequest } from '@smithy/protocol-http';
-import { buildQueryString } from '@smithy/querystring-builder';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import {
 	DeleteObjectParams,
 	DownloadObjectParams,
@@ -120,40 +117,20 @@ export class S3StorageAdapter implements StoragePort {
 		const key = this.buildObjectKey(params.bucket, params.path);
 		const disposition = params.disposition ?? 'inline';
 		const filename = params.filename ?? this.extractFileName(params.path);
-		const host = `${this.bucketName}.s3.${this.region}.amazonaws.com`;
-		const request = new HttpRequest({
-			protocol: 'https:',
-			method: 'GET',
-			hostname: host,
-			path: `/${key}`,
-			headers: {
-				host,
-			},
-			query: {
-				'response-content-disposition': this.buildContentDisposition(
-					disposition,
-					filename
-				),
-			},
+		const command = new GetObjectCommand({
+			Bucket: this.bucketName,
+			Key: key,
+			ResponseContentDisposition: this.buildContentDisposition(
+				disposition,
+				filename
+			),
 		});
 
 		try {
-			const presigner = new SignatureV4MultiRegion({
-				credentials: this.s3Client.config.credentials,
-				region: this.region,
-				service: 's3',
-				sha256: Hash.bind(null, 'sha256'),
-				uriEscapePath: false,
-			});
-			const signedRequest = await presigner.presign(request, {
+			return await getSignedUrl(this.s3Client, command, {
 				expiresIn:
 					params.expiresInSeconds ?? S3StorageAdapter.DEFAULT_SIGNED_URL_TTL,
 			});
-
-			const queryString = buildQueryString(signedRequest.query ?? {});
-			return `https://${signedRequest.hostname}${signedRequest.path}${
-				queryString ? `?${queryString}` : ''
-			}`;
 		} catch (error) {
 			this.logger.error(
 				`Erro ao gerar URL assinada do S3 para ${key}: ${String(error)}`

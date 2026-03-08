@@ -5,12 +5,18 @@ import {
 	GetObjectCommand,
 	PutObjectCommand,
 } from '@aws-sdk/client-s3';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { S3StorageAdapter } from './s3-storage.adapter';
+
+jest.mock('@aws-sdk/s3-request-presigner', () => ({
+	getSignedUrl: jest.fn(),
+}));
 
 describe('S3StorageAdapter', () => {
 	let adapter: S3StorageAdapter;
 	let configService: jest.Mocked<ConfigService>;
 	let sendMock: jest.Mock;
+	let getSignedUrlMock: jest.MockedFunction<typeof getSignedUrl>;
 
 	beforeEach(() => {
 		configService = {
@@ -28,16 +34,13 @@ describe('S3StorageAdapter', () => {
 
 		adapter = new S3StorageAdapter(configService);
 		sendMock = jest.fn();
+		getSignedUrlMock = getSignedUrl as jest.MockedFunction<typeof getSignedUrl>;
+		getSignedUrlMock.mockResolvedValue(
+			'https://app-bucket.s3.us-east-2.amazonaws.com/lesson-audios/user-1/lesson-1/audio.mp3?X-Amz-SignedHeaders=host&X-Amz-Expires=900'
+		);
 		Object.defineProperty(adapter as object, 's3Client', {
 			value: {
 				send: sendMock,
-				config: {
-					credentials: () =>
-						Promise.resolve({
-							accessKeyId: 'key',
-							secretAccessKey: 'secret',
-						}),
-				},
 			},
 		});
 	});
@@ -70,9 +73,13 @@ describe('S3StorageAdapter', () => {
 		});
 		expect(result.url).toContain('X-Amz-SignedHeaders=host');
 		expect(result.url).toContain('X-Amz-Expires=900');
+		expect(getSignedUrlMock.mock.calls[0]?.[2]).toEqual({ expiresIn: 900 });
 	});
 
 	it('gera URL assinada com a key prefixada pelo bucket lógico', async () => {
+		getSignedUrlMock.mockResolvedValue(
+			'https://app-bucket.s3.us-east-2.amazonaws.com/lesson-assets/user%201/file%20name.pdf?X-Amz-SignedHeaders=host&X-Amz-Expires=900&response-content-disposition=attachment%3B%20filename%3D%22arquivo%20final.pdf%22'
+		);
 		const url = await adapter.getAccessUrl({
 			bucket: 'lesson-assets',
 			path: 'user 1/file name.pdf',
@@ -81,12 +88,22 @@ describe('S3StorageAdapter', () => {
 		});
 
 		expect(url).toContain(
-			'https://app-bucket.s3.us-east-2.amazonaws.com/lesson-assets/user 1/file name.pdf?'
+			'https://app-bucket.s3.us-east-2.amazonaws.com/lesson-assets/user%201/file%20name.pdf?'
 		);
 		expect(url).toContain('X-Amz-SignedHeaders=host');
 		expect(url).toContain('response-content-disposition=');
 		expect(decodeURIComponent(url)).toContain(
 			'attachment; filename="arquivo final.pdf"'
+		);
+		expect(getSignedUrlMock.mock.calls[1]?.[1]).toEqual(
+			expect.objectContaining<Partial<GetObjectCommand>>({
+				input: expect.objectContaining({
+					Bucket: 'app-bucket',
+					Key: 'lesson-assets/user 1/file name.pdf',
+					ResponseContentDisposition:
+						'attachment; filename="arquivo final.pdf"',
+				}),
+			})
 		);
 	});
 
