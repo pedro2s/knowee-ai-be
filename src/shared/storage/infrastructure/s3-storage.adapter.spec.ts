@@ -29,11 +29,20 @@ describe('S3StorageAdapter', () => {
 		adapter = new S3StorageAdapter(configService);
 		sendMock = jest.fn();
 		Object.defineProperty(adapter as object, 's3Client', {
-			value: { send: sendMock },
+			value: {
+				send: sendMock,
+				config: {
+					credentials: () =>
+						Promise.resolve({
+							accessKeyId: 'key',
+							secretAccessKey: 'secret',
+						}),
+				},
+			},
 		});
 	});
 
-	it('faz upload usando o prefixo do bucket lógico e retorna path/url públicos', async () => {
+	it('faz upload usando o prefixo do bucket lógico e retorna path/url assinados', async () => {
 		sendMock.mockResolvedValue({});
 
 		const result = await adapter.upload({
@@ -55,18 +64,23 @@ describe('S3StorageAdapter', () => {
 		);
 		expect(result).toEqual({
 			path: 'user-1/lesson-1/audio.mp3',
-			url: 'https://app-bucket.s3.us-east-2.amazonaws.com/lesson-audios/user-1/lesson-1/audio.mp3',
+			url: expect.stringContaining(
+				'https://app-bucket.s3.us-east-2.amazonaws.com/lesson-audios/user-1/lesson-1/audio.mp3?'
+			),
 		});
 	});
 
-	it('gera URL pública com a key prefixada pelo bucket lógico', () => {
-		expect(
-			adapter.getPublicUrl({
+	it('gera URL assinada com a key prefixada pelo bucket lógico', async () => {
+		await expect(
+			adapter.getAccessUrl({
 				bucket: 'lesson-assets',
 				path: 'user 1/file name.pdf',
+				disposition: 'attachment',
 			})
-		).toBe(
-			'https://app-bucket.s3.us-east-2.amazonaws.com/lesson-assets/user%201/file%20name.pdf'
+		).resolves.toEqual(
+			expect.stringContaining(
+				'https://app-bucket.s3.us-east-2.amazonaws.com/lesson-assets/user%201/file%20name.pdf?'
+			)
 		);
 	});
 

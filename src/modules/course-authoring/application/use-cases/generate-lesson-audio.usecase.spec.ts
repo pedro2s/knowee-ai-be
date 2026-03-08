@@ -62,7 +62,7 @@ describe('GenerateLessonAudioUseCase', () => {
 			}),
 			deleteObject: jest.fn().mockResolvedValue(undefined),
 			download: jest.fn(),
-			getPublicUrl: jest.fn(),
+			getAccessUrl: jest.fn(),
 		};
 
 		useCase = new GenerateLessonAudioUseCase(
@@ -73,7 +73,7 @@ describe('GenerateLessonAudioUseCase', () => {
 		);
 	});
 
-	it('remove áudio anterior, faz upload do mp3 final e persiste audioPath/audioUrl', async () => {
+	it('remove áudio anterior, faz upload do mp3 final e persiste só audioPath', async () => {
 		lessonRepository.findById.mockResolvedValue({
 			id: 'lesson-1',
 			title: 'Lesson',
@@ -107,7 +107,6 @@ describe('GenerateLessonAudioUseCase', () => {
 			{
 				content: {
 					audioPath: 'user-1/lesson-1/123-audio.mp3',
-					audioUrl: 'https://cdn/audio.mp3',
 					scriptSections: [{ content: 'Parte 1' }, { content: 'Parte 2' }],
 				},
 				duration: 3,

@@ -235,25 +235,33 @@ export class GenerateSectionVideoUseCase {
 				throw new PreconditionFailedException('Erro no upload para o storage');
 			}
 
-			section.videoPath = upload.path;
-			section.videoUrl = upload.url;
-			section.videoDuration = Math.trunc(durationInSeconds);
-			section.videoStatus = 'ready';
-			section.isRecorded = true;
+			const updatedSection = {
+				...section,
+				videoPath: upload.path,
+				videoDuration: Math.trunc(durationInSeconds),
+				videoStatus: 'ready' as const,
+				isRecorded: true,
+			};
+			const updatedSections = scriptSections.map((item) =>
+				item.id === updatedSection.id ? updatedSection : item
+			);
 
 			await this.lessonRepository.update(
 				lesson.id,
 				{
 					content: {
-						scriptSections: [...scriptSections],
+						scriptSections: updatedSections,
 					},
 				},
 				authContext
 			);
+
+			return {
+				...updatedSection,
+				videoUrl: upload.url,
+			};
 		} finally {
 			await fs.rm(tempDir, { recursive: true, force: true });
 		}
-
-		return section;
 	}
 }

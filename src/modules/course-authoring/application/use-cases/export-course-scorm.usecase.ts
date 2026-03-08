@@ -63,10 +63,12 @@ export class ExportCourseScormUseCase {
 						| 'article';
 					const resolvedMediaUrl =
 						lessonType === 'video'
-							? this.getString(content.finalVideoUrl)
+							? this.getString(content.finalVideoPath)
 							: lessonType === 'audio'
-								? this.getString(content.audioUrl)
-								: null;
+								? this.getString(content.audioPath)
+								: lessonType === 'pdf'
+									? this.getString(content.pdfPath)
+									: null;
 
 					return {
 						id: lesson.id,
@@ -75,8 +77,10 @@ export class ExportCourseScormUseCase {
 						lessonType,
 						duration: lesson.duration,
 						content,
-						resolvedMediaUrl,
-						shouldUseVideoFallback: lessonType === 'video' && !resolvedMediaUrl,
+						mediaSourcePath: resolvedMediaUrl,
+						shouldUseVideoFallback:
+							(lessonType === 'video' || lessonType === 'audio') &&
+							!resolvedMediaUrl,
 					};
 				}),
 			})),

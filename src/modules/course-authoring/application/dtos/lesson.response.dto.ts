@@ -1,4 +1,5 @@
 import { Lesson } from '../../domain/entities/lesson.entity';
+import type { LessonProps } from '../../domain/entities/lesson.types';
 
 export class LessonResponseDto {
 	public id: string;
@@ -19,13 +20,22 @@ export class LessonResponseDto {
 		Object.assign(this, props);
 	}
 
-	static fromDomain(entity: Lesson): LessonResponseDto {
+	static fromDomain(
+		entity: Lesson,
+		options?: { content?: unknown }
+	): LessonResponseDto {
 		const primitives = entity.toPrimitives();
+		return LessonResponseDto.fromPrimitives(primitives, options);
+	}
 
+	static fromPrimitives(
+		primitives: LessonProps,
+		options?: { content?: unknown }
+	): LessonResponseDto {
 		return new LessonResponseDto({
 			id: primitives.id,
 			title: primitives.title,
-			content: primitives.content,
+			content: options?.content ?? primitives.content,
 			moduleId: primitives.moduleId,
 			courseId: primitives.courseId,
 			description: primitives.description,

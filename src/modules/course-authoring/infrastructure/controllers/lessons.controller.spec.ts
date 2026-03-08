@@ -29,7 +29,8 @@ describe('LessonsController', () => {
 			{} as any,
 			{} as any,
 			{} as any,
-			generateQuizUseCase
+			generateQuizUseCase,
+			{} as any
 		);
 
 		const response = await controller.generateQuiz(

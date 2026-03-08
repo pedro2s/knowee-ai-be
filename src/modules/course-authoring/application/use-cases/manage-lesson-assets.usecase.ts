@@ -30,7 +30,6 @@ export class ManageLessonAssetsUseCase {
 		return this.upload(input, {
 			bucket: 'lesson-audios',
 			pathKey: 'audioPath',
-			urlKey: 'audioUrl',
 		});
 	}
 
@@ -42,7 +41,6 @@ export class ManageLessonAssetsUseCase {
 		return this.upload(input, {
 			bucket: 'lesson-assets',
 			pathKey: 'pdfPath',
-			urlKey: 'pdfUrl',
 		});
 	}
 
@@ -53,7 +51,6 @@ export class ManageLessonAssetsUseCase {
 		return this.remove(input, {
 			bucket: 'lesson-audios',
 			pathKey: 'audioPath',
-			urlKey: 'audioUrl',
 		});
 	}
 
@@ -61,7 +58,6 @@ export class ManageLessonAssetsUseCase {
 		return this.remove(input, {
 			bucket: 'lesson-assets',
 			pathKey: 'pdfPath',
-			urlKey: 'pdfUrl',
 		});
 	}
 
@@ -74,7 +70,6 @@ export class ManageLessonAssetsUseCase {
 		config: {
 			bucket: string;
 			pathKey: 'audioPath' | 'pdfPath';
-			urlKey: 'audioUrl' | 'pdfUrl';
 		}
 	): Promise<{ path: string; url: string }> {
 		const authContext: AuthContext = {
@@ -116,7 +111,6 @@ export class ManageLessonAssetsUseCase {
 				content: {
 					...content,
 					[config.pathKey]: upload.path,
-					[config.urlKey]: upload.url,
 				},
 			},
 			authContext
@@ -130,7 +124,6 @@ export class ManageLessonAssetsUseCase {
 		config: {
 			bucket: string;
 			pathKey: 'audioPath' | 'pdfPath';
-			urlKey: 'audioUrl' | 'pdfUrl';
 		}
 	): Promise<void> {
 		const authContext: AuthContext = {
@@ -153,7 +146,6 @@ export class ManageLessonAssetsUseCase {
 
 		const updatedContent = { ...content };
 		delete updatedContent[config.pathKey];
-		delete updatedContent[config.urlKey];
 
 		await this.lessonRepository.update(
 			input.lessonId,

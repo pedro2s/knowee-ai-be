@@ -5,7 +5,7 @@ export interface ScormExportLesson {
 	lessonType: 'video' | 'audio' | 'quiz' | 'pdf' | 'external' | 'article';
 	duration: number | null;
 	content: Record<string, unknown>;
-	resolvedMediaUrl: string | null;
+	mediaSourcePath: string | null;
 	shouldUseVideoFallback: boolean;
 }
 

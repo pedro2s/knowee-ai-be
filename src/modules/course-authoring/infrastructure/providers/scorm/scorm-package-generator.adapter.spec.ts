@@ -1,11 +1,16 @@
 import fs from 'fs/promises';
 import { ScormManifestBuilder } from './scorm-manifest.builder';
 import { ScormPackageGeneratorAdapter } from './scorm-package-generator.adapter';
+import type { StoragePort } from 'src/shared/storage/domain/ports/storage.port';
 
 describe('ScormPackageGeneratorAdapter', () => {
 	it('deve gerar zip SCORM com artefatos esperados e executar cleanup', async () => {
+		const storage = {
+			download: jest.fn(),
+		} as unknown as StoragePort;
 		const adapter = new ScormPackageGeneratorAdapter(
-			new ScormManifestBuilder()
+			new ScormManifestBuilder(),
+			storage
 		);
 
 		const result = await adapter.generate({
@@ -31,7 +36,7 @@ describe('ScormPackageGeneratorAdapter', () => {
 							lessonType: 'video',
 							duration: 100,
 							content: {},
-							resolvedMediaUrl: null,
+							mediaSourcePath: null,
 							shouldUseVideoFallback: true,
 						},
 						{
@@ -51,7 +56,7 @@ describe('ScormPackageGeneratorAdapter', () => {
 									},
 								],
 							},
-							resolvedMediaUrl: null,
+							mediaSourcePath: null,
 							shouldUseVideoFallback: false,
 						},
 					],

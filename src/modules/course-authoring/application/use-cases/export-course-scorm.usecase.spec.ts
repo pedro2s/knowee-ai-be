@@ -63,7 +63,7 @@ describe('ExportCourseScormUseCase', () => {
 								description: 'Desc aula',
 								lessonType: 'video',
 								duration: 120,
-								content: { finalVideoUrl: 'https://cdn.exemplo/video.mp4' },
+								content: { finalVideoPath: 'user-1/lesson-1/video.mp4' },
 							},
 						],
 					},
@@ -87,7 +87,7 @@ describe('ExportCourseScormUseCase', () => {
 					expect.objectContaining({
 						lessons: [
 							expect.objectContaining({
-								resolvedMediaUrl: 'https://cdn.exemplo/video.mp4',
+								mediaSourcePath: 'user-1/lesson-1/video.mp4',
 								shouldUseVideoFallback: false,
 							}),
 						],
@@ -97,7 +97,7 @@ describe('ExportCourseScormUseCase', () => {
 		);
 	});
 
-	it('deve marcar fallback para aula de vídeo sem finalVideoUrl', async () => {
+	it('deve marcar fallback para aula de vídeo sem finalVideoPath', async () => {
 		courseRepository.findById.mockResolvedValue({
 			toPrimitives: () => ({
 				id: 'course-1',
@@ -144,7 +144,7 @@ describe('ExportCourseScormUseCase', () => {
 					expect.objectContaining({
 						lessons: [
 							expect.objectContaining({
-								resolvedMediaUrl: null,
+								mediaSourcePath: null,
 								shouldUseVideoFallback: true,
 							}),
 						],

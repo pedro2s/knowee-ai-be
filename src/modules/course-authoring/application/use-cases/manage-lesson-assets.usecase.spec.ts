@@ -21,7 +21,7 @@ describe('ManageLessonAssetsUseCase', () => {
 			upload: jest.fn(),
 			deleteObject: jest.fn(),
 			download: jest.fn(),
-			getPublicUrl: jest.fn(),
+			getAccessUrl: jest.fn(),
 		};
 
 		useCase = new ManageLessonAssetsUseCase(lessonRepository, storage);
@@ -67,7 +67,6 @@ describe('ManageLessonAssetsUseCase', () => {
 			{
 				content: {
 					audioPath: 'user-1/lesson-1/123-audio.mp3',
-					audioUrl: 'https://cdn/audio.mp3',
 					keep: 'value',
 				},
 			},
@@ -84,7 +83,6 @@ describe('ManageLessonAssetsUseCase', () => {
 			id: 'lesson-1',
 			content: {
 				pdfPath: 'old/file.pdf',
-				pdfUrl: 'https://cdn/file.pdf',
 				keep: 'value',
 			},
 		} as never);
