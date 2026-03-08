@@ -81,7 +81,7 @@ describe('S3StorageAdapter', () => {
 		});
 
 		expect(url).toContain(
-			'https://app-bucket.s3.us-east-2.amazonaws.com/lesson-assets/user%201/file%20name.pdf?'
+			'https://app-bucket.s3.us-east-2.amazonaws.com/lesson-assets/user 1/file name.pdf?'
 		);
 		expect(url).toContain('X-Amz-SignedHeaders=host');
 		expect(url).toContain('response-content-disposition=');
