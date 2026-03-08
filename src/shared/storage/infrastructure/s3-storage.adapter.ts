@@ -121,11 +121,15 @@ export class S3StorageAdapter implements StoragePort {
 		const encodedKey = this.encodeObjectKey(key);
 		const disposition = params.disposition ?? 'inline';
 		const filename = params.filename ?? this.extractFileName(params.path);
+		const host = `${this.bucketName}.s3.${this.region}.amazonaws.com`;
 		const request = new HttpRequest({
 			protocol: 'https:',
 			method: 'GET',
-			hostname: `${this.bucketName}.s3.${this.region}.amazonaws.com`,
+			hostname: host,
 			path: `/${encodedKey}`,
+			headers: {
+				host,
+			},
 			query: {
 				'response-content-disposition': this.buildContentDisposition(
 					disposition,
