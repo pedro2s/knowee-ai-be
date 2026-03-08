@@ -114,7 +114,6 @@ export class GenerateLessonAudioUseCase {
 				const updatedContent = {
 					...(lesson.content as object),
 					audioPath: upload.path,
-					audioUrl: upload.url,
 				};
 
 				await this.lessonRepository.update(

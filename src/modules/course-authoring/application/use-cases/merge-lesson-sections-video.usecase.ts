@@ -49,17 +49,16 @@ export class MergeLessonSectionsVideoUseCase {
 			}
 		).scriptSections;
 
-		// 2. Validate all script sections have videoPath and videoUrl
-		const videosToMerge: { videoPath: string; videoUrl: string }[] = [];
+		// 2. Validate all script sections have videoPath
+		const videosToMerge: { videoPath: string }[] = [];
 		for (const section of scriptSections) {
-			if (!section.videoPath || !section.videoUrl) {
+			if (!section.videoPath) {
 				throw new PreconditionFailedException(
 					`Nem todas as seções possuem vídeos gerados. A seção com id ${section.id} não possui um vídeo. Por favor, gere os vídeos para todas as seções antes de tentar unificar.`
 				);
 			}
 			videosToMerge.push({
 				videoPath: section.videoPath,
-				videoUrl: section.videoUrl,
 			});
 		}
 
@@ -136,7 +135,6 @@ export class MergeLessonSectionsVideoUseCase {
 					content: {
 						...(lesson.content as any),
 						finalVideoPath: upload.path,
-						finalVideoUrl: upload.url,
 						finalVideoStatus: 'ready',
 					},
 					duration: Math.trunc(durationInSeconds / 60),

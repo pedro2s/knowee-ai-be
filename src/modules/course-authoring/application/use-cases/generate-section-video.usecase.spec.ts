@@ -80,7 +80,7 @@ describe('GenerateSectionVideoUseCase', () => {
 			}),
 			deleteObject: jest.fn().mockResolvedValue(undefined),
 			download: jest.fn(),
-			getPublicUrl: jest.fn(),
+			getAccessUrl: jest.fn(),
 		};
 		imageGenerator = {
 			generate: jest.fn().mockResolvedValue({ content: Buffer.from('image') }),
@@ -109,7 +109,7 @@ describe('GenerateSectionVideoUseCase', () => {
 		);
 	});
 
-	it('remove vídeo anterior, faz upload do mp4 final e atualiza a seção', async () => {
+	it('remove vídeo anterior, faz upload do mp4 final e persiste só o path da seção', async () => {
 		const scriptSections = [
 			{
 				id: 'section-1',
@@ -182,7 +182,6 @@ describe('GenerateSectionVideoUseCase', () => {
 					scriptSections: [
 						expect.objectContaining({
 							videoPath: 'user-1/lesson-1/123-video.mp4',
-							videoUrl: 'https://cdn/video.mp4',
 							videoDuration: 58,
 							videoStatus: 'ready',
 							isRecorded: true,

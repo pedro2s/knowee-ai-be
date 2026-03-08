@@ -19,6 +19,9 @@ export interface DownloadObjectParams {
 export interface GetObjectUrlParams {
 	bucket: string;
 	path: string;
+	expiresInSeconds?: number;
+	disposition?: 'inline' | 'attachment';
+	filename?: string;
 }
 
 export interface UploadObjectResult {
@@ -30,5 +33,5 @@ export abstract class StoragePort {
 	abstract upload(params: UploadObjectParams): Promise<UploadObjectResult>;
 	abstract deleteObject(params: DeleteObjectParams): Promise<void>;
 	abstract download(params: DownloadObjectParams): Promise<Buffer>;
-	abstract getPublicUrl(params: GetObjectUrlParams): string;
+	abstract getAccessUrl(params: GetObjectUrlParams): Promise<string>;
 }

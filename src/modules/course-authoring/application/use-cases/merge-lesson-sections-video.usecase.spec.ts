@@ -38,7 +38,7 @@ describe('MergeLessonSectionsVideoUseCase', () => {
 			}),
 			deleteObject: jest.fn(),
 			download: jest.fn().mockResolvedValue(Buffer.from('section-video')),
-			getPublicUrl: jest.fn(),
+			getAccessUrl: jest.fn(),
 		};
 		mediaService = {
 			getAudioDuration: jest.fn().mockResolvedValue(180),
@@ -58,7 +58,7 @@ describe('MergeLessonSectionsVideoUseCase', () => {
 		);
 	});
 
-	it('baixa vídeos das seções, sobe o vídeo final e persiste finalVideoPath/finalVideoUrl', async () => {
+	it('baixa vídeos das seções, sobe o vídeo final e persiste só finalVideoPath', async () => {
 		lessonRepository.findById.mockResolvedValue({
 			id: 'lesson-1',
 			title: 'Lesson',
@@ -67,12 +67,10 @@ describe('MergeLessonSectionsVideoUseCase', () => {
 					{
 						id: 'section-1',
 						videoPath: 'path-1.mp4',
-						videoUrl: 'https://cdn/1.mp4',
 					},
 					{
 						id: 'section-2',
 						videoPath: 'path-2.mp4',
-						videoUrl: 'https://cdn/2.mp4',
 					},
 				],
 			},
@@ -103,16 +101,13 @@ describe('MergeLessonSectionsVideoUseCase', () => {
 						{
 							id: 'section-1',
 							videoPath: 'path-1.mp4',
-							videoUrl: 'https://cdn/1.mp4',
 						},
 						{
 							id: 'section-2',
 							videoPath: 'path-2.mp4',
-							videoUrl: 'https://cdn/2.mp4',
 						},
 					],
 					finalVideoPath: 'user-1/lesson-1/merged-lesson-123.mp4',
-					finalVideoUrl: 'https://cdn/final.mp4',
 					finalVideoStatus: 'ready',
 				},
 				duration: 3,

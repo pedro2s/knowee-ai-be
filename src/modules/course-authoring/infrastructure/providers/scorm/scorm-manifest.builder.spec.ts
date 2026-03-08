@@ -27,7 +27,7 @@ describe('ScormManifestBuilder', () => {
 							lessonType: 'video',
 							duration: 10,
 							content: {},
-							resolvedMediaUrl: 'https://cdn.example/video.mp4',
+							mediaSourcePath: 'user-1/lesson-video/video.mp4',
 							shouldUseVideoFallback: false,
 						},
 						{
@@ -37,7 +37,7 @@ describe('ScormManifestBuilder', () => {
 							lessonType: 'quiz',
 							duration: 5,
 							content: {},
-							resolvedMediaUrl: null,
+							mediaSourcePath: null,
 							shouldUseVideoFallback: false,
 						},
 						{
@@ -47,7 +47,7 @@ describe('ScormManifestBuilder', () => {
 							lessonType: 'video',
 							duration: 5,
 							content: {},
-							resolvedMediaUrl: null,
+							mediaSourcePath: null,
 							shouldUseVideoFallback: true,
 						},
 					],
@@ -58,6 +58,7 @@ describe('ScormManifestBuilder', () => {
 		expect(xml).toContain('adlcp:scormtype="sco"');
 		expect(xml).toContain('ADL SCORM');
 		expect(xml).toContain('sco1_1/player.html?videoUrl=');
+		expect(xml).toContain('sco1_1/media.mp4');
 		expect(xml).toContain('sco1_2/quiz.html');
 		expect(xml).toContain('sco1_3/index.html');
 		expect(xml).toContain('RESOURCE-LESSON-lesson-video');

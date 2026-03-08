@@ -75,6 +75,7 @@ import { GenerationQueueProcessor } from './infrastructure/queue/generation-queu
 import { StartLessonAudioGenerationUseCase } from './application/use-cases/start-lesson-audio-generation.usecase';
 import { StartSectionVideoGenerationUseCase } from './application/use-cases/start-section-video-generation.usecase';
 import { StartLessonMergeVideoGenerationUseCase } from './application/use-cases/start-lesson-merge-video-generation.usecase';
+import { LessonMediaAccessService } from './application/services/lesson-media-access.service';
 
 const workerProviders =
 	process.env.ENABLE_QUEUE_WORKERS === 'true' ? [GenerationQueueProcessor] : [];
@@ -116,6 +117,7 @@ const workerProviders =
 		StartLessonAudioGenerationUseCase,
 		StartSectionVideoGenerationUseCase,
 		StartLessonMergeVideoGenerationUseCase,
+		LessonMediaAccessService,
 		AssetsGenerationOrchestratorUseCase,
 		GetGenerationJobUseCase,
 		GetActiveGenerationJobByCourseUseCase,

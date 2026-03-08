@@ -7,6 +7,7 @@ import {
 	Param,
 	Post,
 	Put,
+	Query,
 	UploadedFile,
 	UseGuards,
 	UseInterceptors,
@@ -40,6 +41,10 @@ import { StartLessonAudioGenerationUseCase } from '../../application/use-cases/s
 import { StartSectionVideoGenerationUseCase } from '../../application/use-cases/start-section-video-generation.usecase';
 import { StartLessonMergeVideoGenerationUseCase } from '../../application/use-cases/start-lesson-merge-video-generation.usecase';
 import { StartCourseGenerationResponseDto } from '../../application/dtos/start-course-generation.response.dto';
+import { LessonMediaAccessService } from '../../application/services/lesson-media-access.service';
+import { LessonMediaAccessQueryDto } from '../../application/dtos/lesson-media-access.query.dto';
+import { LessonMediaAccessResponseDto } from '../../application/dtos/lesson-media-access.response.dto';
+import { Lesson } from '../../domain/entities/lesson.entity';
 
 @Controller('lessons')
 @UseGuards(JwtAuthGuard, ProductAccessGuard)
@@ -55,7 +60,8 @@ export class LessonsController {
 		private readonly startLessonMergeVideoGenerationUseCase: StartLessonMergeVideoGenerationUseCase,
 		private readonly reorderLessonsUseCase: ReorderLessonsUseCase,
 		private readonly manageLessonAssetsUseCase: ManageLessonAssetsUseCase,
-		private readonly generateQuizUseCase: GenerateQuizUseCase
+		private readonly generateQuizUseCase: GenerateQuizUseCase,
+		private readonly lessonMediaAccessService: LessonMediaAccessService
 	) {}
 
 	// 1. Rotas Específicas (SEM ID) - Devem vir PRIMEIRO
@@ -262,6 +268,22 @@ export class LessonsController {
 		};
 	}
 
+	@Get('/:id/media-access')
+	@RequireAccess('lesson.read', { lessonIdParam: 'id' })
+	async getMediaAccess(
+		@Param('id') lessonId: string,
+		@Query() query: LessonMediaAccessQueryDto,
+		@CurrentUser() user: UserPayload
+	): Promise<LessonMediaAccessResponseDto> {
+		const lesson = await this.getLessonUseCase.execute(lessonId, user.id);
+		const access = await this.lessonMediaAccessService.getLessonMediaAccess(
+			lesson,
+			query
+		);
+
+		return new LessonMediaAccessResponseDto(access);
+	}
+
 	// 3. Rotas Genéricas (CRUD) - Devem vir POR ÚLTIMO
 
 	@Get('/:id')
@@ -271,7 +293,7 @@ export class LessonsController {
 		@CurrentUser() user: UserPayload
 	): Promise<LessonResponseDto> {
 		const lesson = await this.getLessonUseCase.execute(lessonId, user.id);
-		return LessonResponseDto.fromDomain(lesson);
+		return this.toLessonResponse(lesson);
 	}
 
 	@Put('/:id')
@@ -286,6 +308,13 @@ export class LessonsController {
 			data,
 			user.id
 		);
-		return LessonResponseDto.fromDomain(updatedLesson);
+		return this.toLessonResponse(updatedLesson);
+	}
+
+	private async toLessonResponse(lesson: Lesson): Promise<LessonResponseDto> {
+		const content = await this.lessonMediaAccessService.enrichContent(
+			lesson.content
+		);
+		return LessonResponseDto.fromDomain(lesson, { content });
 	}
 }

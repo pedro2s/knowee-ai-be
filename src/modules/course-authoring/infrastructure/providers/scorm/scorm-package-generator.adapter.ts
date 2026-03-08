@@ -4,6 +4,7 @@ import os from 'os';
 import path from 'path';
 import { execFile } from 'child_process';
 import { promisify } from 'util';
+import { StoragePort } from 'src/shared/storage/domain/ports/storage.port';
 import type {
 	ScormPackageGeneratorPort,
 	ScormPackageGeneratorResult,
@@ -18,7 +19,10 @@ const execFileAsync = promisify(execFile);
 
 @Injectable()
 export class ScormPackageGeneratorAdapter implements ScormPackageGeneratorPort {
-	constructor(private readonly manifestBuilder: ScormManifestBuilder) {}
+	constructor(
+		private readonly manifestBuilder: ScormManifestBuilder,
+		private readonly storage: StoragePort
+	) {}
 
 	async generate(
 		input: ScormCourseExportInput
@@ -102,6 +106,7 @@ export class ScormPackageGeneratorAdapter implements ScormPackageGeneratorPort {
 			(lesson.lessonType === 'video' || lesson.lessonType === 'audio') &&
 			!lesson.shouldUseVideoFallback
 		) {
+			await this.writeLessonMediaAsset(scoDir, lesson);
 			await fs.copyFile(
 				path.join(templatesBaseDir, 'player', 'player.html'),
 				path.join(scoDir, 'player.html')
@@ -151,12 +156,15 @@ export class ScormPackageGeneratorAdapter implements ScormPackageGeneratorPort {
 		}
 
 		if (lesson.lessonType === 'pdf') {
+			const pdfUrl = lesson.mediaSourcePath
+				? await this.writeLessonMediaAsset(scoDir, lesson)
+				: '';
 			const html = await this.renderTemplate(
 				path.join(templatesBaseDir, 'pdf', 'pdf.ejs'),
 				{
 					title: lesson.title,
 					description: lesson.description || '',
-					pdfUrl: lesson.content.pdfUrl || '',
+					pdfUrl,
 				}
 			);
 			await fs.writeFile(path.join(scoDir, 'index.html'), html, 'utf-8');
@@ -252,5 +260,52 @@ export class ScormPackageGeneratorAdapter implements ScormPackageGeneratorPort {
 			.replace(/[\u0300-\u036f]/g, '')
 			.replace(/[^a-z0-9]+/g, '-')
 			.replace(/^-+|-+$/g, '');
+	}
+
+	private async writeLessonMediaAsset(
+		scoDir: string,
+		lesson: ScormExportLesson
+	): Promise<string> {
+		if (!lesson.mediaSourcePath) {
+			return '';
+		}
+
+		const fileName = this.getMediaFileName(lesson);
+		const targetPath = path.join(scoDir, fileName);
+		const buffer = await this.storage.download({
+			bucket: this.getStorageBucket(lesson.lessonType),
+			path: lesson.mediaSourcePath,
+		});
+		await fs.writeFile(targetPath, buffer);
+		return fileName;
+	}
+
+	private getStorageBucket(
+		lessonType: ScormExportLesson['lessonType']
+	): string {
+		if (lessonType === 'audio') return 'lesson-audios';
+		if (lessonType === 'pdf') return 'lesson-assets';
+		return 'lesson-videos';
+	}
+
+	private getMediaFileName(lesson: ScormExportLesson): string {
+		const extension =
+			(lesson.mediaSourcePath ? path.extname(lesson.mediaSourcePath) : '') ||
+			this.getDefaultExtension(lesson.lessonType);
+
+		if (lesson.lessonType === 'pdf') {
+			return `document${extension}`;
+		}
+
+		return `media${extension}`;
+	}
+
+	private getDefaultExtension(
+		lessonType: ScormExportLesson['lessonType']
+	): string {
+		if (lessonType === 'video') return '.mp4';
+		if (lessonType === 'audio') return '.mp3';
+		if (lessonType === 'pdf') return '.pdf';
+		return '.bin';
 	}
 }

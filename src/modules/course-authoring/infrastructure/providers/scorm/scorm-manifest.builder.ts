@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import path from 'path';
 import type { ScormCourseExportInput } from '../../../domain/entities/scorm-export.types';
 
 @Injectable()
@@ -41,13 +42,13 @@ export class ScormManifestBuilder {
 					(lesson.lessonType === 'video' || lesson.lessonType === 'audio') &&
 					!lesson.shouldUseVideoFallback
 				) {
-					const encodedMediaUrl = encodeURIComponent(
-						lesson.resolvedMediaUrl || ''
-					);
+					const mediaFileName = this.getMediaFileName(lesson);
+					const encodedMediaUrl = encodeURIComponent(mediaFileName);
 					resources.push(
 						`<resource identifier="${escape(resourceIdentifier)}" type="webcontent" adlcp:scormtype="sco" href="${escape(`${scoDir}/player.html?videoUrl=${encodedMediaUrl}`)}">
 <file href="${escape(`${scoDir}/player.html`)}"/>
 <file href="${escape(`${scoDir}/scorm_api_wrapper.js`)}"/>
+<file href="${escape(`${scoDir}/${mediaFileName}`)}"/>
 </resource>`
 					);
 					continue;
@@ -59,6 +60,17 @@ export class ScormManifestBuilder {
 <file href="${escape(`${scoDir}/quiz.html`)}"/>
 <file href="${escape(`${scoDir}/quiz.js`)}"/>
 <file href="${escape(`${scoDir}/scormdriver.js`)}"/>
+</resource>`
+					);
+					continue;
+				}
+
+				if (lesson.lessonType === 'pdf' && lesson.mediaSourcePath) {
+					resources.push(
+						`<resource identifier="${escape(resourceIdentifier)}" type="webcontent" adlcp:scormtype="sco" href="${escape(`${scoDir}/index.html`)}">
+<file href="${escape(`${scoDir}/index.html`)}"/>
+<file href="${escape(`${scoDir}/scorm_api_wrapper.js`)}"/>
+<file href="${escape(`${scoDir}/${this.getMediaFileName(lesson)}`)}"/>
 </resource>`
 					);
 					continue;
@@ -119,5 +131,30 @@ ${resources.join('\n')}
 			.replaceAll('>', '&gt;')
 			.replaceAll('"', '&quot;')
 			.replaceAll("'", '&apos;');
+	}
+
+	private getMediaFileName(data: {
+		lessonType: 'video' | 'audio' | 'pdf' | 'quiz' | 'external' | 'article';
+		mediaSourcePath: string | null;
+	}): string {
+		const extension = data.mediaSourcePath
+			? path.extname(data.mediaSourcePath) ||
+				this.getDefaultExtension(data.lessonType)
+			: this.getDefaultExtension(data.lessonType);
+
+		if (data.lessonType === 'pdf') {
+			return `document${extension || '.pdf'}`;
+		}
+
+		return `media${extension || '.bin'}`;
+	}
+
+	private getDefaultExtension(
+		lessonType: 'video' | 'audio' | 'pdf' | 'quiz' | 'external' | 'article'
+	): string {
+		if (lessonType === 'video') return '.mp4';
+		if (lessonType === 'audio') return '.mp3';
+		if (lessonType === 'pdf') return '.pdf';
+		return '.bin';
 	}
 }
