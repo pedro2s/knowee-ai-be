@@ -10,10 +10,10 @@ import {
 	PutObjectCommand,
 	S3Client,
 } from '@aws-sdk/client-s3';
+import { SignatureV4MultiRegion } from '@aws-sdk/signature-v4-multi-region';
 import { Hash } from '@smithy/hash-node';
 import { HttpRequest } from '@smithy/protocol-http';
 import { buildQueryString } from '@smithy/querystring-builder';
-import { SignatureV4 } from '@smithy/signature-v4';
 import {
 	DeleteObjectParams,
 	DownloadObjectParams,
@@ -118,7 +118,6 @@ export class S3StorageAdapter implements StoragePort {
 
 	async getAccessUrl(params: GetObjectUrlParams): Promise<string> {
 		const key = this.buildObjectKey(params.bucket, params.path);
-		const encodedKey = this.encodeObjectKey(key);
 		const disposition = params.disposition ?? 'inline';
 		const filename = params.filename ?? this.extractFileName(params.path);
 		const host = `${this.bucketName}.s3.${this.region}.amazonaws.com`;
@@ -126,7 +125,7 @@ export class S3StorageAdapter implements StoragePort {
 			protocol: 'https:',
 			method: 'GET',
 			hostname: host,
-			path: `/${encodedKey}`,
+			path: `/${key}`,
 			headers: {
 				host,
 			},
@@ -139,11 +138,12 @@ export class S3StorageAdapter implements StoragePort {
 		});
 
 		try {
-			const presigner = new SignatureV4({
+			const presigner = new SignatureV4MultiRegion({
 				credentials: this.s3Client.config.credentials,
 				region: this.region,
 				service: 's3',
 				sha256: Hash.bind(null, 'sha256'),
+				uriEscapePath: false,
 			});
 			const signedRequest = await presigner.presign(request, {
 				expiresIn:
@@ -169,13 +169,6 @@ export class S3StorageAdapter implements StoragePort {
 		const normalizedPath = path.replace(/^\/+/, '');
 
 		return `${normalizedBucket}/${normalizedPath}`;
-	}
-
-	private encodeObjectKey(key: string): string {
-		return key
-			.split('/')
-			.map((segment) => encodeURIComponent(segment))
-			.join('/');
 	}
 
 	private extractFileName(path: string): string {
