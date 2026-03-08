@@ -9,16 +9,17 @@ import {
 	type LessonRepositoryPort,
 } from '../../domain/ports/lesson-repository.port';
 import { AuthContext } from 'src/shared/database/domain/ports/db-context.port';
-import { SUPABASE_CLIENT } from 'src/shared/supabase/subapase.constants';
-import { SupabaseClient } from '@supabase/supabase-js';
+import {
+	StoragePort,
+	UploadObjectResult,
+} from 'src/shared/storage/domain/ports/storage.port';
 
 @Injectable()
 export class ManageLessonAssetsUseCase {
 	constructor(
 		@Inject(LESSON_REPOSITORY)
 		private readonly lessonRepository: LessonRepositoryPort,
-		@Inject(SUPABASE_CLIENT)
-		private readonly supabaseClient: SupabaseClient
+		private readonly storage: StoragePort
 	) {}
 
 	async uploadAudio(input: {
@@ -91,39 +92,37 @@ export class ManageLessonAssetsUseCase {
 		const content = (lesson.content as Record<string, unknown>) || {};
 		const oldPath = content[config.pathKey] as string | undefined;
 		if (oldPath) {
-			await this.supabaseClient.storage.from(config.bucket).remove([oldPath]);
+			await this.storage.deleteObject({ bucket: config.bucket, path: oldPath });
 		}
 
 		const originalName = input.file.originalname.replace(/\s+/g, '-');
 		const uploadPath = `${input.userId}/${input.lessonId}/${Date.now()}-${originalName}`;
-		const upload = await this.supabaseClient.storage
-			.from(config.bucket)
-			.upload(uploadPath, input.file.buffer, {
+		let upload: UploadObjectResult;
+		try {
+			upload = await this.storage.upload({
+				bucket: config.bucket,
+				path: uploadPath,
+				buffer: input.file.buffer,
 				contentType: input.file.mimetype,
 				upsert: true,
 			});
-
-		if (upload.error) {
-			throw new PreconditionFailedException(upload.error.message);
+		} catch (error) {
+			throw new PreconditionFailedException(error.message);
 		}
-
-		const publicUrl = this.supabaseClient.storage
-			.from(config.bucket)
-			.getPublicUrl(uploadPath).data.publicUrl;
 
 		await this.lessonRepository.update(
 			input.lessonId,
 			{
 				content: {
 					...content,
-					[config.pathKey]: uploadPath,
-					[config.urlKey]: publicUrl,
+					[config.pathKey]: upload.path,
+					[config.urlKey]: upload.url,
 				},
 			},
 			authContext
 		);
 
-		return { path: uploadPath, url: publicUrl };
+		return upload;
 	}
 
 	private async remove(
@@ -149,7 +148,7 @@ export class ManageLessonAssetsUseCase {
 		const content = (lesson.content as Record<string, unknown>) || {};
 		const path = content[config.pathKey] as string | undefined;
 		if (path) {
-			await this.supabaseClient.storage.from(config.bucket).remove([path]);
+			await this.storage.deleteObject({ bucket: config.bucket, path });
 		}
 
 		const updatedContent = { ...content };

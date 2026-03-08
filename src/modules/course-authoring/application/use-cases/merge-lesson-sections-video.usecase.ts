@@ -17,8 +17,7 @@ import {
 } from 'src/shared/media/domain/ports/media.port';
 import fs from 'fs/promises';
 import path from 'path';
-import { SUPABASE_CLIENT } from 'src/shared/supabase/subapase.constants';
-import { SupabaseClient } from '@supabase/supabase-js';
+import { StoragePort } from 'src/shared/storage/domain/ports/storage.port';
 
 @Injectable()
 export class MergeLessonSectionsVideoUseCase {
@@ -27,8 +26,7 @@ export class MergeLessonSectionsVideoUseCase {
 	constructor(
 		@Inject(LESSON_REPOSITORY)
 		private readonly lessonRepository: LessonRepositoryPort,
-		@Inject(SUPABASE_CLIENT)
-		private readonly supabaseClient: SupabaseClient,
+		private readonly storage: StoragePort,
 		@Inject(MEDIA_SERVICE)
 		private readonly mediaService: MediaPort
 	) {}
@@ -75,28 +73,22 @@ export class MergeLessonSectionsVideoUseCase {
 			tempDir = await fs.mkdtemp(`merged-lesson-${lesson.id}-`);
 			const downloadedVideoFilePaths: string[] = [];
 
-			// 4. Download all section videos from Supabase to temp files
+			// 4. Download all section videos from storage to temp files
 			for (const [index, video] of videosToMerge.entries()) {
-				const { data, error } = await this.supabaseClient.storage
-					.from('lesson-videos')
-					.download(video.videoPath);
-
-				if (error) {
+				let videoBuffer: Buffer;
+				try {
+					videoBuffer = await this.storage.download({
+						bucket: 'lesson-videos',
+						path: video.videoPath,
+					});
+				} catch (error) {
 					this.logger.error(
-						`[MergeLessonSectionsVideoUseCase] Erro ao baixar vídeo do Supabase: ${error.message}`
+						`[MergeLessonSectionsVideoUseCase] Erro ao baixar vídeo do storage: ${error.message}`
 					);
 					throw new PreconditionFailedException(
-						`Erro ao baixar vídeo da seção ${index + 1} do Supabase.`
+						`Erro ao baixar vídeo da seção ${index + 1} do storage.`
 					);
 				}
-				if (!data) {
-					throw new PreconditionFailedException(
-						`Dados de vídeo vazios para a seção ${index + 1}.`
-					);
-				}
-
-				const arrayBuffer = await data.arrayBuffer();
-				const videoBuffer = Buffer.from(arrayBuffer);
 				const tempFilePath = path.join(tempDir, `section-${index}.mp4`);
 				await fs.writeFile(tempFilePath, videoBuffer);
 				downloadedVideoFilePaths.push(tempFilePath);
@@ -112,20 +104,22 @@ export class MergeLessonSectionsVideoUseCase {
 			const finalVideoPath = path.join(tempDir, 'merged_video.mp4');
 			await this.mediaService.concatVideos(fileListPath, finalVideoPath);
 
-			// 6. Upload merged video to Supabase
+			// 6. Upload merged video to storage
 			const mergedVideoBuffer = await fs.readFile(finalVideoPath);
-			const supabaseUploadPath = `${userId}/${lesson.id}/merged-lesson-${Date.now()}.mp4`;
+			const storageUploadPath = `${userId}/${lesson.id}/merged-lesson-${Date.now()}.mp4`;
 
-			const { error: uploadError } = await this.supabaseClient.storage
-				.from('lesson-videos')
-				.upload(supabaseUploadPath, mergedVideoBuffer, {
+			let upload;
+			try {
+				upload = await this.storage.upload({
+					bucket: 'lesson-videos',
+					path: storageUploadPath,
+					buffer: mergedVideoBuffer,
 					contentType: 'video/mp4',
 					upsert: true,
 				});
-
-			if (uploadError) {
+			} catch (error) {
 				this.logger.error(
-					`[MergeLessonSectionsVideoUseCase] Erro no upload do vídeo mesclado para o Supabase: ${uploadError.message}`
+					`[MergeLessonSectionsVideoUseCase] Erro no upload do vídeo mesclado para o storage: ${error.message}`
 				);
 				throw new PreconditionFailedException(
 					'Erro no upload do vídeo mesclado para o storage.'
@@ -133,10 +127,6 @@ export class MergeLessonSectionsVideoUseCase {
 			}
 
 			// 7. Update lesson with merged video path/URL
-			const { data: publicUrlData } = this.supabaseClient.storage
-				.from('lesson-videos')
-				.getPublicUrl(supabaseUploadPath);
-
 			const durationInSeconds =
 				await this.mediaService.getAudioDuration(finalVideoPath);
 
@@ -145,8 +135,8 @@ export class MergeLessonSectionsVideoUseCase {
 				{
 					content: {
 						...(lesson.content as any),
-						finalVideoPath: supabaseUploadPath,
-						finalVideoUrl: publicUrlData.publicUrl,
+						finalVideoPath: upload.path,
+						finalVideoUrl: upload.url,
 						finalVideoStatus: 'ready',
 					},
 					duration: Math.trunc(durationInSeconds / 60),
@@ -156,7 +146,7 @@ export class MergeLessonSectionsVideoUseCase {
 
 			return {
 				message: 'Vídeos das seções mesclados com sucesso!',
-				mergedVideoUrl: publicUrlData.publicUrl,
+				mergedVideoUrl: upload.url,
 			};
 		} catch (error) {
 			this.logger.error(

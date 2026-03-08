@@ -6,6 +6,8 @@ import { EmbeddingService } from './infrastructure/embedding.service';
 import { AIProvidersModule } from '../ai-providers/ai-providers.module';
 import { DatabaseModule } from '../database/database.module';
 import { TokenUsageModule } from '../token-usage/token-usage.module';
+import { StoragePort } from './domain/ports/storage.port';
+import { S3StorageAdapter } from './infrastructure/s3-storage.adapter';
 
 @Module({
 	imports: [DatabaseModule, AIProvidersModule, TokenUsageModule],
@@ -18,7 +20,11 @@ import { TokenUsageModule } from '../token-usage/token-usage.module';
 			provide: EMBEDDING_SERVICE,
 			useClass: EmbeddingService,
 		},
+		{
+			provide: StoragePort,
+			useClass: S3StorageAdapter,
+		},
 	],
-	exports: [FILE_PROCESSING_SERVICE, EMBEDDING_SERVICE],
+	exports: [FILE_PROCESSING_SERVICE, EMBEDDING_SERVICE, StoragePort],
 })
 export class StorageModule {}
