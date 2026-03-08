@@ -68,19 +68,25 @@ describe('S3StorageAdapter', () => {
 				'https://app-bucket.s3.us-east-2.amazonaws.com/lesson-audios/user-1/lesson-1/audio.mp3?'
 			),
 		});
+		expect(result.url).toContain('X-Amz-SignedHeaders=host');
+		expect(result.url).toContain('X-Amz-Expires=900');
 	});
 
 	it('gera URL assinada com a key prefixada pelo bucket lógico', async () => {
-		await expect(
-			adapter.getAccessUrl({
-				bucket: 'lesson-assets',
-				path: 'user 1/file name.pdf',
-				disposition: 'attachment',
-			})
-		).resolves.toEqual(
-			expect.stringContaining(
-				'https://app-bucket.s3.us-east-2.amazonaws.com/lesson-assets/user%201/file%20name.pdf?'
-			)
+		const url = await adapter.getAccessUrl({
+			bucket: 'lesson-assets',
+			path: 'user 1/file name.pdf',
+			disposition: 'attachment',
+			filename: 'arquivo final.pdf',
+		});
+
+		expect(url).toContain(
+			'https://app-bucket.s3.us-east-2.amazonaws.com/lesson-assets/user%201/file%20name.pdf?'
+		);
+		expect(url).toContain('X-Amz-SignedHeaders=host');
+		expect(url).toContain('response-content-disposition=');
+		expect(decodeURIComponent(url)).toContain(
+			'attachment; filename="arquivo final.pdf"'
 		);
 	});
 
