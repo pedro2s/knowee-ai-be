@@ -93,6 +93,24 @@ DATABASE_SSL_CA="-----BEGIN CERTIFICATE-----\n...\n-----END CERTIFICATE-----"
 
 On AWS, verify whether TLS is being enforced by the RDS parameter group (`rds.force_ssl=1`) or by an RDS Proxy with `Require TLS` enabled.
 
+## AWS local development
+
+The S3 adapter keeps using the AWS SDK default credential chain by default. This preserves production behavior when the app runs with an instance/task role.
+
+If you need to force a specific shared credentials profile in local development, set:
+
+```bash
+AWS_SDK_PROFILE=my-dev-profile
+AWS_REGION=us-east-2
+AWS_S3_BUCKET_NAME=my-bucket
+```
+
+Notes:
+
+- `AWS_SDK_PROFILE` is only for local/shared credentials resolution. Production should normally leave it unset.
+- Do not set `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` to empty strings in `.env`; if you want to use a profile or IAM role, leave those variables unset.
+- The selected profile must exist in `~/.aws/config` and/or `~/.aws/credentials`.
+
 ## Resources
 
 Check out a few resources that may come in handy when working with NestJS:

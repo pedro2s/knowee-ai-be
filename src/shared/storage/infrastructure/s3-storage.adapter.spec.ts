@@ -1,15 +1,19 @@
-import { InternalServerErrorException } from '@nestjs/common';
+import { InternalServerErrorException, Logger } from '@nestjs/common';
 import type { ConfigService } from '@nestjs/config';
 import {
 	DeleteObjectCommand,
 	GetObjectCommand,
 	PutObjectCommand,
 } from '@aws-sdk/client-s3';
+import { fromIni } from '@aws-sdk/credential-provider-ini';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { S3StorageAdapter } from './s3-storage.adapter';
 
 jest.mock('@aws-sdk/s3-request-presigner', () => ({
 	getSignedUrl: jest.fn(),
+}));
+jest.mock('@aws-sdk/credential-provider-ini', () => ({
+	fromIni: jest.fn(),
 }));
 
 describe('S3StorageAdapter', () => {
@@ -17,24 +21,31 @@ describe('S3StorageAdapter', () => {
 	let configService: jest.Mocked<ConfigService>;
 	let sendMock: jest.Mock;
 	let getSignedUrlMock: jest.MockedFunction<typeof getSignedUrl>;
+	let fromIniMock: jest.MockedFunction<typeof fromIni>;
+	let env: Record<string, string>;
+	let loggerDebugSpy: jest.SpyInstance;
+	let loggerLogSpy: jest.SpyInstance;
 
 	beforeEach(() => {
+		env = {
+			AWS_S3_BUCKET_NAME: 'app-bucket',
+			AWS_REGION: 'us-east-2',
+		};
 		configService = {
+			get: jest.fn((key: string) => env[key]),
 			getOrThrow: jest.fn((key: string) => {
-				const env: Record<string, string> = {
-					AWS_S3_BUCKET_NAME: 'app-bucket',
-					AWS_REGION: 'us-east-2',
-					AWS_ACCESS_KEY_ID: 'key',
-					AWS_SECRET_ACCESS_KEY: 'secret',
-				};
-
 				return env[key];
 			}),
 		} as never;
 
+		fromIniMock = fromIni as jest.MockedFunction<typeof fromIni>;
+		fromIniMock.mockReset();
+		loggerDebugSpy = jest.spyOn(Logger.prototype, 'debug').mockImplementation();
+		loggerLogSpy = jest.spyOn(Logger.prototype, 'log').mockImplementation();
 		adapter = new S3StorageAdapter(configService);
 		sendMock = jest.fn();
 		getSignedUrlMock = getSignedUrl as jest.MockedFunction<typeof getSignedUrl>;
+		getSignedUrlMock.mockReset();
 		getSignedUrlMock.mockResolvedValue(
 			'https://app-bucket.s3.us-east-2.amazonaws.com/lesson-audios/user-1/lesson-1/audio.mp3?X-Amz-SignedHeaders=host&X-Amz-Expires=900'
 		);
@@ -43,6 +54,32 @@ describe('S3StorageAdapter', () => {
 				send: sendMock,
 			},
 		});
+	});
+
+	afterEach(() => {
+		loggerDebugSpy.mockRestore();
+		loggerLogSpy.mockRestore();
+	});
+
+	it('usa a default credential chain quando AWS_SDK_PROFILE nao esta definido', () => {
+		expect(configService.get.mock.calls).toContainEqual(['AWS_SDK_PROFILE']);
+		expect(fromIniMock).not.toHaveBeenCalled();
+		expect(loggerDebugSpy).toHaveBeenCalledWith(
+			'Using default AWS credential chain for S3'
+		);
+	});
+
+	it('usa o shared credentials profile configurado para S3', () => {
+		const credentialProvider = jest.fn();
+		fromIniMock.mockReturnValue(credentialProvider);
+		env.AWS_SDK_PROFILE = 'dev-profile';
+
+		new S3StorageAdapter(configService);
+
+		expect(fromIniMock).toHaveBeenCalledWith({ profile: 'dev-profile' });
+		expect(loggerLogSpy).toHaveBeenCalledWith(
+			'Using AWS shared credentials profile "dev-profile" for S3'
+		);
 	});
 
 	it('faz upload usando o prefixo do bucket lógico e retorna path/url assinados', async () => {
@@ -95,7 +132,7 @@ describe('S3StorageAdapter', () => {
 		expect(decodeURIComponent(url)).toContain(
 			'attachment; filename="arquivo final.pdf"'
 		);
-		expect(getSignedUrlMock.mock.calls[1]?.[1]).toEqual(
+		expect(getSignedUrlMock.mock.calls[0]?.[1]).toEqual(
 			expect.objectContaining<Partial<GetObjectCommand>>({
 				input: expect.objectContaining({
 					Bucket: 'app-bucket',

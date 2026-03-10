@@ -9,7 +9,9 @@ import {
 	GetObjectCommand,
 	PutObjectCommand,
 	S3Client,
+	type S3ClientConfig,
 } from '@aws-sdk/client-s3';
+import { fromIni } from '@aws-sdk/credential-provider-ini';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import {
 	DeleteObjectParams,
@@ -33,9 +35,25 @@ export class S3StorageAdapter implements StoragePort {
 			this.configService.getOrThrow<string>('AWS_S3_BUCKET_NAME');
 		this.region = this.configService.getOrThrow<string>('AWS_REGION');
 
-		this.s3Client = new S3Client({
+		this.s3Client = new S3Client(this.buildS3ClientConfig());
+	}
+
+	private buildS3ClientConfig(): S3ClientConfig {
+		const profile = this.configService.get<string>('AWS_SDK_PROFILE')?.trim();
+		const config: S3ClientConfig = {
 			region: this.region,
-		});
+		};
+
+		if (profile) {
+			this.logger.log(
+				`Using AWS shared credentials profile "${profile}" for S3`
+			);
+			config.credentials = fromIni({ profile });
+		} else {
+			this.logger.debug('Using default AWS credential chain for S3');
+		}
+
+		return config;
 	}
 
 	async upload(params: UploadObjectParams): Promise<UploadObjectResult> {
