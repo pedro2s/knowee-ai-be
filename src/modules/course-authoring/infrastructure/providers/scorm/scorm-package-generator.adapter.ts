@@ -1,9 +1,14 @@
-import { Injectable } from '@nestjs/common';
+import {
+	Injectable,
+	InternalServerErrorException,
+	Logger,
+} from '@nestjs/common';
 import fs from 'fs/promises';
+import { createWriteStream } from 'fs';
 import os from 'os';
 import path from 'path';
-import { execFile } from 'child_process';
-import { promisify } from 'util';
+import { pipeline } from 'stream/promises';
+import JSZip from 'jszip';
 import { StoragePort } from 'src/shared/storage/domain/ports/storage.port';
 import type {
 	ScormPackageGeneratorPort,
@@ -15,10 +20,10 @@ import type {
 } from '../../../domain/entities/scorm-export.types';
 import { ScormManifestBuilder } from './scorm-manifest.builder';
 
-const execFileAsync = promisify(execFile);
-
 @Injectable()
 export class ScormPackageGeneratorAdapter implements ScormPackageGeneratorPort {
+	private readonly logger = new Logger(ScormPackageGeneratorAdapter.name);
+
 	constructor(
 		private readonly manifestBuilder: ScormManifestBuilder,
 		private readonly storage: StoragePort
@@ -36,13 +41,18 @@ export class ScormPackageGeneratorAdapter implements ScormPackageGeneratorPort {
 		);
 		const packageDir = path.join(rootTempDir, 'package');
 		const zipPath = path.join(rootTempDir, `${slug}.zip`);
+		let currentStage = 'creating workspace';
 
 		await fs.mkdir(packageDir, { recursive: true });
 
 		try {
+			currentStage = 'writing manifest';
 			await this.writeManifest(input, packageDir);
+			currentStage = 'copying schema files';
 			await this.copyXsdFiles(packageDir);
+			currentStage = 'writing lessons';
 			await this.writeLessons(input, packageDir);
+			currentStage = 'compressing package';
 			await this.zipDirectory(packageDir, zipPath);
 
 			return {
@@ -53,8 +63,13 @@ export class ScormPackageGeneratorAdapter implements ScormPackageGeneratorPort {
 				},
 			};
 		} catch (error) {
+			this.logger.error(
+				`Failed to generate SCORM package during ${currentStage}: ${String(error)}`
+			);
 			await fs.rm(rootTempDir, { recursive: true, force: true });
-			throw error;
+			throw new InternalServerErrorException(
+				`Falha ao gerar pacote SCORM durante ${currentStage}.`
+			);
 		}
 	}
 
@@ -210,9 +225,36 @@ export class ScormPackageGeneratorAdapter implements ScormPackageGeneratorPort {
 		sourceDir: string,
 		outputZipPath: string
 	): Promise<void> {
-		await execFileAsync('zip', ['-r', '-q', outputZipPath, '.'], {
-			cwd: sourceDir,
+		const zip = new JSZip();
+		await this.addDirectoryToZip(zip, sourceDir, '');
+		const zipStream = zip.generateNodeStream({
+			compression: 'DEFLATE',
+			streamFiles: true,
 		});
+		await pipeline(zipStream, createWriteStream(outputZipPath));
+	}
+
+	private async addDirectoryToZip(
+		zip: JSZip,
+		currentDir: string,
+		relativeDir: string
+	): Promise<void> {
+		const entries = await fs.readdir(currentDir, { withFileTypes: true });
+
+		for (const entry of entries) {
+			const absolutePath = path.join(currentDir, entry.name);
+			const relativePath = relativeDir
+				? path.posix.join(relativeDir, entry.name)
+				: entry.name;
+
+			if (entry.isDirectory()) {
+				await this.addDirectoryToZip(zip, absolutePath, relativePath);
+				continue;
+			}
+
+			const fileBuffer = await fs.readFile(absolutePath);
+			zip.file(relativePath, fileBuffer);
+		}
 	}
 
 	private async renderTemplate(
