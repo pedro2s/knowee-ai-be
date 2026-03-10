@@ -23,7 +23,9 @@
 		"test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
 		"test:e2e": "jest --config ./test/jest-e2e.json",
 		"migration:generate": "drizzle-kit generate",
-		"migration:run": "drizzle-kit migrate",
+		"migration:inspect": "node ./scripts/db-inspect.js",
+		"migration:run": "node ./scripts/run-drizzle-migrate.js",
+		"migration:verify": "node ./scripts/verify-drizzle-migrations.js",
 		"db:seed": "npx tsx src/shared/database/infrastructure/drizzle/seed.ts",
 		"prepare": "husky"
 	},

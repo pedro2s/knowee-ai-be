@@ -13,15 +13,15 @@ export default tseslint.config(
 		],
 	},
 	eslint.configs.recommended,
-	...tseslint.configs.recommendedTypeChecked,
 	eslintPluginPrettierRecommended,
 	{
+		files: ['**/*.ts'],
+		extends: [...tseslint.configs.recommendedTypeChecked],
 		languageOptions: {
 			globals: {
 				...globals.node,
 				...globals.jest,
 			},
-			sourceType: 'commonjs',
 			parserOptions: {
 				projectService: true,
 				tsconfigRootDir: import.meta.dirname,
@@ -29,6 +29,19 @@ export default tseslint.config(
 		},
 	},
 	{
+		files: ['scripts/**/*.js'],
+		languageOptions: {
+			globals: {
+				...globals.node,
+			},
+			sourceType: 'commonjs',
+		},
+		rules: {
+			'no-undef': 'off',
+		},
+	},
+	{
+		files: ['**/*.ts'],
 		rules: {
 			'@typescript-eslint/no-explicit-any': 'off',
 			'@typescript-eslint/no-floating-promises': 'warn',
