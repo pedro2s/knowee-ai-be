@@ -71,6 +71,13 @@
 			"when": 1774800000000,
 			"tag": "0009_queue_generation_infra",
 			"breakpoints": true
+		},
+		{
+			"idx": 10,
+			"version": "7",
+			"when": 1774886400000,
+			"tag": "0010_vengeful_prodigy",
+			"breakpoints": true
 		}
 	]
 }

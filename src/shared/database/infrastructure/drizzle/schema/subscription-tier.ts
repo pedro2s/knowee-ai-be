@@ -1,3 +1,4 @@
+import { timestamp } from 'drizzle-orm/pg-core';
 import {
 	boolean,
 	integer,
@@ -29,6 +30,18 @@ export const subscriptionTier = pgTable(
 		stripePriceId: text('stripe_price_id'),
 		stripePriceIdAnnual: text('stripe_price_id_annual'),
 		annualPrice: numeric('annual_price', { precision: 8, scale: 2 }),
+		createdAt: timestamp('created_at', {
+			withTimezone: true,
+			mode: 'string',
+		})
+			.defaultNow()
+			.notNull(),
+		updatedAt: timestamp('updated_at', {
+			withTimezone: true,
+			mode: 'string',
+		})
+			.defaultNow()
+			.notNull(),
 	},
 	(table) => [uniqueIndex('subscription_tier_name_uidx').on(table.name)]
 );
