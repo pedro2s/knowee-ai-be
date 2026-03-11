@@ -24,8 +24,26 @@ export type GenerationJobType =
 	| 'lesson_section_video_generation'
 	| 'lesson_merge_video_generation';
 
+export type GenerationJobFamily =
+	| 'course'
+	| 'asset_batch'
+	| 'lesson_audio'
+	| 'lesson_section_video'
+	| 'lesson_merge_video';
+
+export interface GenerationJobScope {
+	courseId: string | null;
+	lessonId: string | null;
+	sectionId: string | null;
+}
+
 export interface GenerationJobMetadata {
 	jobType?: GenerationJobType;
+	jobFamily?: GenerationJobFamily;
+	jobIntent?: string;
+	dedupeKey?: string | null;
+	targetLabel?: string | null;
+	scope?: Partial<GenerationJobScope>;
 	strategy?: 'on-demand' | 'selected' | 'all';
 	providerSelection?: {
 		imageProvider: string;
@@ -64,8 +82,13 @@ export interface GenerationJob {
 	courseId: string | null;
 	status: GenerationJobStatus;
 	jobType: GenerationJobType;
+	jobFamily: GenerationJobFamily;
+	jobIntent: string;
 	phase: GenerationJobPhase;
 	progress: number;
+	dedupeKey: string | null;
+	targetLabel: string | null;
+	scope: GenerationJobScope;
 	queueName: string;
 	queueJobId: string | null;
 	attempts: number;
@@ -83,9 +106,14 @@ export interface CreateGenerationJobInput {
 	userId: string;
 	courseId?: string | null;
 	jobType?: GenerationJobType;
+	jobFamily?: GenerationJobFamily;
+	jobIntent?: string;
 	phase?: GenerationJobPhase;
 	status?: GenerationJobStatus;
 	progress?: number;
+	dedupeKey?: string | null;
+	targetLabel?: string | null;
+	scope?: GenerationJobScope;
 	queueName?: string;
 	queueJobId?: string | null;
 	attempts?: number;
@@ -99,8 +127,13 @@ export interface UpdateGenerationJobInput {
 	courseId?: string | null;
 	status?: GenerationJobStatus;
 	jobType?: GenerationJobType;
+	jobFamily?: GenerationJobFamily;
+	jobIntent?: string;
 	phase?: GenerationJobPhase;
 	progress?: number;
+	dedupeKey?: string | null;
+	targetLabel?: string | null;
+	scope?: GenerationJobScope;
 	queueName?: string;
 	queueJobId?: string | null;
 	attempts?: number;

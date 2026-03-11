@@ -3,7 +3,13 @@ export class StartAssetsGenerationResponseDto {
 	message: string;
 	courseId: string;
 	jobId?: string;
-	status?: 'pending' | 'processing';
-	phase?: 'assets_prepare' | 'assets_processing' | 'assets_finalize';
+	reason?: 'duplicate_active_job';
+	status?: 'pending' | 'processing' | 'completed' | 'failed';
+	phase?: 'assets_prepare' | 'assets_processing' | 'assets_finalize' | 'done';
 	progress?: number;
+	jobType?: string;
+	jobFamily?: string;
+	jobIntent?: string;
+	dedupeKey?: string | null;
+	targetLabel?: string | null;
 }

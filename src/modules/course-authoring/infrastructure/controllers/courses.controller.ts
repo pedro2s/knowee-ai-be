@@ -74,10 +74,16 @@ export class CoursesController {
 		});
 
 		return {
+			started: true,
 			jobId: job.id,
 			status: job.status,
 			phase: job.phase,
 			progress: job.progress,
+			jobType: job.jobType,
+			jobFamily: job.jobFamily,
+			jobIntent: job.jobIntent,
+			dedupeKey: job.dedupeKey,
+			targetLabel: job.targetLabel,
 		};
 	}
 

@@ -68,6 +68,7 @@ import { ProviderPreferencesModule } from '../provider-preferences/provider-pref
 import { StartAssetsGenerationUseCase } from './application/use-cases/start-assets-generation.usecase';
 import { AssetsGenerationOrchestratorUseCase } from './application/use-cases/assets-generation-orchestrator.usecase';
 import { GetActiveGenerationJobByCourseUseCase } from './application/use-cases/get-active-generation-job-by-course.usecase';
+import { GetActiveGenerationJobsByCourseUseCase } from './application/use-cases/get-active-generation-jobs-by-course.usecase';
 import { AccessControlModule } from '../access-control/access-control.module';
 import { GENERATION_JOB_PAYLOAD_REPOSITORY } from './domain/ports/generation-job-payload-repository.port';
 import { GenerationQueueProducer } from './infrastructure/queue/generation-queue.producer';
@@ -76,6 +77,7 @@ import { StartLessonAudioGenerationUseCase } from './application/use-cases/start
 import { StartSectionVideoGenerationUseCase } from './application/use-cases/start-section-video-generation.usecase';
 import { StartLessonMergeVideoGenerationUseCase } from './application/use-cases/start-lesson-merge-video-generation.usecase';
 import { LessonMediaAccessService } from './application/services/lesson-media-access.service';
+import { GenerationJobDescriptorService } from './application/services/generation-job-descriptor.service';
 
 const workerProviders =
 	process.env.ENABLE_QUEUE_WORKERS === 'true' ? [GenerationQueueProcessor] : [];
@@ -121,6 +123,7 @@ const workerProviders =
 		AssetsGenerationOrchestratorUseCase,
 		GetGenerationJobUseCase,
 		GetActiveGenerationJobByCourseUseCase,
+		GetActiveGenerationJobsByCourseUseCase,
 		GenerateLessonStoryboardUseCase,
 		GenerateModuleUseCase,
 		GenerateArticleUseCase,
@@ -170,6 +173,7 @@ const workerProviders =
 		OpenAIGenerateAssessmentsAgentAdapter,
 		ScormManifestBuilder,
 		GenerationEventsService,
+		GenerationJobDescriptorService,
 		GenerationQueueProducer,
 		{
 			provide: SCORM_PACKAGE_GENERATOR,
