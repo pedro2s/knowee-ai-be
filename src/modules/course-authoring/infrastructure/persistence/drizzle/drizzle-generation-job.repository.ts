@@ -87,7 +87,9 @@ export class DrizzleGenerationJobRepository implements GenerationJobRepositoryPo
 			const jobs = await tx.query.generationJobs.findMany({
 				where: and(
 					eq(schema.generationJobs.courseId, courseId),
-					inArray(schema.generationJobs.status, ['pending', 'processing'])
+					inArray(schema.generationJobs.status, ['pending', 'processing']),
+					sql`${schema.generationJobs.phase} <> 'done'`,
+					sql`${schema.generationJobs.completedAt} IS NULL`
 				),
 				orderBy: [
 					sql`CASE

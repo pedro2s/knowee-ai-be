@@ -353,6 +353,22 @@ export class GenerationQueueProcessor extends WorkerHost {
 		}
 
 		const auth = this.getAuth(job.data);
+		const currentJob = await this.generationJobRepository.findById(
+			job.data.jobId,
+			auth
+		);
+		if (
+			currentJob &&
+			(currentJob.status === 'completed' ||
+				currentJob.completedAt !== null ||
+				currentJob.phase === 'done')
+		) {
+			this.logger.warn(
+				`Ignorando falha tardia do worker para job concluido ${job.data.jobId}: ${error.message}`
+			);
+			return;
+		}
+
 		const maxAttempts = job.opts.attempts ?? 1;
 		const isFinalFailure = job.attemptsMade >= maxAttempts;
 

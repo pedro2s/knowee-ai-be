@@ -55,12 +55,27 @@ export class StartSectionVideoGenerationUseCase {
 			throw new NotFoundException('Módulo da aula não encontrado');
 		}
 
+		const sectionLabel =
+			(
+				lesson.content as {
+					scriptSections?: Array<{
+						id?: string;
+						content?: string;
+					}>;
+				}
+			)?.scriptSections
+				?.find((section) => section.id === input.data.sectionId)
+				?.content?.split('\n')[0]
+				?.replace(/#+/g, '')
+				?.trim() ?? null;
+
 		const descriptor = GenerationJobDescriptorService.build({
 			jobType: 'lesson_section_video_generation',
 			courseId: module.courseId,
 			lessonId: input.data.lessonId,
 			sectionId: input.data.sectionId,
 			targetLabel: lesson.title,
+			sectionLabel,
 		});
 
 		if (descriptor.dedupeKey) {

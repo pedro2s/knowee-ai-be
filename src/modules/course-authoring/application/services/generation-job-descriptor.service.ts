@@ -12,6 +12,7 @@ interface BuildDescriptorInput {
 	lessonId?: string | null;
 	sectionId?: string | null;
 	targetLabel?: string | null;
+	sectionLabel?: string | null;
 	selectedLessonIds?: string[];
 }
 
@@ -61,8 +62,28 @@ const buildAssetsSelectionHash = (selectedLessonIds?: string[]) => {
 	return [...selectedLessonIds].sort().join(',');
 };
 
+const shortenSectionId = (sectionId: string | null | undefined) => {
+	if (!sectionId) {
+		return null;
+	}
+
+	return sectionId.length <= 8 ? sectionId : sectionId.slice(0, 8);
+};
+
+const buildLessonScopedTarget = (
+	label: string | null | undefined,
+	suffix: string
+) => {
+	if (!label?.trim()) {
+		return suffix;
+	}
+
+	return `${label} • ${suffix}`;
+};
+
 export class GenerationJobDescriptorService {
 	static build(input: BuildDescriptorInput): GenerationJobDescriptor {
+		// targetLabel must identify the most specific human target for the job.
 		const scope: GenerationJobScope = {
 			courseId: input.courseId ?? null,
 			lessonId: input.lessonId ?? null,
@@ -89,7 +110,7 @@ export class GenerationJobDescriptorService {
 					jobFamily: 'lesson_audio',
 					jobIntent: getJobIntent(input.jobType),
 					dedupeKey: input.lessonId ? `lesson:${input.lessonId}:audio` : null,
-					targetLabel: input.targetLabel ?? null,
+					targetLabel: buildLessonScopedTarget(input.targetLabel, 'audio'),
 					scope,
 				};
 			case 'lesson_section_video_generation':
@@ -100,7 +121,13 @@ export class GenerationJobDescriptorService {
 						input.lessonId && input.sectionId
 							? `lesson:${input.lessonId}:section:${input.sectionId}:video`
 							: null,
-					targetLabel: input.targetLabel ?? null,
+					targetLabel: buildLessonScopedTarget(
+						input.targetLabel,
+						input.sectionLabel?.trim() ||
+							(input.sectionId
+								? `secao ${shortenSectionId(input.sectionId)}`
+								: 'video da secao')
+					),
 					scope,
 				};
 			case 'lesson_merge_video_generation':
@@ -110,7 +137,10 @@ export class GenerationJobDescriptorService {
 					dedupeKey: input.lessonId
 						? `lesson:${input.lessonId}:merge-video`
 						: null,
-					targetLabel: input.targetLabel ?? null,
+					targetLabel: buildLessonScopedTarget(
+						input.targetLabel,
+						'video final'
+					),
 					scope,
 				};
 			default:
