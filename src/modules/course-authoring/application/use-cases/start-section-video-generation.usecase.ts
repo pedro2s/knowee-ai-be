@@ -20,6 +20,8 @@ import { GenerationQueueProducer } from '../../infrastructure/queue/generation-q
 import { GenerationEventsService } from '../services/generation-events.service';
 import { GENERATION_QUEUE } from 'src/shared/queue/queue.constants';
 import { GenerationJob } from '../../domain/entities/generation-job.types';
+import { GenerationJobDescriptorService } from '../services/generation-job-descriptor.service';
+import { StartGenerationJobResult } from '../dtos/start-generation-job.result';
 
 @Injectable()
 export class StartSectionVideoGenerationUseCase {
@@ -39,7 +41,7 @@ export class StartSectionVideoGenerationUseCase {
 	async execute(input: {
 		userId: string;
 		data: GenerateSectionVideoDto;
-	}): Promise<GenerationJob> {
+	}): Promise<StartGenerationJobResult> {
 		const auth = { userId: input.userId, role: 'authenticated' as const };
 		const lesson = await this.lessonRepository.findById(
 			input.data.lessonId,
@@ -53,18 +55,62 @@ export class StartSectionVideoGenerationUseCase {
 			throw new NotFoundException('Módulo da aula não encontrado');
 		}
 
+		const sectionLabel =
+			(
+				lesson.content as {
+					scriptSections?: Array<{
+						id?: string;
+						content?: string;
+					}>;
+				}
+			)?.scriptSections
+				?.find((section) => section.id === input.data.sectionId)
+				?.content?.split('\n')[0]
+				?.replace(/#+/g, '')
+				?.trim() ?? null;
+
+		const descriptor = GenerationJobDescriptorService.build({
+			jobType: 'lesson_section_video_generation',
+			courseId: module.courseId,
+			lessonId: input.data.lessonId,
+			sectionId: input.data.sectionId,
+			targetLabel: lesson.title,
+			sectionLabel,
+		});
+
+		if (descriptor.dedupeKey) {
+			const existingJob =
+				await this.generationJobRepository.findActiveByDedupeKey(
+					descriptor.dedupeKey,
+					auth
+				);
+			if (existingJob) {
+				return {
+					job: existingJob,
+					started: false,
+					reason: 'duplicate_active_job',
+				};
+			}
+		}
+
 		const job = await this.generationJobRepository.create(
 			{
 				userId: input.userId,
 				courseId: module.courseId,
 				status: 'pending',
 				jobType: 'lesson_section_video_generation',
+				jobFamily: descriptor.jobFamily,
+				jobIntent: descriptor.jobIntent,
 				phase: 'lesson_section_video',
 				progress: 0,
+				dedupeKey: descriptor.dedupeKey,
+				targetLabel: descriptor.targetLabel,
+				scope: descriptor.scope,
 				queueName: GENERATION_QUEUE,
 				maxAttempts: 3,
 				metadata: {
 					jobType: 'lesson_section_video_generation',
+					...GenerationJobDescriptorService.toMetadata(descriptor),
 					lessonId: input.data.lessonId,
 					sectionId: input.data.sectionId,
 				},
@@ -108,6 +154,9 @@ export class StartSectionVideoGenerationUseCase {
 			error: job.error,
 		});
 
-		return job;
+		return {
+			job,
+			started: true,
+		};
 	}
 }

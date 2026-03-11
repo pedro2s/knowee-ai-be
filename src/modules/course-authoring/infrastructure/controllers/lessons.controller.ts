@@ -99,15 +99,22 @@ export class LessonsController {
 		@Body() body: GenerateSectionVideoDto,
 		@CurrentUser() user: UserPayload
 	): Promise<StartCourseGenerationResponseDto> {
-		const job = await this.startSectionVideoGenerationUseCase.execute({
+		const result = await this.startSectionVideoGenerationUseCase.execute({
 			userId: user.id,
 			data: body,
 		});
 		return {
-			jobId: job.id,
-			status: job.status,
-			phase: job.phase,
-			progress: job.progress,
+			started: result.started,
+			reason: result.reason,
+			jobId: result.job.id,
+			status: result.job.status,
+			phase: result.job.phase,
+			progress: result.job.progress,
+			jobType: result.job.jobType,
+			jobFamily: result.job.jobFamily,
+			jobIntent: result.job.jobIntent,
+			dedupeKey: result.job.dedupeKey,
+			targetLabel: result.job.targetLabel,
 		};
 	}
 
@@ -147,17 +154,24 @@ export class LessonsController {
 		@Body() data: GenerateLessonAudioDto,
 		@CurrentUser() user: UserPayload
 	): Promise<StartCourseGenerationResponseDto> {
-		const job = await this.startLessonAudioGenerationUseCase.execute({
+		const result = await this.startLessonAudioGenerationUseCase.execute({
 			lessonId,
 			audioProvider: data.ai?.provider || 'openai',
 			audioVoiceId: data.audioVoiceId,
 			userId: user.id,
 		});
 		return {
-			jobId: job.id,
-			status: job.status,
-			phase: job.phase,
-			progress: job.progress,
+			started: result.started,
+			reason: result.reason,
+			jobId: result.job.id,
+			status: result.job.status,
+			phase: result.job.phase,
+			progress: result.job.progress,
+			jobType: result.job.jobType,
+			jobFamily: result.job.jobFamily,
+			jobIntent: result.job.jobIntent,
+			dedupeKey: result.job.dedupeKey,
+			targetLabel: result.job.targetLabel,
 		};
 	}
 
@@ -192,15 +206,22 @@ export class LessonsController {
 		@Param('id') lessonId: string,
 		@CurrentUser() user: UserPayload
 	): Promise<StartCourseGenerationResponseDto> {
-		const job = await this.startLessonMergeVideoGenerationUseCase.execute({
+		const result = await this.startLessonMergeVideoGenerationUseCase.execute({
 			lessonId,
 			userId: user.id,
 		});
 		return {
-			jobId: job.id,
-			status: job.status,
-			phase: job.phase,
-			progress: job.progress,
+			started: result.started,
+			reason: result.reason,
+			jobId: result.job.id,
+			status: result.job.status,
+			phase: result.job.phase,
+			progress: result.job.progress,
+			jobType: result.job.jobType,
+			jobFamily: result.job.jobFamily,
+			jobIntent: result.job.jobIntent,
+			dedupeKey: result.job.dedupeKey,
+			targetLabel: result.job.targetLabel,
 		};
 	}
 

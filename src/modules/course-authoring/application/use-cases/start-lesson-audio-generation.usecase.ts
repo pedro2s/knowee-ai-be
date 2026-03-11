@@ -19,6 +19,8 @@ import { GenerationQueueProducer } from '../../infrastructure/queue/generation-q
 import { GenerationEventsService } from '../services/generation-events.service';
 import { GENERATION_QUEUE } from 'src/shared/queue/queue.constants';
 import { GenerationJob } from '../../domain/entities/generation-job.types';
+import { GenerationJobDescriptorService } from '../services/generation-job-descriptor.service';
+import { StartGenerationJobResult } from '../dtos/start-generation-job.result';
 
 @Injectable()
 export class StartLessonAudioGenerationUseCase {
@@ -40,7 +42,7 @@ export class StartLessonAudioGenerationUseCase {
 		lessonId: string;
 		audioProvider: string;
 		audioVoiceId?: string;
-	}): Promise<GenerationJob> {
+	}): Promise<StartGenerationJobResult> {
 		const auth = { userId: input.userId, role: 'authenticated' as const };
 		const lesson = await this.lessonRepository.findById(input.lessonId, auth);
 		if (!lesson) {
@@ -51,18 +53,46 @@ export class StartLessonAudioGenerationUseCase {
 			throw new NotFoundException('Módulo da aula não encontrado');
 		}
 
+		const descriptor = GenerationJobDescriptorService.build({
+			jobType: 'lesson_audio_generation',
+			courseId: module.courseId,
+			lessonId: lesson.id,
+			targetLabel: lesson.title,
+		});
+
+		if (descriptor.dedupeKey) {
+			const existingJob =
+				await this.generationJobRepository.findActiveByDedupeKey(
+					descriptor.dedupeKey,
+					auth
+				);
+			if (existingJob) {
+				return {
+					job: existingJob,
+					started: false,
+					reason: 'duplicate_active_job',
+				};
+			}
+		}
+
 		const job = await this.generationJobRepository.create(
 			{
 				userId: input.userId,
 				courseId: module.courseId,
 				status: 'pending',
 				jobType: 'lesson_audio_generation',
+				jobFamily: descriptor.jobFamily,
+				jobIntent: descriptor.jobIntent,
 				phase: 'lesson_audio',
 				progress: 0,
+				dedupeKey: descriptor.dedupeKey,
+				targetLabel: descriptor.targetLabel,
+				scope: descriptor.scope,
 				queueName: GENERATION_QUEUE,
 				maxAttempts: 3,
 				metadata: {
 					jobType: 'lesson_audio_generation',
+					...GenerationJobDescriptorService.toMetadata(descriptor),
 					lessonId: lesson.id,
 				},
 			},
@@ -107,6 +137,9 @@ export class StartLessonAudioGenerationUseCase {
 			error: job.error,
 		});
 
-		return job;
+		return {
+			job,
+			started: true,
+		};
 	}
 }

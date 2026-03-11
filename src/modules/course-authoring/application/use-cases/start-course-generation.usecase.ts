@@ -12,6 +12,7 @@ import {
 } from '../../domain/ports/generation-job-payload-repository.port';
 import { GenerationQueueProducer } from '../../infrastructure/queue/generation-queue.producer';
 import { GENERATION_QUEUE } from 'src/shared/queue/queue.constants';
+import { GenerationJobDescriptorService } from '../services/generation-job-descriptor.service';
 
 @Injectable()
 export class StartCourseGenerationUseCase {
@@ -30,15 +31,28 @@ export class StartCourseGenerationUseCase {
 		files: Express.Multer.File[];
 	}): Promise<GenerationJob> {
 		const auth = { userId: input.userId, role: 'authenticated' as const };
+		const descriptor = GenerationJobDescriptorService.build({
+			jobType: 'course_generation',
+			targetLabel: input.data.title,
+		});
 		const job = await this.generationJobRepository.create(
 			{
 				userId: input.userId,
 				status: 'pending',
 				jobType: 'course_generation',
+				jobFamily: descriptor.jobFamily,
+				jobIntent: descriptor.jobIntent,
 				phase: 'structure',
 				progress: 0,
+				dedupeKey: descriptor.dedupeKey,
+				targetLabel: descriptor.targetLabel,
+				scope: descriptor.scope,
 				queueName: GENERATION_QUEUE,
 				maxAttempts: 3,
+				metadata: {
+					jobType: 'course_generation',
+					...GenerationJobDescriptorService.toMetadata(descriptor),
+				},
 			},
 			auth
 		);
