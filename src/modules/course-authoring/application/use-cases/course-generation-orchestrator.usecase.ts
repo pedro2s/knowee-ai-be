@@ -18,6 +18,7 @@ import {
 	type LessonRepositoryPort,
 } from '../../domain/ports/lesson-repository.port';
 import { MarkFreemiumSampleConsumedUseCase } from 'src/modules/access-control/application/use-cases/mark-freemium-sample-consumed.usecase';
+import { GenerationJobDescriptorService } from '../services/generation-job-descriptor.service';
 
 interface CourseGenerationInput {
 	jobId: string;
@@ -83,6 +84,23 @@ export class CourseGenerationOrchestratorUseCase {
 				input.jobId,
 				{
 					courseId: savedCourse.id,
+					dedupeKey: `course:${savedCourse.id}:generation`,
+					targetLabel: savedCourse.title,
+					scope: {
+						courseId: savedCourse.id,
+						lessonId: null,
+						sectionId: null,
+					},
+					metadata: {
+						jobType: 'course_generation',
+						...GenerationJobDescriptorService.toMetadata(
+							GenerationJobDescriptorService.build({
+								jobType: 'course_generation',
+								courseId: savedCourse.id,
+								targetLabel: savedCourse.title,
+							})
+						),
+					},
 					phase: 'demo_script',
 					progress: 30,
 				},
@@ -277,6 +295,14 @@ export class CourseGenerationOrchestratorUseCase {
 					phase: 'done',
 					progress: 100,
 					metadata: {
+						jobType: 'course_generation',
+						...GenerationJobDescriptorService.toMetadata(
+							GenerationJobDescriptorService.build({
+								jobType: 'course_generation',
+								courseId: savedCourse.id,
+								targetLabel: savedCourse.title,
+							})
+						),
 						moduleId: firstModule.id,
 						lessonId: firstLesson.id,
 						demoSectionId,

@@ -19,6 +19,8 @@ import { GenerationQueueProducer } from '../../infrastructure/queue/generation-q
 import { GenerationEventsService } from '../services/generation-events.service';
 import { GENERATION_QUEUE } from 'src/shared/queue/queue.constants';
 import { GenerationJob } from '../../domain/entities/generation-job.types';
+import { GenerationJobDescriptorService } from '../services/generation-job-descriptor.service';
+import { StartGenerationJobResult } from '../dtos/start-generation-job.result';
 
 @Injectable()
 export class StartLessonMergeVideoGenerationUseCase {
@@ -38,7 +40,7 @@ export class StartLessonMergeVideoGenerationUseCase {
 	async execute(input: {
 		userId: string;
 		lessonId: string;
-	}): Promise<GenerationJob> {
+	}): Promise<StartGenerationJobResult> {
 		const auth = { userId: input.userId, role: 'authenticated' as const };
 		const lesson = await this.lessonRepository.findById(input.lessonId, auth);
 		if (!lesson) {
@@ -49,18 +51,46 @@ export class StartLessonMergeVideoGenerationUseCase {
 			throw new NotFoundException('Módulo da aula não encontrado');
 		}
 
+		const descriptor = GenerationJobDescriptorService.build({
+			jobType: 'lesson_merge_video_generation',
+			courseId: module.courseId,
+			lessonId: lesson.id,
+			targetLabel: lesson.title,
+		});
+
+		if (descriptor.dedupeKey) {
+			const existingJob =
+				await this.generationJobRepository.findActiveByDedupeKey(
+					descriptor.dedupeKey,
+					auth
+				);
+			if (existingJob) {
+				return {
+					job: existingJob,
+					started: false,
+					reason: 'duplicate_active_job',
+				};
+			}
+		}
+
 		const job = await this.generationJobRepository.create(
 			{
 				userId: input.userId,
 				courseId: module.courseId,
 				status: 'pending',
 				jobType: 'lesson_merge_video_generation',
+				jobFamily: descriptor.jobFamily,
+				jobIntent: descriptor.jobIntent,
 				phase: 'lesson_merge_video',
 				progress: 0,
+				dedupeKey: descriptor.dedupeKey,
+				targetLabel: descriptor.targetLabel,
+				scope: descriptor.scope,
 				queueName: GENERATION_QUEUE,
 				maxAttempts: 3,
 				metadata: {
 					jobType: 'lesson_merge_video_generation',
+					...GenerationJobDescriptorService.toMetadata(descriptor),
 					lessonId: lesson.id,
 				},
 			},
@@ -103,6 +133,9 @@ export class StartLessonMergeVideoGenerationUseCase {
 			error: job.error,
 		});
 
-		return job;
+		return {
+			job,
+			started: true,
+		};
 	}
 }

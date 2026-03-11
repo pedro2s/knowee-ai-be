@@ -4,6 +4,7 @@ import {
 	type GenerationJobRepositoryPort,
 } from '../../domain/ports/generation-job-repository.port';
 import { GenerationEventsService } from '../services/generation-events.service';
+import { GenerationJobDescriptorService } from '../services/generation-job-descriptor.service';
 import {
 	LESSON_REPOSITORY,
 	type LessonRepositoryPort,
@@ -331,6 +332,14 @@ export class AssetsGenerationOrchestratorUseCase {
 					progress: 100,
 					metadata: {
 						jobType: 'assets_generation',
+						...GenerationJobDescriptorService.toMetadata(
+							GenerationJobDescriptorService.build({
+								jobType: 'assets_generation',
+								courseId: input.courseId,
+								selectedLessonIds: input.lessonIds,
+								targetLabel: `${input.lessonIds.length} aula(s) em processamento`,
+							})
+						),
 						strategy: input.strategy,
 						providerSelection: input.providerSelection,
 						selectedLessonIds: input.lessonIds,

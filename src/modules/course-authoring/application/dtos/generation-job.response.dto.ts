@@ -1,4 +1,5 @@
 import { GenerationJob } from '../../domain/entities/generation-job.types';
+import { GenerationJobScopeResponseDto } from './generation-job-scope.response.dto';
 
 export class GenerationJobResponseDto {
 	id: string;
@@ -6,8 +7,13 @@ export class GenerationJobResponseDto {
 	courseId: string | null;
 	status: string;
 	jobType: string;
+	jobFamily: string;
+	jobIntent: string;
 	phase: string;
 	progress: number;
+	dedupeKey: string | null;
+	targetLabel: string | null;
+	scope: GenerationJobScopeResponseDto;
 	queueJobId: string | null;
 	attempts: number;
 	maxAttempts: number;
@@ -26,8 +32,13 @@ export class GenerationJobResponseDto {
 			courseId: job.courseId,
 			status: job.status,
 			jobType: job.jobType,
+			jobFamily: job.jobFamily,
+			jobIntent: job.jobIntent,
 			phase: job.phase,
 			progress: job.progress,
+			dedupeKey: job.dedupeKey,
+			targetLabel: job.targetLabel,
+			scope: job.scope,
 			queueJobId: job.queueJobId,
 			attempts: job.attempts,
 			maxAttempts: job.maxAttempts,

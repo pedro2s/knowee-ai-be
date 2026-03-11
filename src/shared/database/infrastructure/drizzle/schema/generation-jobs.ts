@@ -21,8 +21,15 @@ export const generationJobs = pgTable(
 		courseId: uuid('course_id'),
 		status: text().notNull().default('pending'),
 		jobType: text('job_type').notNull().default('course_generation'),
+		jobFamily: text('job_family').notNull().default('course'),
+		jobIntent: text('job_intent').notNull().default('Gerando curso'),
 		phase: text().notNull().default('structure'),
 		progress: integer().notNull().default(0),
+		dedupeKey: text('dedupe_key'),
+		targetLabel: text('target_label'),
+		scopeCourseId: uuid('scope_course_id'),
+		scopeLessonId: uuid('scope_lesson_id'),
+		scopeSectionId: text('scope_section_id'),
 		queueName: text('queue_name').notNull().default('generation'),
 		queueJobId: text('queue_job_id'),
 		attempts: integer().notNull().default(0),
@@ -57,6 +64,7 @@ export const generationJobs = pgTable(
 	(table) => [
 		index('idx_generation_jobs_user_id').on(table.userId),
 		index('idx_generation_jobs_course_id').on(table.courseId),
+		index('idx_generation_jobs_dedupe_key').on(table.dedupeKey),
 		index('idx_generation_jobs_queue_job_id').on(table.queueJobId),
 		index('idx_generation_jobs_status_updated_at').on(
 			table.status,

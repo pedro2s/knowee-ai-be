@@ -17,6 +17,14 @@ export interface GenerationJobRepositoryPort {
 		courseId: string,
 		auth: AuthContext
 	): Promise<GenerationJob | null>;
+	findActiveJobsByCourseId(
+		courseId: string,
+		auth: AuthContext
+	): Promise<GenerationJob[]>;
+	findActiveByDedupeKey(
+		dedupeKey: string,
+		auth: AuthContext
+	): Promise<GenerationJob | null>;
 	update(
 		id: string,
 		input: UpdateGenerationJobInput,

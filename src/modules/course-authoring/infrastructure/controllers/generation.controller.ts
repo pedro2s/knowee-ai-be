@@ -18,6 +18,7 @@ import { StartAssetsGenerationUseCase } from '../../application/use-cases/start-
 import { StartAssetsGenerationDto } from '../../application/dtos/start-assets-generation.dto';
 import { StartAssetsGenerationResponseDto } from '../../application/dtos/start-assets-generation.response.dto';
 import { GetActiveGenerationJobByCourseUseCase } from '../../application/use-cases/get-active-generation-job-by-course.usecase';
+import { GetActiveGenerationJobsByCourseUseCase } from '../../application/use-cases/get-active-generation-jobs-by-course.usecase';
 import { ProductAccessGuard } from 'src/modules/access-control/infrastructure/guards/product-access.guard';
 import { RequireAccess } from 'src/modules/access-control/infrastructure/decorators/require-access.decorator';
 
@@ -32,6 +33,7 @@ export class GenerationController {
 	constructor(
 		private readonly getGenerationJobUseCase: GetGenerationJobUseCase,
 		private readonly getActiveGenerationJobByCourseUseCase: GetActiveGenerationJobByCourseUseCase,
+		private readonly getActiveGenerationJobsByCourseUseCase: GetActiveGenerationJobsByCourseUseCase,
 		private readonly generationEventsService: GenerationEventsService,
 		private readonly startAssetsGenerationUseCase: StartAssetsGenerationUseCase
 	) {}
@@ -61,6 +63,19 @@ export class GenerationController {
 		return job ? GenerationJobResponseDto.fromDomain(job) : null;
 	}
 
+	@Get('/course/:courseId/active-jobs')
+	async getActiveJobsByCourse(
+		@Param('courseId') courseId: string,
+		@CurrentUser() user: UserPayload
+	): Promise<GenerationJobResponseDto[]> {
+		const jobs = await this.getActiveGenerationJobsByCourseUseCase.execute(
+			courseId,
+			user.id
+		);
+
+		return jobs.map((job) => GenerationJobResponseDto.fromDomain(job));
+	}
+
 	@Get('/:jobId')
 	async getJob(
 		@Param('jobId') jobId: string,
@@ -84,6 +99,12 @@ export class GenerationController {
 				phase: job.phase,
 				progress: job.progress,
 				courseId: job.courseId,
+				jobType: job.jobType,
+				jobFamily: job.jobFamily,
+				jobIntent: job.jobIntent,
+				dedupeKey: job.dedupeKey,
+				targetLabel: job.targetLabel,
+				scope: job.scope,
 				metadata: job.metadata,
 				error: job.error,
 			},

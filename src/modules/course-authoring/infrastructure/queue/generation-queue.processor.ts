@@ -23,6 +23,7 @@ import {
 	type PersistedGenerationJobPayload,
 } from './generation-queue.types';
 import { GenerationEventsService } from '../../application/services/generation-events.service';
+import { GenerationJobDescriptorService } from '../../application/services/generation-job-descriptor.service';
 
 const workerConcurrency = Number(process.env.WORKER_CONCURRENCY ?? 1) || 1;
 
@@ -216,6 +217,14 @@ export class GenerationQueueProcessor extends WorkerHost {
 						phase: 'done',
 						progress: 100,
 						metadata: {
+							jobType: 'lesson_section_video_generation',
+							...GenerationJobDescriptorService.toMetadata(
+								GenerationJobDescriptorService.build({
+									jobType: 'lesson_section_video_generation',
+									lessonId: payload.data.lessonId,
+									sectionId: payload.data.sectionId,
+								})
+							),
 							lessonId: payload.data.lessonId,
 							sectionId: payload.data.sectionId,
 							videoUrl: sectionResult.videoUrl,
@@ -276,6 +285,13 @@ export class GenerationQueueProcessor extends WorkerHost {
 						phase: 'done',
 						progress: 100,
 						metadata: {
+							jobType: 'lesson_merge_video_generation',
+							...GenerationJobDescriptorService.toMetadata(
+								GenerationJobDescriptorService.build({
+									jobType: 'lesson_merge_video_generation',
+									lessonId: payload.lessonId,
+								})
+							),
 							lessonId: payload.lessonId,
 							...mergeResult,
 						},

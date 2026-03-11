@@ -21,6 +21,8 @@ import {
 } from '../../domain/ports/generation-job-payload-repository.port';
 import { GenerationQueueProducer } from '../../infrastructure/queue/generation-queue.producer';
 import { GENERATION_QUEUE } from 'src/shared/queue/queue.constants';
+import { GenerationJobDescriptorService } from '../services/generation-job-descriptor.service';
+import { StartGenerationJobResult } from '../dtos/start-generation-job.result';
 
 @Injectable()
 export class StartAssetsGenerationUseCase {
@@ -87,6 +89,42 @@ export class StartAssetsGenerationUseCase {
 			throw new BadRequestException('Nenhuma aula elegível para geração');
 		}
 
+		const descriptor = GenerationJobDescriptorService.build({
+			jobType: 'assets_generation',
+			courseId: input.data.courseId,
+			selectedLessonIds,
+			targetLabel: `${selectedLessonIds.length} aula(s) em processamento`,
+		});
+
+		if (descriptor.dedupeKey) {
+			const existingJob =
+				await this.generationJobRepository.findActiveByDedupeKey(
+					descriptor.dedupeKey,
+					auth
+				);
+
+			if (existingJob) {
+				return {
+					started: false,
+					reason: 'duplicate_active_job',
+					message: 'Ja existe um processamento ativo para esse mesmo lote.',
+					courseId: input.data.courseId,
+					jobId: existingJob.id,
+					status: existingJob.status,
+					phase: existingJob.phase as
+						| 'assets_prepare'
+						| 'assets_processing'
+						| 'assets_finalize',
+					progress: existingJob.progress,
+					jobType: existingJob.jobType,
+					jobFamily: existingJob.jobFamily,
+					jobIntent: existingJob.jobIntent,
+					dedupeKey: existingJob.dedupeKey,
+					targetLabel: existingJob.targetLabel,
+				};
+			}
+		}
+
 		const job = await this.generationJobRepository.create(
 			{
 				userId: input.userId,
@@ -95,10 +133,16 @@ export class StartAssetsGenerationUseCase {
 				jobType: 'assets_generation',
 				phase: 'assets_prepare',
 				progress: 0,
+				jobFamily: descriptor.jobFamily,
+				jobIntent: descriptor.jobIntent,
+				dedupeKey: descriptor.dedupeKey,
+				targetLabel: descriptor.targetLabel,
+				scope: descriptor.scope,
 				queueName: GENERATION_QUEUE,
 				maxAttempts: 3,
 				metadata: {
 					jobType: 'assets_generation',
+					...GenerationJobDescriptorService.toMetadata(descriptor),
 					strategy: input.data.strategy,
 					providerSelection: input.data.providerSelection,
 					selectedLessonIds,
@@ -156,6 +200,11 @@ export class StartAssetsGenerationUseCase {
 			status: 'pending',
 			phase: job.phase as 'assets_prepare',
 			progress: job.progress,
+			jobType: job.jobType,
+			jobFamily: job.jobFamily,
+			jobIntent: job.jobIntent,
+			dedupeKey: job.dedupeKey,
+			targetLabel: job.targetLabel,
 		};
 	}
 }
