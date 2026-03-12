@@ -1,6 +1,4 @@
 import { z } from 'zod';
-import { zodToJsonSchema } from 'zod-to-json-schema';
-
 const analysisSchema = z.object({
 	title: z.object({
 		status: z

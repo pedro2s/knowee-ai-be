@@ -30,7 +30,7 @@ export class CreateModuleUseCase {
 				userId,
 				role: 'authenticated',
 			});
-		} catch (error) {
+		} catch {
 			throw new InternalServerErrorException(
 				'Não foi possível criar o módulo.'
 			);

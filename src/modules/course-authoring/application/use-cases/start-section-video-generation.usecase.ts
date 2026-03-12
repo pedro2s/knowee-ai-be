@@ -19,7 +19,6 @@ import {
 import { GenerationQueueProducer } from '../../infrastructure/queue/generation-queue.producer';
 import { GenerationEventsService } from '../services/generation-events.service';
 import { GENERATION_QUEUE } from 'src/shared/queue/queue.constants';
-import { GenerationJob } from '../../domain/entities/generation-job.types';
 import { GenerationJobDescriptorService } from '../services/generation-job-descriptor.service';
 import { StartGenerationJobResult } from '../dtos/start-generation-job.result';
 

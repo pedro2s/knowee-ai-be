@@ -38,7 +38,7 @@ export class GenerateLessonScriptUseCase {
 		input: GenerateLessonScriptDto,
 		userId: string
 	): Promise<GeneratedLessonScript> {
-		const { courseId, moduleId, title, description, ai } = input;
+		const { courseId, title, description, ai } = input;
 		const authContext: AuthContext = {
 			userId,
 			role: 'authenticated',

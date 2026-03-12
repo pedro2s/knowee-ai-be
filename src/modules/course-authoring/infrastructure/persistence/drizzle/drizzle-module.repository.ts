@@ -12,7 +12,6 @@ import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import * as schema from 'src/shared/database/infrastructure/drizzle/schema';
 import { asc, eq } from 'drizzle-orm';
 import { GeneratedModule } from 'src/modules/course-authoring/domain/entities/course.types';
-import { Lesson } from 'src/modules/course-authoring/domain/entities/lesson.entity';
 
 type DrizzleDB = NodePgDatabase<typeof schema>;
 

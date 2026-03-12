@@ -24,21 +24,6 @@ export interface GenerationJobDescriptor {
 	scope: GenerationJobScope;
 }
 
-const getJobFamily = (jobType: GenerationJobType): GenerationJobFamily => {
-	switch (jobType) {
-		case 'assets_generation':
-			return 'asset_batch';
-		case 'lesson_audio_generation':
-			return 'lesson_audio';
-		case 'lesson_section_video_generation':
-			return 'lesson_section_video';
-		case 'lesson_merge_video_generation':
-			return 'lesson_merge_video';
-		default:
-			return 'course';
-	}
-};
-
 const getJobIntent = (jobType: GenerationJobType): string => {
 	switch (jobType) {
 		case 'assets_generation':

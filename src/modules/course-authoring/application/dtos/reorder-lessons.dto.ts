@@ -2,7 +2,6 @@ import {
 	ArrayMinSize,
 	IsArray,
 	IsInt,
-	IsString,
 	IsUUID,
 	ValidateNested,
 } from 'class-validator';

@@ -1,6 +1,5 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { User } from '@supabase/supabase-js';
 import { SignInDto } from 'src/modules/auth/application/dtos/sign-in.dto';
 import { SignUpDto } from 'src/modules/auth/application/dtos/sign-up.dto';
 import { AuthServicePort } from 'src/modules/auth/domain/ports/auth.service.port';
@@ -107,7 +106,7 @@ export class JwtAuthAdapter extends AuthServicePort {
 				access_token: newAccess,
 				refresh_token: refreshToken,
 			};
-		} catch (error) {
+		} catch {
 			throw new UnauthorizedException('Refresh token inválido');
 		}
 	}
