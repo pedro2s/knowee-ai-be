@@ -37,7 +37,7 @@ export class SubmitQuestionUseCase {
 			input.provider || 'openai'
 		);
 
-		const { content: questionAnswered, tokenUsage } = await aiAssistant.ask({
+		const { content: questionAnswered } = await aiAssistant.ask({
 			input: { question },
 			summary: summary || null,
 			recentHistory: window,

@@ -83,7 +83,7 @@ export class HistoryService implements HistoryServicePort {
 
 		if (shouldSummarize) {
 			// Executa em background para não bloquear a resposta ao usuário
-			this.summarizeHistory(context, courseId);
+			void this.summarizeHistory(context, courseId);
 		}
 	}
 

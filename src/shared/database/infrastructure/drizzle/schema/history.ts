@@ -2,7 +2,6 @@ import {
 	pgTable,
 	index,
 	pgPolicy,
-	serial,
 	uuid,
 	foreignKey,
 	timestamp,

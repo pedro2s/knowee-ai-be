@@ -31,9 +31,18 @@
   - `src/modules/course-authoring/infrastructure/persistence/drizzle/drizzle-course.repository.ts`
 - Repositório com DrizzleService:
   - `src/modules/profile/infrastructure/persistence/drizzle/drizzle-profile.repository.ts`
+- Teste de use-case:
+  - `src/modules/profile/application/use-cases/get-profile.usecase.spec.ts`
+- Teste de controller:
+  - `src/modules/profile/infrastructure/controllers/profile.controller.spec.ts`
+- Teste e2e base:
+  - `test/app.e2e-spec.ts`
 
 ## Observacoes
 
 - Autenticacao segue `JwtAuthGuard` + `@CurrentUser()`.
 - Persistencia pode usar `DbContext` (`DB_CONTEXT` + `DrizzleRlsContext`) em `src/shared/database/infrastructure/drizzle/drizzle-rls.context.ts` ou `DrizzleService` direto, conforme padrão do módulo.
 - DTOs usam `class-validator` e `class-transformer` quando necessário.
+- O projeto usa Jest com `testRegex: .*\\.spec\\.ts$`, `collectCoverageFrom: ["**/*.(t|j)s"]` e `coverageDirectory: ../coverage` configurados em `package.json`.
+- Existe comando `npm run test:cov` para gerar cobertura, mas nao ha `coverageThreshold` global configurado no momento.
+- Ao criar scaffold de modulo, prefira incluir pelo menos testes unitarios de use-case e controller no mesmo pacote do codigo alterado.

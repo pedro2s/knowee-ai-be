@@ -22,7 +22,6 @@ import {
 import { GenerationQueueProducer } from '../../infrastructure/queue/generation-queue.producer';
 import { GENERATION_QUEUE } from 'src/shared/queue/queue.constants';
 import { GenerationJobDescriptorService } from '../services/generation-job-descriptor.service';
-import { StartGenerationJobResult } from '../dtos/start-generation-job.result';
 
 @Injectable()
 export class StartAssetsGenerationUseCase {
