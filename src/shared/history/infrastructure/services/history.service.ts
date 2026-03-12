@@ -27,7 +27,7 @@ export class HistoryService implements HistoryServicePort {
 		private readonly openAISumarizeHistory: OpenAISummarizeHistoryAdapter
 	) {}
 
-	public async getWindowMessages(context: AuthContext, courseId: string) {
+	public async getWindowMessages(courseId: string, context: AuthContext) {
 		return this.historyRepository.findWindowHistory(
 			courseId,
 			MAX_WINDOW_MESSAGES,
@@ -35,7 +35,7 @@ export class HistoryService implements HistoryServicePort {
 		);
 	}
 
-	public async getSummary(context: AuthContext, courseId: string) {
+	public async getSummary(courseId: string, context: AuthContext) {
 		const summary = await this.historySummaryRepository.findHistorySummary(
 			courseId,
 			context
@@ -44,8 +44,8 @@ export class HistoryService implements HistoryServicePort {
 	}
 
 	public async shouldSummarizeHistory(
-		context: AuthContext,
-		courseId: string
+		courseId: string,
+		context: AuthContext
 	): Promise<boolean> {
 		const messageCount = await this.historyRepository.countMessages(
 			courseId,
@@ -55,10 +55,10 @@ export class HistoryService implements HistoryServicePort {
 	}
 
 	public saveMessage(
-		context: AuthContext,
 		courseId: string,
 		role: 'user' | 'assistant' | 'system',
-		content: string
+		content: string,
+		context: AuthContext
 	): Promise<void> {
 		const history = History.create({
 			userId: context.userId,
@@ -69,27 +69,27 @@ export class HistoryService implements HistoryServicePort {
 	}
 
 	public async saveMessageAndSummarizeIfNecessary(
-		context: AuthContext,
 		courseId: string,
 		role: 'user' | 'assistant' | 'system',
-		content: string
+		content: string,
+		context: AuthContext
 	): Promise<void> {
-		await this.saveMessage(context, courseId, role, content);
+		await this.saveMessage(courseId, role, content, context);
 
 		const shouldSummarize = await this.shouldSummarizeHistory(
-			context,
-			courseId
+			courseId,
+			context
 		);
 
 		if (shouldSummarize) {
 			// Executa em background para não bloquear a resposta ao usuário
-			void this.summarizeHistory(context, courseId);
+			void this.summarizeHistory(courseId, context);
 		}
 	}
 
 	public async summarizeHistory(
-		context: AuthContext,
-		courseId: string
+		courseId: string,
+		context: AuthContext
 	): Promise<void> {
 		const history = await this.historyRepository.findHistory(courseId, context);
 

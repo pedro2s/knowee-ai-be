@@ -7,10 +7,7 @@ import { SubmitQuestionDto } from '../dtos/submit-question.dto';
 import { AuthContext } from 'src/shared/database/domain/ports/db-context.port';
 import { QuestionAnswer } from 'src/modules/assistant/domain/entities/question-answer.entity';
 import { ProviderRegistry } from '../../infrastructure/providers/provider.registry';
-import {
-	HISTORY_SERVICE,
-	type HistoryServicePort,
-} from 'src/shared/history/domain/ports/history-service.port';
+import { HistoryServicePort } from 'src/shared/history/domain/ports/history-service.port';
 
 @Injectable()
 export class SubmitQuestionUseCase {
@@ -18,7 +15,6 @@ export class SubmitQuestionUseCase {
 		private readonly providerRegistry: ProviderRegistry,
 		@Inject(QUESTION_ANSWER_REPOSITORY)
 		private readonly questionAnswerRepository: QuestionAnswerRepositoryPort,
-		@Inject(HISTORY_SERVICE)
 		private readonly historyService: HistoryServicePort
 	) {}
 
@@ -30,8 +26,8 @@ export class SubmitQuestionUseCase {
 			role: 'authenticated',
 		};
 
-		const summary = await this.historyService.getSummary(auth, courseId);
-		const window = await this.historyService.getWindowMessages(auth, courseId);
+		const summary = await this.historyService.getSummary(courseId, auth);
+		const window = await this.historyService.getWindowMessages(courseId, auth);
 
 		const aiAssistant = this.providerRegistry.getAIAssistantStrategy(
 			input.provider || 'openai'
@@ -43,12 +39,12 @@ export class SubmitQuestionUseCase {
 			recentHistory: window,
 		});
 
-		await this.historyService.saveMessage(auth, courseId, 'user', question);
+		await this.historyService.saveMessage(courseId, 'user', question, auth);
 		await this.historyService.saveMessageAndSummarizeIfNecessary(
-			auth,
 			courseId,
 			'assistant',
-			questionAnswered.answer
+			questionAnswered.answer,
+			auth
 		);
 
 		const qaEntity = QuestionAnswer.create({

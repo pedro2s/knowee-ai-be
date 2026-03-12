@@ -5,10 +5,7 @@ import {
 	NotFoundException,
 	PreconditionFailedException,
 } from '@nestjs/common';
-import {
-	MEDIA_SERVICE,
-	type MediaPort,
-} from 'src/shared/media/domain/ports/media.port';
+import { MediaPort } from 'src/shared/media/domain/ports/media.port';
 import {
 	Scene,
 	STORYBOARD_GENERATOR,
@@ -55,10 +52,8 @@ export class GenerateSectionVideoUseCase {
 		private readonly courseRepository: CourseRepositoryPort,
 		@Inject(MODULE_REPOSITORY)
 		private readonly moduleRepository: ModuleRepositoryPort,
-		@Inject(MEDIA_SERVICE) private readonly media: MediaPort,
 		@Inject(STORYBOARD_GENERATOR)
 		private readonly storyboardGenerator: StoryboardGeneratorPort,
-		@Inject(MEDIA_SERVICE)
 		private readonly mediaService: MediaPort,
 		private readonly storage: StoragePort,
 		private readonly providerRegistry: ProviderRegistry,

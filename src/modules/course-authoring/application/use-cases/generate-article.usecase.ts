@@ -1,9 +1,6 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { AuthContext } from 'src/shared/database/domain/ports/db-context.port';
-import {
-	HISTORY_SERVICE,
-	type HistoryServicePort,
-} from 'src/shared/history/domain/ports/history-service.port';
+import { HistoryServicePort } from 'src/shared/history/domain/ports/history-service.port';
 import {
 	TOKEN_USAGE_SERVICE,
 	type TokenUsagePort,
@@ -20,7 +17,6 @@ import { ProviderRegistry } from '../../infrastructure/providers/provider.regist
 export class GenerateArticleUseCase {
 	constructor(
 		private readonly providerRegistry: ProviderRegistry,
-		@Inject(HISTORY_SERVICE)
 		private readonly historyService: HistoryServicePort,
 		@Inject(TOKEN_USAGE_SERVICE)
 		private readonly tokenUsageService: TokenUsagePort,
@@ -43,10 +39,10 @@ export class GenerateArticleUseCase {
 			ai?.provider || 'openai'
 		);
 
-		const summary = await this.historyService.getSummary(authContext, courseId);
+		const summary = await this.historyService.getSummary(courseId, authContext);
 		const window = await this.historyService.getWindowMessages(
-			authContext,
-			courseId
+			courseId,
+			authContext
 		);
 
 		const module = await this.moduleRepository.findById(moduleId, authContext);
@@ -75,17 +71,17 @@ export class GenerateArticleUseCase {
 		}
 
 		await this.historyService.saveMessage(
-			authContext,
 			courseId,
 			'user',
 			`Título do módulo: ${module.title}\nDescrição do módulo: ${module.description}\n
-			Título da aula: ${title}\nDescrição da aula: ${description}`
+			Título da aula: ${title}\nDescrição da aula: ${description}`,
+			authContext
 		);
 		await this.historyService.saveMessageAndSummarizeIfNecessary(
-			authContext,
 			courseId,
 			'assistant',
-			generatedArticle.content
+			generatedArticle.content,
+			authContext
 		);
 
 		return generatedArticle;

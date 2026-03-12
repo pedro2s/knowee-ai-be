@@ -1,34 +1,38 @@
 import { AuthContext } from 'src/shared/database/domain/ports/db-context.port';
 import { History } from '../entities/history.entity';
 
-export const HISTORY_SERVICE = 'HISTORY_SERVICE';
+export abstract class HistoryServicePort {
+	abstract getWindowMessages(
+		courseId: string,
+		context: AuthContext
+	): Promise<History[]>;
 
-export interface HistoryServicePort {
-	getWindowMessages(context: AuthContext, courseId: string): Promise<History[]>;
-
-	getSummary(
-		context: AuthContext,
-		courseId: string
+	abstract getSummary(
+		courseId: string,
+		context: AuthContext
 	): Promise<string | undefined>;
 
-	shouldSummarizeHistory(
-		context: AuthContext,
-		courseId: string
+	abstract shouldSummarizeHistory(
+		courseId: string,
+		context: AuthContext
 	): Promise<boolean>;
 
-	saveMessage(
-		context: AuthContext,
+	abstract saveMessage(
 		courseId: string,
 		role: 'user' | 'assistant' | 'system',
-		content: string
+		content: string,
+		context: AuthContext
 	): Promise<void>;
 
-	saveMessageAndSummarizeIfNecessary(
-		context: AuthContext,
+	abstract saveMessageAndSummarizeIfNecessary(
 		courseId: string,
 		role: 'user' | 'assistant' | 'system',
-		content: string
+		content: string,
+		context: AuthContext
 	): Promise<void>;
 
-	summarizeHistory(context: AuthContext, courseId: string): Promise<void>;
+	abstract summarizeHistory(
+		courseId: string,
+		context: AuthContext
+	): Promise<void>;
 }

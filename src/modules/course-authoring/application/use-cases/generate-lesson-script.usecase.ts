@@ -1,9 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { GenerateLessonScriptDto } from '../dtos/generate-lesson-script.dto';
-import {
-	HISTORY_SERVICE,
-	type HistoryServicePort,
-} from 'src/shared/history/domain/ports/history-service.port';
+import { HistoryServicePort } from 'src/shared/history/domain/ports/history-service.port';
 import { ProviderRegistry } from '../../infrastructure/providers/provider.registry';
 import {
 	TOKEN_USAGE_SERVICE,
@@ -24,7 +21,6 @@ import { AuthContext } from 'src/shared/database/domain/ports/db-context.port';
 export class GenerateLessonScriptUseCase {
 	constructor(
 		private readonly providerRegistry: ProviderRegistry,
-		@Inject(HISTORY_SERVICE)
 		private readonly historyService: HistoryServicePort,
 		@Inject(TOKEN_USAGE_SERVICE)
 		private readonly tokenUsageService: TokenUsagePort,
@@ -49,10 +45,10 @@ export class GenerateLessonScriptUseCase {
 				ai?.provider || 'openai'
 			);
 
-		const summary = await this.historyService.getSummary(authContext, courseId);
+		const summary = await this.historyService.getSummary(courseId, authContext);
 		const window = await this.historyService.getWindowMessages(
-			authContext,
-			courseId
+			courseId,
+			authContext
 		);
 
 		const { content: generatedLessonScript, tokenUsage } =
@@ -74,16 +70,16 @@ export class GenerateLessonScriptUseCase {
 		}
 
 		await this.historyService.saveMessage(
-			authContext,
 			courseId,
 			'user',
-			`Título da aula: ${title}\nDescrição da aula: ${description}`
+			`Título da aula: ${title}\nDescrição da aula: ${description}`,
+			authContext
 		);
 		await this.historyService.saveMessageAndSummarizeIfNecessary(
-			authContext,
 			courseId,
 			'assistant',
-			JSON.stringify(generatedLessonScript.scriptSections)
+			JSON.stringify(generatedLessonScript.scriptSections),
+			authContext
 		);
 
 		return generatedLessonScript;

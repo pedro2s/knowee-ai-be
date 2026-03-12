@@ -1,6 +1,4 @@
-export const EMBEDDING_SERVICE = 'EmbeddingService';
-
-export interface EmbeddingPort {
-	insertEmbedding(userId: string, content: string): Promise<void>;
-	querySimilar(userId: string, query: string): Promise<string[]>;
+export abstract class EmbeddingPort {
+	abstract insertEmbedding(userId: string, content: string): Promise<void>;
+	abstract querySimilar(userId: string, query: string): Promise<string[]>;
 }

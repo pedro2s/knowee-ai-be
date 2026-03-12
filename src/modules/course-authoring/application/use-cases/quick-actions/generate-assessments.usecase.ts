@@ -12,10 +12,7 @@ import {
 	LESSON_REPOSITORY,
 	type LessonRepositoryPort,
 } from '../../../domain/ports/lesson-repository.port';
-import {
-	HISTORY_SERVICE,
-	type HistoryServicePort,
-} from 'src/shared/history/domain/ports/history-service.port';
+import { HistoryServicePort } from 'src/shared/history/domain/ports/history-service.port';
 import {
 	TOKEN_USAGE_SERVICE,
 	type TokenUsagePort,
@@ -34,7 +31,6 @@ export class GenerateAssessmentsUseCase {
 		private readonly courseRepository: CourseRepositoryPort,
 		@Inject(LESSON_REPOSITORY)
 		private readonly lessonRepository: LessonRepositoryPort,
-		@Inject(HISTORY_SERVICE)
 		private readonly historyService: HistoryServicePort,
 		@Inject(TOKEN_USAGE_SERVICE)
 		private readonly tokenUsageService: TokenUsagePort,
@@ -60,10 +56,10 @@ export class GenerateAssessmentsUseCase {
 			);
 		}
 
-		const summary = await this.historyService.getSummary(authContext, courseId);
+		const summary = await this.historyService.getSummary(courseId, authContext);
 		const window = await this.historyService.getWindowMessages(
-			authContext,
-			courseId
+			courseId,
+			authContext
 		);
 
 		const userMessage = `Curso: ${JSON.stringify(
@@ -116,17 +112,17 @@ Para cada avaliação, retorne a estrutura de uma aula. Certifique-se de:
 		}
 
 		await this.historyService.saveMessage(
-			authContext,
 			courseId,
 			'user',
-			userMessage
+			userMessage,
+			authContext
 		);
 
 		await this.historyService.saveMessageAndSummarizeIfNecessary(
-			authContext,
 			courseId,
 			'assistant',
-			JSON.stringify(generatedAssessments)
+			JSON.stringify(generatedAssessments),
+			authContext
 		);
 
 		const validModuleIds = new Set(

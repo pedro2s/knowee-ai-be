@@ -8,10 +8,7 @@ import {
 	MODULE_REPOSITORY,
 	type ModuleRepositoryPort,
 } from '../../domain/ports/module-repository.port';
-import {
-	HISTORY_SERVICE,
-	type HistoryServicePort,
-} from 'src/shared/history/domain/ports/history-service.port';
+import { HistoryServicePort } from 'src/shared/history/domain/ports/history-service.port';
 import {
 	TOKEN_USAGE_SERVICE,
 	type TokenUsagePort,
@@ -29,7 +26,6 @@ export class GenerateQuizUseCase {
 	constructor(
 		@Inject(MODULE_REPOSITORY)
 		private readonly moduleRepository: ModuleRepositoryPort,
-		@Inject(HISTORY_SERVICE)
 		private readonly historyService: HistoryServicePort,
 		@Inject(TOKEN_USAGE_SERVICE)
 		private readonly tokenUsageService: TokenUsagePort,
@@ -57,10 +53,10 @@ export class GenerateQuizUseCase {
 			throw new NotFoundException('Módulo não pertence ao curso informado');
 		}
 
-		const summary = await this.historyService.getSummary(authContext, courseId);
+		const summary = await this.historyService.getSummary(courseId, authContext);
 		const window = await this.historyService.getWindowMessages(
-			authContext,
-			courseId
+			courseId,
+			authContext
 		);
 
 		const userMessage = `Módulo: ${JSON.stringify(
@@ -126,10 +122,10 @@ export class GenerateQuizUseCase {
 		);
 
 		await this.historyService.saveMessage(
-			authContext,
 			courseId,
 			'user',
-			userMessage
+			userMessage,
+			authContext
 		);
 
 		const normalizedQuiz: GeneratedQuiz = {
@@ -137,10 +133,10 @@ export class GenerateQuizUseCase {
 		};
 
 		await this.historyService.saveMessageAndSummarizeIfNecessary(
-			authContext,
 			courseId,
 			'assistant',
-			JSON.stringify(normalizedQuiz)
+			JSON.stringify(normalizedQuiz),
+			authContext
 		);
 
 		return normalizedQuiz;

@@ -11,10 +11,7 @@ import {
 	LESSON_REPOSITORY,
 	type LessonRepositoryPort,
 } from '../../domain/ports/lesson-repository.port';
-import {
-	MEDIA_SERVICE,
-	type MediaPort,
-} from 'src/shared/media/domain/ports/media.port';
+import { MediaPort } from 'src/shared/media/domain/ports/media.port';
 import { ProviderRegistry } from 'src/shared/ai-providers/infrastructure/registry/provider.registry';
 import { ScriptSection } from '../../domain/entities/lesson-script.types';
 import { AuthContext } from 'src/shared/database/domain/ports/db-context.port';
@@ -29,7 +26,6 @@ export class GenerateLessonAudioUseCase {
 		@Inject(LESSON_REPOSITORY)
 		private readonly lessonRepository: LessonRepositoryPort,
 		private readonly registry: ProviderRegistry,
-		@Inject(MEDIA_SERVICE)
 		private readonly mediaService: MediaPort,
 		private readonly storage: StoragePort
 	) {}
