@@ -1,16 +1,10 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { GenerateLessonScriptDto } from '../dtos/generate-lesson-script.dto';
 import { HistoryServicePort } from 'src/shared/history/domain/ports/history-service.port';
 import { ProviderRegistry } from '../../infrastructure/providers/provider.registry';
 import { TokenUsagePort } from 'src/shared/token-usage/domain/ports/token-usage.port';
-import {
-	MODULE_REPOSITORY,
-	type ModuleRepositoryPort,
-} from '../../domain/ports/module-repository.port';
-import {
-	LESSON_REPOSITORY,
-	type LessonRepositoryPort,
-} from '../../domain/ports/lesson-repository.port';
+import { ModuleRepositoryPort } from '../../domain/ports/module-repository.port';
+import { LessonRepositoryPort } from '../../domain/ports/lesson-repository.port';
 import { GeneratedLessonScript } from '../../domain/entities/lesson-script.types';
 import { AuthContext } from 'src/shared/database/domain/ports/db-context.port';
 
@@ -20,9 +14,7 @@ export class GenerateLessonScriptUseCase {
 		private readonly providerRegistry: ProviderRegistry,
 		private readonly historyService: HistoryServicePort,
 		private readonly tokenUsageService: TokenUsagePort,
-		@Inject(MODULE_REPOSITORY)
 		private readonly moduleRepository: ModuleRepositoryPort,
-		@Inject(LESSON_REPOSITORY)
 		private readonly lessonRepository: LessonRepositoryPort
 	) {}
 

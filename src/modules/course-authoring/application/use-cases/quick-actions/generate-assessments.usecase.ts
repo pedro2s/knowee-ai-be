@@ -4,14 +4,8 @@ import {
 	NotFoundException,
 	PreconditionFailedException,
 } from '@nestjs/common';
-import {
-	COURSE_REPOSITORY,
-	type CourseRepositoryPort,
-} from '../../../domain/ports/course-repository.port';
-import {
-	LESSON_REPOSITORY,
-	type LessonRepositoryPort,
-} from '../../../domain/ports/lesson-repository.port';
+import { CourseRepositoryPort } from '../../../domain/ports/course-repository.port';
+import { LessonRepositoryPort } from '../../../domain/ports/lesson-repository.port';
 import { HistoryServicePort } from 'src/shared/history/domain/ports/history-service.port';
 import { TokenUsagePort } from 'src/shared/token-usage/domain/ports/token-usage.port';
 import {
@@ -24,9 +18,7 @@ import { Lesson } from '../../../domain/entities/lesson.entity';
 @Injectable()
 export class GenerateAssessmentsUseCase {
 	constructor(
-		@Inject(COURSE_REPOSITORY)
 		private readonly courseRepository: CourseRepositoryPort,
-		@Inject(LESSON_REPOSITORY)
 		private readonly lessonRepository: LessonRepositoryPort,
 		private readonly historyService: HistoryServicePort,
 		private readonly tokenUsageService: TokenUsagePort,

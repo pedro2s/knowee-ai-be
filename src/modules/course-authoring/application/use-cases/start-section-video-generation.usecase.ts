@@ -1,21 +1,9 @@
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { GenerateSectionVideoDto } from '../dtos/generate-section-video.dto';
-import {
-	LESSON_REPOSITORY,
-	type LessonRepositoryPort,
-} from '../../domain/ports/lesson-repository.port';
-import {
-	MODULE_REPOSITORY,
-	type ModuleRepositoryPort,
-} from '../../domain/ports/module-repository.port';
-import {
-	GENERATION_JOB_REPOSITORY,
-	type GenerationJobRepositoryPort,
-} from '../../domain/ports/generation-job-repository.port';
-import {
-	GENERATION_JOB_PAYLOAD_REPOSITORY,
-	type GenerationJobPayloadRepositoryPort,
-} from '../../domain/ports/generation-job-payload-repository.port';
+import { LessonRepositoryPort } from '../../domain/ports/lesson-repository.port';
+import { ModuleRepositoryPort } from '../../domain/ports/module-repository.port';
+import { GenerationJobRepositoryPort } from '../../domain/ports/generation-job-repository.port';
+import { GenerationJobPayloadRepositoryPort } from '../../domain/ports/generation-job-payload-repository.port';
 import { GenerationQueueProducer } from '../../infrastructure/queue/generation-queue.producer';
 import { GenerationEventsService } from '../services/generation-events.service';
 import { GENERATION_QUEUE } from 'src/shared/queue/queue.constants';
@@ -25,13 +13,9 @@ import { StartGenerationJobResult } from '../dtos/start-generation-job.result';
 @Injectable()
 export class StartSectionVideoGenerationUseCase {
 	constructor(
-		@Inject(LESSON_REPOSITORY)
 		private readonly lessonRepository: LessonRepositoryPort,
-		@Inject(MODULE_REPOSITORY)
 		private readonly moduleRepository: ModuleRepositoryPort,
-		@Inject(GENERATION_JOB_REPOSITORY)
 		private readonly generationJobRepository: GenerationJobRepositoryPort,
-		@Inject(GENERATION_JOB_PAYLOAD_REPOSITORY)
 		private readonly generationJobPayloadRepository: GenerationJobPayloadRepositoryPort,
 		private readonly generationQueueProducer: GenerationQueueProducer,
 		private readonly generationEventsService: GenerationEventsService

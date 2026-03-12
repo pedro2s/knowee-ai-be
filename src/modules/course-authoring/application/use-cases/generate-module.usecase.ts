@@ -1,33 +1,21 @@
-import { Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { ProviderRegistry } from '../../infrastructure/providers/provider.registry';
 import { TokenUsagePort } from 'src/shared/token-usage/domain/ports/token-usage.port';
 import { HistoryServicePort } from 'src/shared/history/domain/ports/history-service.port';
 import { AuthContext } from 'src/shared/database/domain/ports/db-context.port';
 import { GenerateModuleDto } from '../dtos/generate-module.dto';
 import { Module } from '../../domain/entities/module.entity';
-import {
-	MODULE_REPOSITORY,
-	type ModuleRepositoryPort,
-} from '../../domain/ports/module-repository.port';
-import {
-	LESSON_REPOSITORY,
-	type LessonRepositoryPort,
-} from '../../domain/ports/lesson-repository.port';
-import {
-	COURSE_REPOSITORY,
-	type CourseRepositoryPort,
-} from '../../domain/ports/course-repository.port';
+import { ModuleRepositoryPort } from '../../domain/ports/module-repository.port';
+import { LessonRepositoryPort } from '../../domain/ports/lesson-repository.port';
+import { CourseRepositoryPort } from '../../domain/ports/course-repository.port';
 
 @Injectable()
 export class GenerateModuleUseCase {
 	private readonly logger = new Logger(GenerateModuleUseCase.name);
 
 	constructor(
-		@Inject(COURSE_REPOSITORY)
 		private readonly courseRepository: CourseRepositoryPort,
-		@Inject(MODULE_REPOSITORY)
 		private readonly moduleRepository: ModuleRepositoryPort,
-		@Inject(LESSON_REPOSITORY)
 		private readonly lessonRepository: LessonRepositoryPort,
 		private readonly tokenUsageService: TokenUsagePort,
 		private readonly historyService: HistoryServicePort,

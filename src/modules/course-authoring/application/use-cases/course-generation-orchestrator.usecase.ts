@@ -1,22 +1,13 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { GenerateCourseDto } from '../dtos/generate-course.dto';
 import { GenerateCourseUseCase } from './generate-course.usecase';
-import {
-	GENERATION_JOB_REPOSITORY,
-	type GenerationJobRepositoryPort,
-} from '../../domain/ports/generation-job-repository.port';
+import { GenerationJobRepositoryPort } from '../../domain/ports/generation-job-repository.port';
 import { GenerationEventsService } from '../services/generation-events.service';
 import { GenerateLessonScriptUseCase } from './generate-lesson-script.usecase';
 import { GenerateLessonStoryboardUseCase } from './generate-lesson-storyboard.usecase';
 import { GenerateSectionVideoUseCase } from './generate-section-video.usecase';
-import {
-	COURSE_REPOSITORY,
-	type CourseRepositoryPort,
-} from '../../domain/ports/course-repository.port';
-import {
-	LESSON_REPOSITORY,
-	type LessonRepositoryPort,
-} from '../../domain/ports/lesson-repository.port';
+import { CourseRepositoryPort } from '../../domain/ports/course-repository.port';
+import { LessonRepositoryPort } from '../../domain/ports/lesson-repository.port';
 import { MarkFreemiumSampleConsumedUseCase } from 'src/modules/access-control/application/use-cases/mark-freemium-sample-consumed.usecase';
 import { GenerationJobDescriptorService } from '../services/generation-job-descriptor.service';
 
@@ -39,11 +30,8 @@ export class CourseGenerationOrchestratorUseCase {
 		private readonly generateLessonStoryboardUseCase: GenerateLessonStoryboardUseCase,
 		private readonly generateSectionVideoUseCase: GenerateSectionVideoUseCase,
 		private readonly generationEventsService: GenerationEventsService,
-		@Inject(GENERATION_JOB_REPOSITORY)
 		private readonly generationJobRepository: GenerationJobRepositoryPort,
-		@Inject(COURSE_REPOSITORY)
 		private readonly courseRepository: CourseRepositoryPort,
-		@Inject(LESSON_REPOSITORY)
 		private readonly lessonRepository: LessonRepositoryPort,
 		private readonly markFreemiumSampleConsumedUseCase: MarkFreemiumSampleConsumedUseCase
 	) {}

@@ -1,12 +1,6 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
-import {
-	COURSE_REPOSITORY,
-	type CourseRepositoryPort,
-} from 'src/modules/course-authoring/domain/ports/course-repository.port';
-import {
-	MODULE_REPOSITORY,
-	type ModuleRepositoryPort,
-} from 'src/modules/course-authoring/domain/ports/module-repository.port';
+import { CourseRepositoryPort } from 'src/modules/course-authoring/domain/ports/course-repository.port';
+import { ModuleRepositoryPort } from 'src/modules/course-authoring/domain/ports/module-repository.port';
 import {
 	REORDER_CONTENT_AGENT,
 	type ReorderContentAgentPort,
@@ -18,9 +12,7 @@ import { TokenUsagePort } from 'src/shared/token-usage/domain/ports/token-usage.
 @Injectable()
 export class ReorderContentUseCase {
 	constructor(
-		@Inject(COURSE_REPOSITORY)
 		private readonly courseRepository: CourseRepositoryPort,
-		@Inject(MODULE_REPOSITORY)
 		private readonly moduleRepository: ModuleRepositoryPort,
 		private readonly historyService: HistoryServicePort,
 		private readonly tokenUsageService: TokenUsagePort,

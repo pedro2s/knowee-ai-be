@@ -12,21 +12,12 @@ import {
 	type StoryboardGeneratorPort,
 } from '../../domain/ports/storyboard-generator.port';
 import { GenerateSectionVideoDto } from '../dtos/generate-section-video.dto';
-import {
-	LESSON_REPOSITORY,
-	type LessonRepositoryPort,
-} from '../../domain/ports/lesson-repository.port';
+import { LessonRepositoryPort } from '../../domain/ports/lesson-repository.port';
 import { ProviderRegistry } from '../../infrastructure/providers/provider.registry';
 import { AuthContext } from 'src/shared/database/domain/ports/db-context.port';
 import { ScriptSection } from '../../domain/entities/lesson-script.types';
-import {
-	COURSE_REPOSITORY,
-	type CourseRepositoryPort,
-} from '../../domain/ports/course-repository.port';
-import {
-	MODULE_REPOSITORY,
-	type ModuleRepositoryPort,
-} from '../../domain/ports/module-repository.port';
+import { CourseRepositoryPort } from '../../domain/ports/course-repository.port';
+import { ModuleRepositoryPort } from '../../domain/ports/module-repository.port';
 import fs from 'fs/promises';
 import path from 'path';
 import { ProviderRegistry as SharedProviderRegistry } from 'src/shared/ai-providers/infrastructure/registry/provider.registry';
@@ -46,11 +37,8 @@ export class GenerateSectionVideoUseCase {
 	- RESTRICTIONS: NO photorealism. NO complex details. NO messy sketches.`;
 
 	constructor(
-		@Inject(LESSON_REPOSITORY)
 		private readonly lessonRepository: LessonRepositoryPort,
-		@Inject(COURSE_REPOSITORY)
 		private readonly courseRepository: CourseRepositoryPort,
-		@Inject(MODULE_REPOSITORY)
 		private readonly moduleRepository: ModuleRepositoryPort,
 		@Inject(STORYBOARD_GENERATOR)
 		private readonly storyboardGenerator: StoryboardGeneratorPort,

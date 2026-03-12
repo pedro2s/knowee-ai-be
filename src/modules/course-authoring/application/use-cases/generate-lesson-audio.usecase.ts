@@ -2,15 +2,11 @@ import * as fs from 'fs/promises';
 import * as path from 'path';
 import {
 	BadRequestException,
-	Inject,
 	Injectable,
 	Logger,
 	NotFoundException,
 } from '@nestjs/common';
-import {
-	LESSON_REPOSITORY,
-	type LessonRepositoryPort,
-} from '../../domain/ports/lesson-repository.port';
+import { LessonRepositoryPort } from '../../domain/ports/lesson-repository.port';
 import { MediaPort } from 'src/shared/media/domain/ports/media.port';
 import { ProviderRegistry } from 'src/shared/ai-providers/infrastructure/registry/provider.registry';
 import { ScriptSection } from '../../domain/entities/lesson-script.types';
@@ -23,7 +19,6 @@ export class GenerateLessonAudioUseCase {
 
 	// Renamed class
 	constructor(
-		@Inject(LESSON_REPOSITORY)
 		private readonly lessonRepository: LessonRepositoryPort,
 		private readonly registry: ProviderRegistry,
 		private readonly mediaService: MediaPort,

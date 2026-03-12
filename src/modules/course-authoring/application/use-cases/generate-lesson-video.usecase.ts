@@ -1,16 +1,12 @@
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { ProviderRegistry as SharedProviderRegistry } from 'src/shared/ai-providers/infrastructure/registry/provider.registry';
 import { ProviderRegistry } from '../../infrastructure/providers/provider.registry';
 import { MediaPort } from 'src/shared/media/domain/ports/media.port';
-import {
-	LESSON_REPOSITORY,
-	type LessonRepositoryPort,
-} from '../../domain/ports/lesson-repository.port';
+import { LessonRepositoryPort } from '../../domain/ports/lesson-repository.port';
 
 @Injectable()
 export class GeneratorLessonVideoUseCase {
 	constructor(
-		@Inject(LESSON_REPOSITORY)
 		private readonly lessonRepository: LessonRepositoryPort,
 		private readonly media: MediaPort,
 		private readonly providerRegistry: ProviderRegistry,

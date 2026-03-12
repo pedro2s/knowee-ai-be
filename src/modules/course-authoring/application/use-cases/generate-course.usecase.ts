@@ -1,8 +1,5 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
-import {
-	COURSE_REPOSITORY,
-	type CourseRepositoryPort,
-} from '../../domain/ports/course-repository.port';
+import { Injectable, Logger } from '@nestjs/common';
+import { CourseRepositoryPort } from '../../domain/ports/course-repository.port';
 import { ProviderRegistry } from '../../infrastructure/providers/provider.registry';
 import { GenerateCourseDto } from '../dtos/generate-course.dto';
 import { Course } from '../../domain/entities/course.entity';
@@ -18,7 +15,6 @@ export class GenerateCourseUseCase {
 	private readonly logger = new Logger(GenerateCourseUseCase.name);
 
 	constructor(
-		@Inject(COURSE_REPOSITORY)
 		private readonly courseRepository: CourseRepositoryPort,
 		private readonly providerRegistry: ProviderRegistry,
 		private readonly fileProcessingService: FileProcessingPort,

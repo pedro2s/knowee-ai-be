@@ -1,12 +1,9 @@
-import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { AuthContext } from 'src/shared/database/domain/ports/db-context.port';
 import { HistoryServicePort } from 'src/shared/history/domain/ports/history-service.port';
 import { TokenUsagePort } from 'src/shared/token-usage/domain/ports/token-usage.port';
 import { GenerateArticleDto } from '../dtos/generate-article.dto';
-import {
-	MODULE_REPOSITORY,
-	type ModuleRepositoryPort,
-} from 'src/modules/course-authoring/domain/ports/module-repository.port';
+import { ModuleRepositoryPort } from 'src/modules/course-authoring/domain/ports/module-repository.port';
 import { GeneratedArticleOutput } from '../../domain/entities/generate-article.types';
 import { ProviderRegistry } from '../../infrastructure/providers/provider.registry';
 
@@ -16,7 +13,6 @@ export class GenerateArticleUseCase {
 		private readonly providerRegistry: ProviderRegistry,
 		private readonly historyService: HistoryServicePort,
 		private readonly tokenUsageService: TokenUsagePort,
-		@Inject(MODULE_REPOSITORY)
 		private readonly moduleRepository: ModuleRepositoryPort
 	) {}
 

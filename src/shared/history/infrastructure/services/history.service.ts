@@ -1,14 +1,8 @@
-import {
-	HISTORY_REPOSITORY,
-	type HistoryRepositoryPort,
-} from 'src/shared/history/domain/ports/history-repository.port';
+import { HistoryRepositoryPort } from 'src/shared/history/domain/ports/history-repository.port';
 import { AuthContext } from 'src/shared/database/domain/ports/db-context.port';
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { History } from 'src/shared/history/domain/entities/history.entity';
-import {
-	HISTORY_SUMMARY_REPOSITORY,
-	type HistorySummaryRepositoryPort,
-} from '../../domain/ports/history-summary-repository.port';
+import { HistorySummaryRepositoryPort } from '../../domain/ports/history-summary-repository.port';
 import { OpenAISummarizeHistoryAdapter } from '../providers/openai/openai-summarize-history.adapter';
 import { HistorySummary } from '../../domain/entities/history-summary.entity';
 import { HistoryServicePort } from '../../domain/ports/history-service.port';
@@ -20,9 +14,7 @@ export class HistoryService implements HistoryServicePort {
 	private readonly logger = new Logger(HistoryService.name);
 
 	constructor(
-		@Inject(HISTORY_REPOSITORY)
 		private readonly historyRepository: HistoryRepositoryPort,
-		@Inject(HISTORY_SUMMARY_REPOSITORY)
 		private readonly historySummaryRepository: HistorySummaryRepositoryPort,
 		private readonly openAISumarizeHistory: OpenAISummarizeHistoryAdapter
 	) {}

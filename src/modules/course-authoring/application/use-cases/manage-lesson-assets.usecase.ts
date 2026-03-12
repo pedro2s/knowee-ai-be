@@ -1,13 +1,9 @@
 import {
-	Inject,
 	Injectable,
 	NotFoundException,
 	PreconditionFailedException,
 } from '@nestjs/common';
-import {
-	LESSON_REPOSITORY,
-	type LessonRepositoryPort,
-} from '../../domain/ports/lesson-repository.port';
+import { LessonRepositoryPort } from '../../domain/ports/lesson-repository.port';
 import { AuthContext } from 'src/shared/database/domain/ports/db-context.port';
 import {
 	StoragePort,
@@ -17,7 +13,6 @@ import {
 @Injectable()
 export class ManageLessonAssetsUseCase {
 	constructor(
-		@Inject(LESSON_REPOSITORY)
 		private readonly lessonRepository: LessonRepositoryPort,
 		private readonly storage: StoragePort
 	) {}

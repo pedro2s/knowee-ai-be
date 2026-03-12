@@ -4,10 +4,7 @@ import {
 	NotFoundException,
 	PreconditionFailedException,
 } from '@nestjs/common';
-import {
-	MODULE_REPOSITORY,
-	type ModuleRepositoryPort,
-} from '../../domain/ports/module-repository.port';
+import { ModuleRepositoryPort } from '../../domain/ports/module-repository.port';
 import { HistoryServicePort } from 'src/shared/history/domain/ports/history-service.port';
 import { TokenUsagePort } from 'src/shared/token-usage/domain/ports/token-usage.port';
 import {
@@ -21,7 +18,6 @@ import { AuthContext } from 'src/shared/database/domain/ports/db-context.port';
 @Injectable()
 export class GenerateQuizUseCase {
 	constructor(
-		@Inject(MODULE_REPOSITORY)
 		private readonly moduleRepository: ModuleRepositoryPort,
 		private readonly historyService: HistoryServicePort,
 		private readonly tokenUsageService: TokenUsagePort,

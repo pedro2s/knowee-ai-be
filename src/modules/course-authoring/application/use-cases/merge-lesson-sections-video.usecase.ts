@@ -1,14 +1,10 @@
 import {
-	Inject,
 	Injectable,
 	Logger,
 	NotFoundException,
 	PreconditionFailedException,
 } from '@nestjs/common';
-import {
-	LESSON_REPOSITORY,
-	type LessonRepositoryPort,
-} from '../../domain/ports/lesson-repository.port';
+import { LessonRepositoryPort } from '../../domain/ports/lesson-repository.port';
 import { AuthContext } from 'src/shared/database/domain/ports/db-context.port';
 import { ScriptSection } from '../../domain/entities/lesson-script.types';
 import { MediaPort } from 'src/shared/media/domain/ports/media.port';
@@ -21,7 +17,6 @@ export class MergeLessonSectionsVideoUseCase {
 	private readonly logger = new Logger(MergeLessonSectionsVideoUseCase.name);
 
 	constructor(
-		@Inject(LESSON_REPOSITORY)
 		private readonly lessonRepository: LessonRepositoryPort,
 		private readonly storage: StoragePort,
 		private readonly mediaService: MediaPort
