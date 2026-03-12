@@ -9,26 +9,35 @@ export interface SubscriberSnapshot {
 	sampleGenerationCount: number;
 }
 
-export interface AccessControlRepositoryPort {
-	getLatestSubscriber(userId: string): Promise<SubscriberSnapshot | null>;
-	countUserCourses(userId: string): Promise<number>;
-	getFirstCourseId(userId: string): Promise<string | null>;
-	getUsageInPeriod(
+export abstract class AccessControlRepositoryPort {
+	abstract getLatestSubscriber(
+		userId: string
+	): Promise<SubscriberSnapshot | null>;
+	abstract countUserCourses(userId: string): Promise<number>;
+	abstract getFirstCourseId(userId: string): Promise<string | null>;
+	abstract getUsageInPeriod(
 		userId: string,
 		subscriptionId: string,
 		startDateIso: string
 	): Promise<number>;
-	getFirstModuleId(courseId: string, userId: string): Promise<string | null>;
-	getFirstLessonId(moduleId: string, userId: string): Promise<string | null>;
-	getCourseIdByModuleId(
+	abstract getFirstModuleId(
+		courseId: string,
+		userId: string
+	): Promise<string | null>;
+	abstract getFirstLessonId(
 		moduleId: string,
 		userId: string
 	): Promise<string | null>;
-	getLessonScopeByLessonId(
+	abstract getCourseIdByModuleId(
+		moduleId: string,
+		userId: string
+	): Promise<string | null>;
+	abstract getLessonScopeByLessonId(
 		lessonId: string,
 		userId: string
 	): Promise<{ courseId: string; moduleId: string } | null>;
-	markSampleConsumed(userId: string, sampleCourseId: string): Promise<void>;
+	abstract markSampleConsumed(
+		userId: string,
+		sampleCourseId: string
+	): Promise<void>;
 }
-
-export const ACCESS_CONTROL_REPOSITORY = 'ACCESS_CONTROL_REPOSITORY';

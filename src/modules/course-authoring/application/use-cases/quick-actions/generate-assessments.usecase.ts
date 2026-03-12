@@ -13,10 +13,7 @@ import {
 	type LessonRepositoryPort,
 } from '../../../domain/ports/lesson-repository.port';
 import { HistoryServicePort } from 'src/shared/history/domain/ports/history-service.port';
-import {
-	TOKEN_USAGE_SERVICE,
-	type TokenUsagePort,
-} from 'src/shared/token-usage/domain/ports/token-usage.port';
+import { TokenUsagePort } from 'src/shared/token-usage/domain/ports/token-usage.port';
 import {
 	GENERATE_ASSESSMENTS_AGENT,
 	type GenerateAssessmentsAgentPort,
@@ -32,7 +29,6 @@ export class GenerateAssessmentsUseCase {
 		@Inject(LESSON_REPOSITORY)
 		private readonly lessonRepository: LessonRepositoryPort,
 		private readonly historyService: HistoryServicePort,
-		@Inject(TOKEN_USAGE_SERVICE)
 		private readonly tokenUsageService: TokenUsagePort,
 		@Inject(GENERATE_ASSESSMENTS_AGENT)
 		private readonly generateAssessmentsAgent: GenerateAssessmentsAgentPort

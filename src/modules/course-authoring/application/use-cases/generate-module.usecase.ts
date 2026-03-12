@@ -1,9 +1,6 @@
 import { Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { ProviderRegistry } from '../../infrastructure/providers/provider.registry';
-import {
-	TOKEN_USAGE_SERVICE,
-	type TokenUsagePort,
-} from 'src/shared/token-usage/domain/ports/token-usage.port';
+import { TokenUsagePort } from 'src/shared/token-usage/domain/ports/token-usage.port';
 import { HistoryServicePort } from 'src/shared/history/domain/ports/history-service.port';
 import { AuthContext } from 'src/shared/database/domain/ports/db-context.port';
 import { GenerateModuleDto } from '../dtos/generate-module.dto';
@@ -32,7 +29,6 @@ export class GenerateModuleUseCase {
 		private readonly moduleRepository: ModuleRepositoryPort,
 		@Inject(LESSON_REPOSITORY)
 		private readonly lessonRepository: LessonRepositoryPort,
-		@Inject(TOKEN_USAGE_SERVICE)
 		private readonly tokenUsageService: TokenUsagePort,
 		private readonly historyService: HistoryServicePort,
 		private readonly providerRegistry: ProviderRegistry

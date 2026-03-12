@@ -6,16 +6,13 @@ import {
 } from '../../domain/entities/access-control.types';
 import { AccessPolicyService } from '../services/access-policy.service';
 import { GetUserEntitlementsUseCase } from './get-user-entitlements.usecase';
-import { ACCESS_CONTROL_REPOSITORY } from '../../domain/ports/access-control.repository.port';
-import { Inject } from '@nestjs/common';
-import type { AccessControlRepositoryPort } from '../../domain/ports/access-control.repository.port';
+import { AccessControlRepositoryPort } from '../../domain/ports/access-control.repository.port';
 
 @Injectable()
 export class CheckAccessUseCase {
 	constructor(
 		private readonly getUserEntitlementsUseCase: GetUserEntitlementsUseCase,
 		private readonly policyService: AccessPolicyService,
-		@Inject(ACCESS_CONTROL_REPOSITORY)
 		private readonly repository: AccessControlRepositoryPort
 	) {}
 

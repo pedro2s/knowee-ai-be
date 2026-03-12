@@ -1,14 +1,10 @@
-import { Inject, Injectable } from '@nestjs/common';
-import { ACCESS_CONTROL_REPOSITORY } from '../../domain/ports/access-control.repository.port';
+import { Injectable } from '@nestjs/common';
 import { UserEntitlements } from '../../domain/entities/access-control.types';
-import type { AccessControlRepositoryPort } from '../../domain/ports/access-control.repository.port';
+import { AccessControlRepositoryPort } from '../../domain/ports/access-control.repository.port';
 
 @Injectable()
 export class GetUserEntitlementsUseCase {
-	constructor(
-		@Inject(ACCESS_CONTROL_REPOSITORY)
-		private readonly repository: AccessControlRepositoryPort
-	) {}
+	constructor(private readonly repository: AccessControlRepositoryPort) {}
 
 	async execute(userId: string): Promise<UserEntitlements> {
 		const subscriber = await this.repository.getLatestSubscriber(userId);

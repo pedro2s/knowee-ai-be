@@ -9,10 +9,7 @@ import { Course } from '../../domain/entities/course.entity';
 import type { InputFile } from '../../domain/entities/course.types';
 import { FileProcessingPort } from 'src/shared/storage/domain/ports/file-processing.port';
 import { EmbeddingPort } from 'src/shared/storage/domain/ports/embedding.port';
-import {
-	TOKEN_USAGE_SERVICE,
-	type TokenUsagePort,
-} from 'src/shared/token-usage/domain/ports/token-usage.port';
+import { TokenUsagePort } from 'src/shared/token-usage/domain/ports/token-usage.port';
 import { HistoryServicePort } from 'src/shared/history/domain/ports/history-service.port';
 import { AuthContext } from 'src/shared/database/domain/ports/db-context.port';
 
@@ -26,7 +23,6 @@ export class GenerateCourseUseCase {
 		private readonly providerRegistry: ProviderRegistry,
 		private readonly fileProcessingService: FileProcessingPort,
 		private readonly embeddingService: EmbeddingPort,
-		@Inject(TOKEN_USAGE_SERVICE)
 		private readonly tokenUsageService: TokenUsagePort,
 		private readonly historyService: HistoryServicePort
 	) {}

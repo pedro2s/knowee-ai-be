@@ -4,7 +4,7 @@ import { BillingWebhookController } from './infrastructure/controllers/billing-w
 import { BillingPublicController } from './infrastructure/controllers/billing-public.controller';
 import { GetUsageUseCase } from './application/use-cases/get-usage.usecase';
 import { GetSubscriptionUseCase } from './application/use-cases/get-subscription.usecase';
-import { USAGE_REPOSITORY } from './domain/ports/usage-repository.port';
+import { UsageRepositoryPort } from './domain/ports/usage-repository.port';
 import { DrizzleUsageRepository } from './infrastructure/persistence/drizzle/drizzle-usage.repository';
 import { DatabaseModule } from 'src/shared/database/database.module';
 import { CreateFreeSubscriptionUseCase } from './application/use-cases/create-free-subscription.usecase';
@@ -30,7 +30,7 @@ import { GetPublicPlansUseCase } from './application/use-cases/get-public-plans.
 		HandleStripeWebhookUseCase,
 		GetPublicPlansUseCase,
 		{
-			provide: USAGE_REPOSITORY,
+			provide: UsageRepositoryPort,
 			useClass: DrizzleUsageRepository,
 		},
 	],

@@ -1,20 +1,16 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { GenerateTextDto } from '../dtos/generate-text.dto';
 import { ProviderRegistry } from '../../infrastructure/providers/provider.registry';
 import { GeneratedTextOutput } from '../../domain/entities/generate-text.types';
 import { AuthContext } from 'src/shared/database/domain/ports/db-context.port';
 import { HistoryServicePort } from 'src/shared/history/domain/ports/history-service.port';
-import {
-	TOKEN_USAGE_SERVICE,
-	type TokenUsagePort,
-} from 'src/shared/token-usage/domain/ports/token-usage.port';
+import { TokenUsagePort } from 'src/shared/token-usage/domain/ports/token-usage.port';
 
 @Injectable()
 export class GenerateTextUseCase {
 	constructor(
 		private readonly providerRegistry: ProviderRegistry,
 		private readonly historyService: HistoryServicePort,
-		@Inject(TOKEN_USAGE_SERVICE)
 		private readonly tokenUsageService: TokenUsagePort
 	) {}
 

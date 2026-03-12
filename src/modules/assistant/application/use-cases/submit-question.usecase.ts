@@ -1,8 +1,5 @@
-import { Inject, Injectable } from '@nestjs/common';
-import {
-	QUESTION_ANSWER_REPOSITORY,
-	type QuestionAnswerRepositoryPort,
-} from '../../domain/ports/question-anwer-repository.port';
+import { Injectable } from '@nestjs/common';
+import { QuestionAnswerRepositoryPort } from '../../domain/ports/question-anwer-repository.port';
 import { SubmitQuestionDto } from '../dtos/submit-question.dto';
 import { AuthContext } from 'src/shared/database/domain/ports/db-context.port';
 import { QuestionAnswer } from 'src/modules/assistant/domain/entities/question-answer.entity';
@@ -13,7 +10,6 @@ import { HistoryServicePort } from 'src/shared/history/domain/ports/history-serv
 export class SubmitQuestionUseCase {
 	constructor(
 		private readonly providerRegistry: ProviderRegistry,
-		@Inject(QUESTION_ANSWER_REPOSITORY)
 		private readonly questionAnswerRepository: QuestionAnswerRepositoryPort,
 		private readonly historyService: HistoryServicePort
 	) {}

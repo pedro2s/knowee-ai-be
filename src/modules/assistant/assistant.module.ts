@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { AssistantController } from './infrastructure/controllers/assistant.controller';
 import { GetChatHistoryUseCase } from './application/use-cases/get-chat-history.usecase';
-import { QUESTION_ANSWER_REPOSITORY } from './domain/ports/question-anwer-repository.port';
+import { QuestionAnswerRepositoryPort } from './domain/ports/question-anwer-repository.port';
 import { DrizzleQuestionAnswerRepository } from './infrastructure/persistence/drizzle/drizzle-question-answer.repository';
 import { DatabaseModule } from 'src/shared/database/database.module';
 import { SubmitQuestionUseCase } from './application/use-cases/submit-question.usecase';
@@ -28,7 +28,7 @@ import { AccessControlModule } from '../access-control/access-control.module';
 	],
 	providers: [
 		{
-			provide: QUESTION_ANSWER_REPOSITORY,
+			provide: QuestionAnswerRepositoryPort,
 			useClass: DrizzleQuestionAnswerRepository,
 		},
 		GetChatHistoryUseCase,

@@ -9,10 +9,7 @@ import {
 	type ModuleRepositoryPort,
 } from '../../domain/ports/module-repository.port';
 import { HistoryServicePort } from 'src/shared/history/domain/ports/history-service.port';
-import {
-	TOKEN_USAGE_SERVICE,
-	type TokenUsagePort,
-} from 'src/shared/token-usage/domain/ports/token-usage.port';
+import { TokenUsagePort } from 'src/shared/token-usage/domain/ports/token-usage.port';
 import {
 	QUIZ_GENERATOR,
 	type QuizGeneratorPort,
@@ -27,7 +24,6 @@ export class GenerateQuizUseCase {
 		@Inject(MODULE_REPOSITORY)
 		private readonly moduleRepository: ModuleRepositoryPort,
 		private readonly historyService: HistoryServicePort,
-		@Inject(TOKEN_USAGE_SERVICE)
 		private readonly tokenUsageService: TokenUsagePort,
 		@Inject(QUIZ_GENERATOR)
 		private readonly quizGenerator: QuizGeneratorPort

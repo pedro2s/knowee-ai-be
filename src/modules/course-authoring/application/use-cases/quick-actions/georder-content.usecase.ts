@@ -13,10 +13,7 @@ import {
 } from 'src/modules/course-authoring/domain/ports/reorder-content-agent.port';
 import { HistoryServicePort } from 'src/shared/history/domain/ports/history-service.port';
 import { AuthContext } from 'src/shared/database/domain/ports/db-context.port';
-import {
-	TOKEN_USAGE_SERVICE,
-	type TokenUsagePort,
-} from 'src/shared/token-usage/domain/ports/token-usage.port';
+import { TokenUsagePort } from 'src/shared/token-usage/domain/ports/token-usage.port';
 
 @Injectable()
 export class ReorderContentUseCase {
@@ -26,7 +23,6 @@ export class ReorderContentUseCase {
 		@Inject(MODULE_REPOSITORY)
 		private readonly moduleRepository: ModuleRepositoryPort,
 		private readonly historyService: HistoryServicePort,
-		@Inject(TOKEN_USAGE_SERVICE)
 		private readonly tokenUsageService: TokenUsagePort,
 		@Inject(REORDER_CONTENT_AGENT)
 		private readonly reorderContentAgent: ReorderContentAgentPort
