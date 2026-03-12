@@ -49,19 +49,17 @@ describe('SubmitQuestionUseCase', () => {
 			recentHistory: [],
 		});
 		expect(historyService.saveMessage).toHaveBeenCalledWith(
-			{ userId: 'user-1', role: 'authenticated' },
 			'course-1',
 			'user',
-			'Como melhorar isso?'
+			'Como melhorar isso?',
+			{ userId: 'user-1', role: 'authenticated' }
 		);
 		expect(
 			historyService.saveMessageAndSummarizeIfNecessary
-		).toHaveBeenCalledWith(
-			{ userId: 'user-1', role: 'authenticated' },
-			'course-1',
-			'assistant',
-			'Resposta da IA'
-		);
+		).toHaveBeenCalledWith('course-1', 'assistant', 'Resposta da IA', {
+			userId: 'user-1',
+			role: 'authenticated',
+		});
 		expect(questionAnswerRepository.create).toHaveBeenCalledWith(
 			expect.objectContaining({
 				userId: 'user-1',

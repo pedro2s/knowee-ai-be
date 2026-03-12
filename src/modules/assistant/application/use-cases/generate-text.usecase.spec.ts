@@ -53,19 +53,17 @@ describe('GenerateTextUseCase', () => {
 			'gpt-test'
 		);
 		expect(historyService.saveMessage).toHaveBeenCalledWith(
-			{ userId: 'user-1', role: 'authenticated' },
 			'course-1',
 			'user',
-			'Explique closures'
+			'Explique closures',
+			{ userId: 'user-1', role: 'authenticated' }
 		);
 		expect(
 			historyService.saveMessageAndSummarizeIfNecessary
-		).toHaveBeenCalledWith(
-			{ userId: 'user-1', role: 'authenticated' },
-			'course-1',
-			'assistant',
-			'Texto gerado'
-		);
+		).toHaveBeenCalledWith('course-1', 'assistant', 'Texto gerado', {
+			userId: 'user-1',
+			role: 'authenticated',
+		});
 	});
 
 	it('nao deve registrar tokens quando o provider nao os retornar', async () => {

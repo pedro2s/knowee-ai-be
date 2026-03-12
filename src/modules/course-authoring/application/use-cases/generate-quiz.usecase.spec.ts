@@ -107,16 +107,16 @@ describe('GenerateQuizUseCase', () => {
 		);
 		expect(saveTokenUsageMock).toHaveBeenCalledWith('user-1', 120, 'gpt-4.1');
 		expect(saveMessageMock).toHaveBeenCalledWith(
-			{ userId: 'user-1', role: 'authenticated' },
 			'course-1',
 			'user',
-			expect.stringContaining('Módulo:')
+			expect.stringContaining('Módulo:'),
+			{ userId: 'user-1', role: 'authenticated' }
 		);
 		expect(saveMessageAndSummarizeMock).toHaveBeenCalledWith(
-			{ userId: 'user-1', role: 'authenticated' },
 			'course-1',
 			'assistant',
-			expect.any(String)
+			expect.any(String),
+			{ userId: 'user-1', role: 'authenticated' }
 		);
 		expect(result.quizQuestions[0].id).toBeDefined();
 	});
