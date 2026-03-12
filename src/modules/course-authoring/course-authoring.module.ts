@@ -21,6 +21,7 @@ import { ModuleRepositoryPort } from './domain/ports/module-repository.port';
 import { DrizzleModuleRepository } from './infrastructure/persistence/drizzle/drizzle-module.repository';
 import { FetchModulesUseCase } from './application/use-cases/fetch-modules.usecase';
 import { CreateModuleUseCase } from './application/use-cases/create-module.usecase';
+import { CreateModuleTreeUseCase } from './application/use-cases/create-module-tree.usecase';
 import { DeleteModuleUseCase } from './application/use-cases/delete-module.usecase';
 import { UpdateModuleUseCase } from './application/use-cases/update-module.usecase';
 import { HistoryModule } from '../../shared/history/history.module';
@@ -131,6 +132,7 @@ const workerProviders =
 		GenerateSectionVideoUseCase,
 		MergeLessonSectionsVideoUseCase,
 		CreateModuleUseCase,
+		CreateModuleTreeUseCase,
 		GetCourseUseCase,
 		GetLessonUseCase,
 		FetchCoursesUseCase,
@@ -186,6 +188,7 @@ const workerProviders =
 		{ provide: CourseRepositoryPort, useClass: DrizzleCourseRepository },
 		{ provide: LessonRepositoryPort, useClass: DrizzleLessonRepository },
 		{ provide: ModuleRepositoryPort, useClass: DrizzleModuleRepository },
+		CreateModuleTreeUseCase,
 	],
 })
 export class CourseAuthoringModule {}

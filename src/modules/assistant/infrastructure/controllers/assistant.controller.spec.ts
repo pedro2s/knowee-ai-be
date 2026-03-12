@@ -24,7 +24,9 @@ describe('AssistantController', () => {
 			]),
 		} as unknown as jest.Mocked<GetChatHistoryUseCase>;
 		const submitQuestion = {
-			execute: jest.fn().mockResolvedValue({ answer: 'Resposta' }),
+			execute: jest
+				.fn()
+				.mockResolvedValue({ answer: 'Resposta', action: { status: 'none' } }),
 		} as unknown as jest.Mocked<SubmitQuestionUseCase>;
 		const generateTextUseCase = {
 			execute: jest.fn().mockResolvedValue({ text: 'Texto gerado' }),
@@ -51,7 +53,7 @@ describe('AssistantController', () => {
 		).resolves.toEqual({ targetAudience: 'Beginners' });
 		await expect(
 			controller.question({ courseId: 'course-1', question: 'Pergunta?' }, user)
-		).resolves.toEqual({ answer: 'Resposta' });
+		).resolves.toEqual({ answer: 'Resposta', action: { status: 'none' } });
 		await expect(
 			controller.getChatHistoryByCourseId('course-1', user)
 		).resolves.toEqual([
