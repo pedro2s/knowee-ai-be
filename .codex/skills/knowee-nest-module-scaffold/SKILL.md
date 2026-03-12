@@ -9,9 +9,9 @@ description: Scaffold de módulos NestJS seguindo a arquitetura deste repo (appl
 
 1. Escolher o nome do módulo e o objetivo (ex.: `reports`, `notifications`).
 2. Criar a estrutura de pastas seguindo os padrões do repo.
-3. Criar DTOs, use-cases, ports e controllers conforme os exemplos existentes.
-4. Implementar repositório Drizzle (quando houver persistência).
-5. Criar/ajustar testes unitários do use-case e controller; adicionar e2e quando o escopo envolver wiring HTTP relevante.
+3. Criar DTOs, use-cases, ports abstratas e controllers conforme os exemplos existentes.
+4. Implementar repository/adapter concreto com provider class-based no módulo.
+5. Criar ou ajustar testes unitários de use-case e controller; adicionar e2e apenas quando o escopo exigir wiring HTTP relevante.
 6. Registrar o módulo no `AppModule`.
 
 Referências locais: ver `references/knowee-nestjs-architecture.md`.
@@ -27,11 +27,14 @@ Referências locais: ver `references/knowee-nestjs-architecture.md`.
   - `infrastructure/persistence/drizzle/` (se houver persistência)
 - Controller com rotas e guards conforme padrão do repo.
 - DTOs com `class-validator` sempre e `class-transformer` quando necessário.
-- Use-cases com `@Inject` de ports e retorno tipado.
-- Portas declaradas com `const <NAME>_REPOSITORY` exportado.
+- Ports internas declaradas como `abstract class`, sem token string próprio.
+- Implementações concretas usando `implements`, não `extends`, quando a port for contrato puro.
+- Módulo registrando providers class-based como `{ provide: XPort, useClass: Impl }`.
+- Consumidores injetando por tipo `constructor(private readonly dep: XPort) {}` sempre que não houver ambiguidade.
+- `@Inject(...)` reservado para tokens externos, alias/factories ou ambiguidades reais.
 - Repositório Drizzle seguindo o padrão do módulo-alvo (`DbContext`/`DB_CONTEXT` para RLS ou `DrizzleService` para acesso direto).
 - Testes `.spec.ts` para use-cases e controllers novos ou alterados.
-- Verificação de cobertura com `npm run test:cov` quando a mudança justificar; atualmente o repo gera cobertura, mas não define `coverageThreshold` global no `package.json`.
+- Validar com `npm run test -- --runInBand` e `npm run test:cov -- --runInBand` quando a mudança tocar código da `api`.
 - Módulo registrado no `src/app.module.ts`.
 
 ## Padroes de controller (guards, CurrentUser, DTO, response)
@@ -43,18 +46,53 @@ Referências locais: ver `references/knowee-nestjs-architecture.md`.
 
 Exemplo de referencia: `src/modules/course-authoring/infrastructure/controllers/courses.controller.ts`.
 
-## Padroes de use-case (Inject ports, exceptions, retorno)
+## Padroes de use-case (DI, exceptions, retorno)
 
 - Use-case como `@Injectable()`.
-- Injetar ports via token (ex.: `@Inject(COURSE_REPOSITORY)`), tipar com interface.
+- Injetar ports internas por tipo quando o provider usar a classe abstrata como token.
+- Usar `@Inject(...)` apenas com tokens explícitos, como `DB_CONTEXT`, `OPENAI_CLIENT`, `STRIPE_CLIENT` e equivalentes.
 - Usar exceptions de Nest (`NotFoundException`, etc.) conforme necessario.
 - Retornar tipos simples ou DTOs conforme a camada de controller.
 
 Exemplo de referencia: `src/modules/course-authoring/application/use-cases/generate-course.usecase.ts`.
 
-## Padroes de repository Drizzle (DbContext/DB_CONTEXT ou DrizzleService)
+## Padroes de ports e repository Drizzle
 
-- Implementar interface do port.
+- Declarar ports internas como contrato de DI e domínio:
+
+```ts
+export abstract class ReportRepositoryPort {
+	abstract findById(id: string): Promise<Report | null>;
+}
+```
+
+- Implementação concreta deve satisfazer o contrato com `implements`:
+
+```ts
+export class DrizzleReportRepository implements ReportRepositoryPort {
+	async findById(id: string): Promise<Report | null> {
+		// ...
+	}
+}
+```
+
+- Registrar no módulo com provider class-based:
+
+```ts
+providers: [
+	{
+		provide: ReportRepositoryPort,
+		useClass: DrizzleReportRepository,
+	},
+];
+```
+
+- Consumir por tipo:
+
+```ts
+constructor(private readonly reportRepository: ReportRepositoryPort) {}
+```
+
 - Para módulos com RLS/autorização por usuário, preferir `@Inject(DB_CONTEXT)`, tipar com `DbContext` e usar `this.dbContext.runAsUser`.
 - Para módulos sem RLS contextual, pode usar `DrizzleService` diretamente.
 - Usar schema de `src/shared/database/infrastructure/drizzle/schema`.
@@ -74,23 +112,25 @@ Exemplo de referencia: `src/app.module.ts`.
 
 ## Padroes de teste e cobertura
 
-- Para novos use-cases, criar `*.usecase.spec.ts` ao lado do arquivo testando fluxo feliz e falhas relevantes com mocks tipados das ports.
+- Para novos use-cases, criar `*.usecase.spec.ts` ao lado do arquivo testando fluxo feliz e falhas relevantes com mocks tipados das ports abstratas.
 - Para novos controllers, criar `*.controller.spec.ts` cobrindo delegacao para use-cases, `@CurrentUser()` e mapeamento basico de DTOs/respostas sem depender de `TestingModule` quando nao for necessario.
 - Adicionar teste e2e em `test/` apenas quando houver comportamento HTTP integrado, pipes/guards/interceptors ou wiring de modulo que nao fique bem coberto em unit tests.
-- Usar `npm run test` para validacao rapida e `npm run test:cov` para inspecionar cobertura; o projeto publica a cobertura em `coverage/`, mas nao falha por threshold global configurado no momento.
+- Preferir assertions sobre comportamento observável e chamadas de porta, não sobre detalhes internos.
+- Usar `npm run test -- --runInBand` para validacao rapida e `npm run test:cov -- --runInBand` para inspecionar cobertura.
 - Ao scaffoldar, nao deixar codigo novo sem testes quando houver logica de negocio, contrato de controller ou regra de autorizacao.
 
 Exemplos de referencia:
 
 - `src/modules/profile/application/use-cases/get-profile.usecase.spec.ts`
 - `src/modules/profile/infrastructure/controllers/profile.controller.spec.ts`
+- `src/modules/access-control/application/services/access-policy.service.spec.ts`
 - `test/app.e2e-spec.ts`
 
 ## Exemplos de prompts
 
-- "Cria um modulo `reports` com `ReportsController`, `GetReportUseCase`, `report.response.dto` e porta + repository Drizzle seguindo o padrao de `course-authoring`."
+- "Cria um modulo `reports` com `ReportsController`, `GetReportUseCase`, `report.response.dto` e `ReportRepositoryPort` abstrata + `DrizzleReportRepository` seguindo o padrao de `course-authoring`."
 - "Adiciona endpoint `GET /courses` com guard, decorator `@CurrentUser` e response DTO no padrao do `CoursesController`."
-- "Cria porta `REPORT_REPOSITORY` e implementacao `DrizzleReportRepository` usando `DbContext` e schema Drizzle, como em `drizzle-course.repository.ts`."
+- "Cria `ReportRepositoryPort` como classe abstrata e `DrizzleReportRepository` usando `DbContext` e schema Drizzle, como em `drizzle-course.repository.ts`."
 - "Registra o novo modulo no `AppModule` como em `src/app.module.ts`."
 - "Cria o modulo `reports` com controller, use-case, repository e os testes `.spec.ts` necessarios seguindo os padroes de `profile` e valida com cobertura."
 
