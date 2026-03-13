@@ -1,15 +1,9 @@
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
-import {
-	USAGE_REPOSITORY,
-	type UsageRepositoryPort,
-} from '../../domain/ports/usage-repository.port';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { UsageRepositoryPort } from '../../domain/ports/usage-repository.port';
 
 @Injectable()
 export class GetUsageUseCase {
-	constructor(
-		@Inject(USAGE_REPOSITORY)
-		private readonly usageRepository: UsageRepositoryPort
-	) {}
+	constructor(private readonly usageRepository: UsageRepositoryPort) {}
 
 	async execute(userId: string): Promise<{ used: number }> {
 		const subscription =

@@ -1,16 +1,7 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
-import {
-	LESSON_REPOSITORY,
-	type LessonRepositoryPort,
-} from '../../domain/ports/lesson-repository.port';
-import {
-	MODULE_REPOSITORY,
-	type ModuleRepositoryPort,
-} from '../../domain/ports/module-repository.port';
-import {
-	COURSE_REPOSITORY,
-	type CourseRepositoryPort,
-} from '../../domain/ports/course-repository.port';
+import { LessonRepositoryPort } from '../../domain/ports/lesson-repository.port';
+import { ModuleRepositoryPort } from '../../domain/ports/module-repository.port';
+import { CourseRepositoryPort } from '../../domain/ports/course-repository.port';
 import {
 	STORYBOARD_GENERATOR,
 	type StoryboardGeneratorPort,
@@ -36,11 +27,8 @@ interface GeneratedLessonStoryboardResult {
 @Injectable()
 export class GenerateLessonStoryboardUseCase {
 	constructor(
-		@Inject(LESSON_REPOSITORY)
 		private readonly lessonRepository: LessonRepositoryPort,
-		@Inject(MODULE_REPOSITORY)
 		private readonly moduleRepository: ModuleRepositoryPort,
-		@Inject(COURSE_REPOSITORY)
 		private readonly courseRepository: CourseRepositoryPort,
 		@Inject(STORYBOARD_GENERATOR)
 		private readonly storyboardGenerator: StoryboardGeneratorPort

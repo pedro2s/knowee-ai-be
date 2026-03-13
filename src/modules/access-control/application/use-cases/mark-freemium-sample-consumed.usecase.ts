@@ -1,12 +1,10 @@
-import { Inject, Injectable } from '@nestjs/common';
-import { ACCESS_CONTROL_REPOSITORY } from '../../domain/ports/access-control.repository.port';
+import { Injectable } from '@nestjs/common';
 import { GetUserEntitlementsUseCase } from './get-user-entitlements.usecase';
-import type { AccessControlRepositoryPort } from '../../domain/ports/access-control.repository.port';
+import { AccessControlRepositoryPort } from '../../domain/ports/access-control.repository.port';
 
 @Injectable()
 export class MarkFreemiumSampleConsumedUseCase {
 	constructor(
-		@Inject(ACCESS_CONTROL_REPOSITORY)
 		private readonly repository: AccessControlRepositoryPort,
 		private readonly getUserEntitlementsUseCase: GetUserEntitlementsUseCase
 	) {}

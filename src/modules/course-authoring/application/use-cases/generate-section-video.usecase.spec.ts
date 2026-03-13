@@ -100,7 +100,6 @@ describe('GenerateSectionVideoUseCase', () => {
 			lessonRepository,
 			courseRepository,
 			moduleRepository,
-			mediaService,
 			storyboardGenerator,
 			mediaService,
 			storage,

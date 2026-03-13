@@ -1,17 +1,11 @@
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
-import {
-	MODULE_REPOSITORY,
-	type ModuleRepositoryPort,
-} from '../../domain/ports/module-repository.port';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { ModuleRepositoryPort } from '../../domain/ports/module-repository.port';
 import { Module } from '../../domain/entities/module.entity';
 import { UpdateModuleDto } from '../dtos/update-module.dto';
 
 @Injectable()
 export class UpdateModuleUseCase {
-	constructor(
-		@Inject(MODULE_REPOSITORY)
-		private readonly moduleRepository: ModuleRepositoryPort
-	) {}
+	constructor(private readonly moduleRepository: ModuleRepositoryPort) {}
 
 	async execute(
 		moduleId: string,

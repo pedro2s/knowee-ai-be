@@ -1,17 +1,11 @@
-import { BadRequestException, Inject, Injectable } from '@nestjs/common';
-import {
-	LESSON_REPOSITORY,
-	type LessonRepositoryPort,
-} from '../../domain/ports/lesson-repository.port';
+import { BadRequestException, Injectable } from '@nestjs/common';
+import { LessonRepositoryPort } from '../../domain/ports/lesson-repository.port';
 import { ReorderLessonsDto } from '../dtos/reorder-lessons.dto';
 import { AuthContext } from 'src/shared/database/domain/ports/db-context.port';
 
 @Injectable()
 export class ReorderLessonsUseCase {
-	constructor(
-		@Inject(LESSON_REPOSITORY)
-		private readonly lessonRepository: LessonRepositoryPort
-	) {}
+	constructor(private readonly lessonRepository: LessonRepositoryPort) {}
 
 	async execute(input: {
 		dto: ReorderLessonsDto;

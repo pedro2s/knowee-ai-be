@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { AssistantController } from './infrastructure/controllers/assistant.controller';
 import { GetChatHistoryUseCase } from './application/use-cases/get-chat-history.usecase';
-import { QUESTION_ANSWER_REPOSITORY } from './domain/ports/question-anwer-repository.port';
+import { QuestionAnswerRepositoryPort } from './domain/ports/question-anwer-repository.port';
 import { DrizzleQuestionAnswerRepository } from './infrastructure/persistence/drizzle/drizzle-question-answer.repository';
 import { DatabaseModule } from 'src/shared/database/database.module';
 import { SubmitQuestionUseCase } from './application/use-cases/submit-question.usecase';
@@ -16,6 +16,11 @@ import { OpenAIAnalyticsAdapter } from './infrastructure/providers/openai/openai
 import { AnalyticsUseCase } from './application/use-cases/analytics.usecase';
 import { GenAIAnalyticsAdapter } from './infrastructure/providers/genai/gemini-analytics.adapter';
 import { AccessControlModule } from '../access-control/access-control.module';
+import { AssistantPendingActionRepositoryPort } from './domain/ports/assistant-pending-action-repository.port';
+import { DrizzleAssistantPendingActionRepository } from './infrastructure/persistence/drizzle/drizzle-assistant-pending-action.repository';
+import { AssistantToolRegistry } from './application/services/assistant-tool.registry';
+import { AssistantToolExecutor } from './application/services/assistant-tool.executor';
+import { CourseAuthoringModule } from '../course-authoring/course-authoring.module';
 
 @Module({
 	controllers: [AssistantController],
@@ -25,16 +30,23 @@ import { AccessControlModule } from '../access-control/access-control.module';
 		AIProvidersModule,
 		TokenUsageModule,
 		AccessControlModule,
+		CourseAuthoringModule,
 	],
 	providers: [
 		{
-			provide: QUESTION_ANSWER_REPOSITORY,
+			provide: QuestionAnswerRepositoryPort,
 			useClass: DrizzleQuestionAnswerRepository,
+		},
+		{
+			provide: AssistantPendingActionRepositoryPort,
+			useClass: DrizzleAssistantPendingActionRepository,
 		},
 		GetChatHistoryUseCase,
 		SubmitQuestionUseCase,
 		GenerateTextUseCase,
 		AnalyticsUseCase,
+		AssistantToolRegistry,
+		AssistantToolExecutor,
 		ProviderRegistry,
 		OpenAIAssistantAdapter,
 		OpenAITextGeneratorAdapter,

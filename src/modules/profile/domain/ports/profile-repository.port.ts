@@ -1,7 +1,5 @@
 import { UpdateProfileDto } from '../../application/dtos/update-profile.dto';
 
-export const PROFILE_REPOSITORY = 'PROFILE_REPOSITORY';
-
 export interface ProfileData {
 	id: string;
 	email: string | null;
@@ -12,9 +10,9 @@ export interface ProfileData {
 	avatarUrl: string | null;
 }
 
-export interface ProfileRepositoryPort {
-	findById(id: string): Promise<ProfileData | null>;
-	upsert(input: {
+export abstract class ProfileRepositoryPort {
+	abstract findById(id: string): Promise<ProfileData | null>;
+	abstract upsert(input: {
 		id: string;
 		email: string;
 		fullName?: string;

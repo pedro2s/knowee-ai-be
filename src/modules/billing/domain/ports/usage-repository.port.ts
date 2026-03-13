@@ -16,27 +16,29 @@ export interface PublicSubscriptionTierData {
 	supportSlaHours: number;
 }
 
-export interface UsageRepositoryPort {
-	getUsageInPeriod(
+export abstract class UsageRepositoryPort {
+	abstract getUsageInPeriod(
 		userId: string,
 		subscriptionId: string,
 		startDate: Date
 	): Promise<number>;
-	getActiveSubscription(userId: string): Promise<{
+	abstract getActiveSubscription(userId: string): Promise<{
 		id: string;
 		createdAt: string;
 	} | null>;
-	getLatestSubscriptionSnapshot(userId: string): Promise<{
+	abstract getLatestSubscriptionSnapshot(userId: string): Promise<{
 		id: string;
 		createdAt: string;
 		status: 'free' | 'active' | 'past_due' | 'canceled';
 	} | null>;
-	getSubscription(userId: string): Promise<SubscriptionResponseDto | null>;
-	createFreeSubscription(
+	abstract getSubscription(
+		userId: string
+	): Promise<SubscriptionResponseDto | null>;
+	abstract createFreeSubscription(
 		userId: string,
 		email: string
 	): Promise<SubscriptionResponseDto>;
-	getSubscriptionTierByName(name: string): Promise<{
+	abstract getSubscriptionTierByName(name: string): Promise<{
 		id: number;
 		name: string;
 		monthlyTokenLimit: number;
@@ -44,7 +46,7 @@ export interface UsageRepositoryPort {
 		stripePriceId: string | null;
 		stripePriceIdAnnual: string | null;
 	} | null>;
-	getSubscriptionTierByStripePriceId(priceId: string): Promise<{
+	abstract getSubscriptionTierByStripePriceId(priceId: string): Promise<{
 		id: number;
 		name: string;
 		monthlyTokenLimit: number;
@@ -52,15 +54,15 @@ export interface UsageRepositoryPort {
 		stripePriceId: string | null;
 		stripePriceIdAnnual: string | null;
 	} | null>;
-	listPublicSubscriptionTiers(): Promise<PublicSubscriptionTierData[]>;
-	getLatestSubscriberForUser(userId: string): Promise<{
+	abstract listPublicSubscriptionTiers(): Promise<PublicSubscriptionTierData[]>;
+	abstract getLatestSubscriberForUser(userId: string): Promise<{
 		id: string;
 		status: 'free' | 'active' | 'past_due' | 'canceled';
 		subscriptionTierId: number | null;
 		stripeCustomerId: string | null;
 		stripeSubscriptionId: string | null;
 	} | null>;
-	updateSubscriberById(
+	abstract updateSubscriberById(
 		id: string,
 		patch: {
 			status?: 'free' | 'active' | 'past_due' | 'canceled';
@@ -70,7 +72,7 @@ export interface UsageRepositoryPort {
 			subscriptionEnd?: string | null;
 		}
 	): Promise<void>;
-	updateSubscriberByStripeSubscriptionId(
+	abstract updateSubscriberByStripeSubscriptionId(
 		stripeSubscriptionId: string,
 		patch: {
 			status?: 'free' | 'active' | 'past_due' | 'canceled';
@@ -80,5 +82,3 @@ export interface UsageRepositoryPort {
 		}
 	): Promise<void>;
 }
-
-export const USAGE_REPOSITORY = 'USAGE_REPOSITORY';

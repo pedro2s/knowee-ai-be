@@ -1,16 +1,10 @@
-import { Inject, Injectable } from '@nestjs/common';
-import {
-	PROFILE_REPOSITORY,
-	type ProfileRepositoryPort,
-} from '../../domain/ports/profile-repository.port';
+import { Injectable } from '@nestjs/common';
+import { ProfileRepositoryPort } from '../../domain/ports/profile-repository.port';
 import { ProfileResponseDto } from '../dtos/profile.response.dto';
 
 @Injectable()
 export class GetProfileUseCase {
-	constructor(
-		@Inject(PROFILE_REPOSITORY)
-		private readonly profileRepository: ProfileRepositoryPort
-	) {}
+	constructor(private readonly profileRepository: ProfileRepositoryPort) {}
 
 	async execute(user: {
 		id: string;

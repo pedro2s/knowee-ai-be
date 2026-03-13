@@ -4,13 +4,17 @@ import {
 	AIAssistantPort,
 	AskQuestionInput,
 } from 'src/modules/assistant/domain/ports/ai-assistant.port';
-import { QuestionAnswered } from 'src/modules/assistant/domain/entities/question-answer.types';
+import {
+	AssistantModelAnswer,
+	AssistantToolDefinition,
+} from 'src/modules/assistant/domain/entities/assistant-tool.types';
 import { ChatCompletionMessageParam, ChatModel } from 'openai/resources';
 import { OPENAI_CLIENT } from 'src/shared/ai-providers/ai-providers.constants';
 import {
 	InteractionContext,
 	InteractionResult,
 } from 'src/shared/types/interaction';
+import { ChatCompletionTool } from 'openai/resources/chat/completions';
 
 @Injectable()
 export class OpenAIAssistantAdapter implements AIAssistantPort {
@@ -18,17 +22,26 @@ export class OpenAIAssistantAdapter implements AIAssistantPort {
 
 	async ask(
 		context: InteractionContext<AskQuestionInput>
-	): Promise<InteractionResult<QuestionAnswered>> {
+	): Promise<InteractionResult<AssistantModelAnswer>> {
 		const { input } = context;
 
 		const messages: ChatCompletionMessageParam[] = [];
 
 		messages.push({
 			role: 'system',
-			content: `Como assistente especializado em criação de cursos educacionais, responda de forma útil e específica para ajudar a melhorar este curso.
-Você pode sugerir ações automatizadas (como criar módulo, adicionar aula, etc.) usando as funções disponíveis quando todos os parâmetros obrigatórios (como course_id, module_id, etc.) existirem.
-Sempre peça confirmação do usuário antes de executar ações sensíveis.
-Caso contrário, devolva respostas sem formatação markdown.`,
+			content: `Você é um assistente especializado em criação de cursos educacionais.
+Seu objetivo é ajudar a melhorar o curso atual e acionar ferramentas quando houver intenção executável.
+
+Regras obrigatórias:
+- Quando o usuário pedir para criar um módulo e houver informações suficientes na mensagem atual ou no contexto recente, chame a ferramenta create_module.
+- Não responda com um resumo pedindo confirmação em linguagem natural se já for possível montar uma chamada válida de create_module.
+- Use somente o formato exato de argumentos da ferramenta.
+- O curso atual já é conhecido pelo servidor. Nunca invente ou dependa de course_id para decidir a chamada.
+- Se o usuário colar uma especificação textual de módulo com aulas, converta isso para os campos estruturados da ferramenta.
+- Reaproveite dados já presentes na conversa; não peça novamente informações que já estejam disponíveis.
+- Se faltarem campos obrigatórios, responda normalmente explicando exatamente o que falta.
+- Sempre responda sem markdown quando não estiver chamando ferramenta.
+- Nunca execute ações sensíveis por conta própria fora do fluxo de confirmação do backend.`,
 		});
 
 		// Adiciona o resumo como parte do contexto inicial, se existir
@@ -55,12 +68,42 @@ Caso contrário, devolva respostas sem formatação markdown.`,
 
 		const model: ChatModel = 'gpt-4o-mini';
 
+		const tools = ((context.tools ?? []) as AssistantToolDefinition[]).map(
+			(tool): ChatCompletionTool => ({
+				type: 'function',
+				function: {
+					name: tool.name,
+					description: tool.description,
+					parameters: tool.parameters,
+				},
+			})
+		);
+
 		const completion = await this.openai.chat.completions.create({
 			model: model,
 			messages: messages,
+			...(tools.length > 0
+				? {
+						tools,
+						tool_choice: 'auto' as const,
+					}
+				: {}),
 		});
 
-		const answer = completion.choices[0].message.content || '';
+		const message = completion.choices[0].message;
+		const answer = message.content || '';
+		const firstToolCall = message.tool_calls?.[0];
+
+		const toolCall =
+			firstToolCall?.type === 'function'
+				? {
+						name: firstToolCall.function.name,
+						arguments: JSON.parse(firstToolCall.function.arguments) as Record<
+							string,
+							unknown
+						>,
+					}
+				: undefined;
 
 		const tokenUsage = completion.usage?.total_tokens
 			? {
@@ -70,7 +113,10 @@ Caso contrário, devolva respostas sem formatação markdown.`,
 			: undefined;
 
 		return {
-			content: { answer: answer },
+			content: {
+				answer,
+				toolCall,
+			},
 			tokenUsage,
 		};
 	}

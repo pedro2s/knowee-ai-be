@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { DatabaseModule } from 'src/shared/database/database.module';
-import { ACCESS_CONTROL_REPOSITORY } from './domain/ports/access-control.repository.port';
+import { AccessControlRepositoryPort } from './domain/ports/access-control.repository.port';
 import { DrizzleAccessControlRepository } from './infrastructure/persistence/drizzle/drizzle-access-control.repository';
 import { GetUserEntitlementsUseCase } from './application/use-cases/get-user-entitlements.usecase';
 import { CheckAccessUseCase } from './application/use-cases/check-access.usecase';
@@ -14,7 +14,7 @@ import { MarkFreemiumSampleConsumedUseCase } from './application/use-cases/mark-
 	controllers: [AccessControlController],
 	providers: [
 		{
-			provide: ACCESS_CONTROL_REPOSITORY,
+			provide: AccessControlRepositoryPort,
 			useClass: DrizzleAccessControlRepository,
 		},
 		GetUserEntitlementsUseCase,

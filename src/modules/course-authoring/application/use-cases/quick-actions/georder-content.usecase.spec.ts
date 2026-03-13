@@ -144,16 +144,16 @@ describe('ReorderContentUseCase', () => {
 
 		expect(tokenUsageSaveMock).toHaveBeenCalledWith('user-1', 123, 'gpt-4.1');
 		expect(saveMessageMock).toHaveBeenCalledWith(
-			{ userId: 'user-1', role: 'authenticated' },
 			'course-1',
 			'user',
-			expect.any(String)
+			expect.any(String),
+			{ userId: 'user-1', role: 'authenticated' }
 		);
 		expect(saveMessageAndSummarizeIfNecessaryMock).toHaveBeenCalledWith(
-			{ userId: 'user-1', role: 'authenticated' },
 			'course-1',
 			'assistant',
-			JSON.stringify(reorderedContent)
+			JSON.stringify(reorderedContent),
+			{ userId: 'user-1', role: 'authenticated' }
 		);
 		expect(updateModuleMock).toHaveBeenCalledTimes(2);
 		expect(updateModuleMock).toHaveBeenNthCalledWith(

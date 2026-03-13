@@ -5,27 +5,28 @@ import {
 	UpdateGenerationJobInput,
 } from '../entities/generation-job.types';
 
-export const GENERATION_JOB_REPOSITORY = 'GenerationJobRepository';
-
-export interface GenerationJobRepositoryPort {
-	create(
+export abstract class GenerationJobRepositoryPort {
+	abstract create(
 		input: CreateGenerationJobInput,
 		auth: AuthContext
 	): Promise<GenerationJob>;
-	findById(id: string, auth: AuthContext): Promise<GenerationJob | null>;
-	findActiveByCourseId(
+	abstract findById(
+		id: string,
+		auth: AuthContext
+	): Promise<GenerationJob | null>;
+	abstract findActiveByCourseId(
 		courseId: string,
 		auth: AuthContext
 	): Promise<GenerationJob | null>;
-	findActiveJobsByCourseId(
+	abstract findActiveJobsByCourseId(
 		courseId: string,
 		auth: AuthContext
 	): Promise<GenerationJob[]>;
-	findActiveByDedupeKey(
+	abstract findActiveByDedupeKey(
 		dedupeKey: string,
 		auth: AuthContext
 	): Promise<GenerationJob | null>;
-	update(
+	abstract update(
 		id: string,
 		input: UpdateGenerationJobInput,
 		auth: AuthContext

@@ -6,10 +6,7 @@ import {
 } from '@nestjs/common';
 import Stripe from 'stripe';
 import { STRIPE_CLIENT } from 'src/shared/stripe/stripe.constants';
-import {
-	USAGE_REPOSITORY,
-	type UsageRepositoryPort,
-} from '../../domain/ports/usage-repository.port';
+import { UsageRepositoryPort } from '../../domain/ports/usage-repository.port';
 import { ConfigService } from '@nestjs/config';
 
 export type BillingCycle = 'monthly' | 'annual';
@@ -17,7 +14,6 @@ export type BillingCycle = 'monthly' | 'annual';
 @Injectable()
 export class CreateCheckoutSessionUseCase {
 	constructor(
-		@Inject(USAGE_REPOSITORY)
 		private readonly usageRepository: UsageRepositoryPort,
 		@Inject(STRIPE_CLIENT)
 		private readonly stripe: Stripe,

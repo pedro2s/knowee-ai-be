@@ -52,7 +52,7 @@ export class AssistantController {
 	): Promise<QuestionAnsweredResponseDto> {
 		const questionAnswered = await this.submitQuestion.execute(body, user.id);
 
-		return { answer: questionAnswered.answer };
+		return questionAnswered;
 	}
 
 	@Get('chat/:courseId')

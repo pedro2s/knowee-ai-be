@@ -1,8 +1,5 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
-import {
-	COURSE_REPOSITORY,
-	type CourseRepositoryPort,
-} from '../../domain/ports/course-repository.port';
+import { CourseRepositoryPort } from '../../domain/ports/course-repository.port';
 import {
 	SCORM_PACKAGE_GENERATOR,
 	type ScormPackageGeneratorPort,
@@ -15,7 +12,6 @@ import type { ExportScormDto } from '../dtos/export-scorm.dto';
 @Injectable()
 export class ExportCourseScormUseCase {
 	constructor(
-		@Inject(COURSE_REPOSITORY)
 		private readonly courseRepository: CourseRepositoryPort,
 		@Inject(SCORM_PACKAGE_GENERATOR)
 		private readonly scormPackageGenerator: ScormPackageGeneratorPort

@@ -3,10 +3,7 @@ import { toSql } from 'pgvector';
 import { DrizzleService } from 'src/shared/database/infrastructure/drizzle/drizzle.service';
 import { documents } from 'src/shared/database/infrastructure/drizzle/schema';
 import { l2Distance, desc, eq } from 'drizzle-orm';
-import {
-	TOKEN_USAGE_SERVICE,
-	type TokenUsagePort,
-} from '../../token-usage/domain/ports/token-usage.port';
+import { TokenUsagePort } from '../../token-usage/domain/ports/token-usage.port';
 import { OPENAI_CLIENT } from '../../ai-providers/ai-providers.constants';
 import OpenAI from 'openai';
 import { EmbeddingPort } from '../domain/ports/embedding.port';
@@ -21,7 +18,6 @@ export class EmbeddingService implements EmbeddingPort {
 		@Inject(OPENAI_CLIENT)
 		private readonly openai: OpenAI,
 		private readonly drizzle: DrizzleService,
-		@Inject(TOKEN_USAGE_SERVICE)
 		private readonly tokenUsageService: TokenUsagePort
 	) {}
 
