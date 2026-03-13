@@ -62,9 +62,17 @@ export interface GenerationJobMetadata {
 			lessonId: string;
 			lessonType: string;
 			status: 'success' | 'failed' | 'skipped';
+			readiness: 'ready' | 'blocked';
 			error?: string;
 		}>;
 	};
+	isExportReady?: boolean;
+	blockingIssues?: Array<{
+		lessonId: string;
+		lessonType: string;
+		code: string;
+		message: string;
+	}>;
 	moduleId?: string;
 	lessonId?: string;
 	demoSectionId?: string;

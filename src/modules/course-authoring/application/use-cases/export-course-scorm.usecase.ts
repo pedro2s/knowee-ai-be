@@ -1,4 +1,9 @@
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import {
+	Inject,
+	Injectable,
+	NotFoundException,
+	PreconditionFailedException,
+} from '@nestjs/common';
 import { CourseRepositoryPort } from '../../domain/ports/course-repository.port';
 import {
 	SCORM_PACKAGE_GENERATOR,
@@ -8,6 +13,11 @@ import {
 import { AuthContext } from 'src/shared/database/domain/ports/db-context.port';
 import type { ScormCourseExportInput } from '../../domain/entities/scorm-export.types';
 import type { ExportScormDto } from '../dtos/export-scorm.dto';
+import {
+	AssetBlockingIssue,
+	evaluateLessonExportReadiness,
+	getSafeLessonContent,
+} from '../services/asset-export-readiness';
 
 @Injectable()
 export class ExportCourseScormUseCase {
@@ -34,6 +44,13 @@ export class ExportCourseScormUseCase {
 		}
 
 		const primitive = course.toPrimitives();
+		const blockingIssues = this.getBlockingIssues(primitive.modules || []);
+		if (blockingIssues.length > 0) {
+			throw new PreconditionFailedException(
+				this.buildBlockingExportMessage(blockingIssues)
+			);
+		}
+
 		const input: ScormCourseExportInput = {
 			id: primitive.id,
 			title: primitive.title,
@@ -74,9 +91,7 @@ export class ExportCourseScormUseCase {
 						duration: lesson.duration,
 						content,
 						mediaSourcePath: resolvedMediaUrl,
-						shouldUseVideoFallback:
-							(lessonType === 'video' || lessonType === 'audio') &&
-							!resolvedMediaUrl,
+						shouldUseVideoFallback: false,
 					};
 				}),
 			})),
@@ -86,13 +101,45 @@ export class ExportCourseScormUseCase {
 	}
 
 	private getSafeContent(value: unknown): Record<string, unknown> {
-		if (value && typeof value === 'object' && !Array.isArray(value)) {
-			return value as Record<string, unknown>;
-		}
-		return {};
+		return getSafeLessonContent(value);
 	}
 
 	private getString(value: unknown): string | null {
 		return typeof value === 'string' && value.trim().length > 0 ? value : null;
+	}
+
+	private getBlockingIssues(
+		modules: Array<{
+			lessons?: Array<{
+				id: string;
+				title: string;
+				lessonType: string;
+				content: unknown;
+			}>;
+		}>
+	): AssetBlockingIssue[] {
+		return modules.flatMap((module) =>
+			(module.lessons || []).flatMap(
+				(lesson) =>
+					evaluateLessonExportReadiness({
+						lessonId: lesson.id,
+						lessonType: lesson.lessonType,
+						content: lesson.content,
+					}).blockingIssues
+			)
+		);
+	}
+
+	private buildBlockingExportMessage(
+		blockingIssues: AssetBlockingIssue[]
+	): string {
+		if (blockingIssues.length === 1) {
+			return blockingIssues[0].message;
+		}
+
+		return `${blockingIssues.length} pendencia(s) impedem a exportacao SCORM: ${blockingIssues
+			.slice(0, 3)
+			.map((issue) => issue.message)
+			.join(' ')}`;
 	}
 }
