@@ -1,14 +1,8 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
-import {
-	GENERATION_JOB_REPOSITORY,
-	type GenerationJobRepositoryPort,
-} from '../../domain/ports/generation-job-repository.port';
+import { Injectable, Logger } from '@nestjs/common';
+import { GenerationJobRepositoryPort } from '../../domain/ports/generation-job-repository.port';
 import { GenerationEventsService } from '../services/generation-events.service';
 import { GenerationJobDescriptorService } from '../services/generation-job-descriptor.service';
-import {
-	LESSON_REPOSITORY,
-	type LessonRepositoryPort,
-} from '../../domain/ports/lesson-repository.port';
+import { LessonRepositoryPort } from '../../domain/ports/lesson-repository.port';
 import { GenerateSectionVideoUseCase } from './generate-section-video.usecase';
 import { MergeLessonSectionsVideoUseCase } from './merge-lesson-sections-video.usecase';
 import { GenerateLessonAudioUseCase } from './generate-lesson-audio.usecase';
@@ -45,9 +39,7 @@ export class AssetsGenerationOrchestratorUseCase {
 	);
 
 	constructor(
-		@Inject(GENERATION_JOB_REPOSITORY)
 		private readonly generationJobRepository: GenerationJobRepositoryPort,
-		@Inject(LESSON_REPOSITORY)
 		private readonly lessonRepository: LessonRepositoryPort,
 		private readonly generationEventsService: GenerationEventsService,
 		private readonly generateSectionVideoUseCase: GenerateSectionVideoUseCase,

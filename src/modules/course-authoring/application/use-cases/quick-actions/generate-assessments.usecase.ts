@@ -4,22 +4,10 @@ import {
 	NotFoundException,
 	PreconditionFailedException,
 } from '@nestjs/common';
-import {
-	COURSE_REPOSITORY,
-	type CourseRepositoryPort,
-} from '../../../domain/ports/course-repository.port';
-import {
-	LESSON_REPOSITORY,
-	type LessonRepositoryPort,
-} from '../../../domain/ports/lesson-repository.port';
-import {
-	HISTORY_SERVICE,
-	type HistoryServicePort,
-} from 'src/shared/history/domain/ports/history-service.port';
-import {
-	TOKEN_USAGE_SERVICE,
-	type TokenUsagePort,
-} from 'src/shared/token-usage/domain/ports/token-usage.port';
+import { CourseRepositoryPort } from '../../../domain/ports/course-repository.port';
+import { LessonRepositoryPort } from '../../../domain/ports/lesson-repository.port';
+import { HistoryServicePort } from 'src/shared/history/domain/ports/history-service.port';
+import { TokenUsagePort } from 'src/shared/token-usage/domain/ports/token-usage.port';
 import {
 	GENERATE_ASSESSMENTS_AGENT,
 	type GenerateAssessmentsAgentPort,
@@ -30,13 +18,9 @@ import { Lesson } from '../../../domain/entities/lesson.entity';
 @Injectable()
 export class GenerateAssessmentsUseCase {
 	constructor(
-		@Inject(COURSE_REPOSITORY)
 		private readonly courseRepository: CourseRepositoryPort,
-		@Inject(LESSON_REPOSITORY)
 		private readonly lessonRepository: LessonRepositoryPort,
-		@Inject(HISTORY_SERVICE)
 		private readonly historyService: HistoryServicePort,
-		@Inject(TOKEN_USAGE_SERVICE)
 		private readonly tokenUsageService: TokenUsagePort,
 		@Inject(GENERATE_ASSESSMENTS_AGENT)
 		private readonly generateAssessmentsAgent: GenerateAssessmentsAgentPort
@@ -60,10 +44,10 @@ export class GenerateAssessmentsUseCase {
 			);
 		}
 
-		const summary = await this.historyService.getSummary(authContext, courseId);
+		const summary = await this.historyService.getSummary(courseId, authContext);
 		const window = await this.historyService.getWindowMessages(
-			authContext,
-			courseId
+			courseId,
+			authContext
 		);
 
 		const userMessage = `Curso: ${JSON.stringify(
@@ -116,17 +100,17 @@ Para cada avaliação, retorne a estrutura de uma aula. Certifique-se de:
 		}
 
 		await this.historyService.saveMessage(
-			authContext,
 			courseId,
 			'user',
-			userMessage
+			userMessage,
+			authContext
 		);
 
 		await this.historyService.saveMessageAndSummarizeIfNecessary(
-			authContext,
 			courseId,
 			'assistant',
-			JSON.stringify(generatedAssessments)
+			JSON.stringify(generatedAssessments),
+			authContext
 		);
 
 		const validModuleIds = new Set(

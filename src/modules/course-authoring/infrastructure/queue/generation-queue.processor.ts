@@ -1,18 +1,12 @@
 import { OnWorkerEvent, Processor, WorkerHost } from '@nestjs/bullmq';
-import { Inject, Logger } from '@nestjs/common';
+import { Logger } from '@nestjs/common';
 import { Job } from 'bullmq';
 import {
 	GENERATION_JOB_NAMES,
 	GENERATION_QUEUE,
 } from 'src/shared/queue/queue.constants';
-import {
-	GENERATION_JOB_PAYLOAD_REPOSITORY,
-	type GenerationJobPayloadRepositoryPort,
-} from '../../domain/ports/generation-job-payload-repository.port';
-import {
-	GENERATION_JOB_REPOSITORY,
-	type GenerationJobRepositoryPort,
-} from '../../domain/ports/generation-job-repository.port';
+import { GenerationJobPayloadRepositoryPort } from '../../domain/ports/generation-job-payload-repository.port';
+import { GenerationJobRepositoryPort } from '../../domain/ports/generation-job-repository.port';
 import { CourseGenerationOrchestratorUseCase } from '../../application/use-cases/course-generation-orchestrator.usecase';
 import { AssetsGenerationOrchestratorUseCase } from '../../application/use-cases/assets-generation-orchestrator.usecase';
 import { GenerateLessonAudioUseCase } from '../../application/use-cases/generate-lesson-audio.usecase';
@@ -34,9 +28,7 @@ export class GenerationQueueProcessor extends WorkerHost {
 	private readonly logger = new Logger(GenerationQueueProcessor.name);
 
 	constructor(
-		@Inject(GENERATION_JOB_PAYLOAD_REPOSITORY)
 		private readonly payloadRepository: GenerationJobPayloadRepositoryPort,
-		@Inject(GENERATION_JOB_REPOSITORY)
 		private readonly generationJobRepository: GenerationJobRepositoryPort,
 		private readonly courseOrchestrator: CourseGenerationOrchestratorUseCase,
 		private readonly assetsOrchestrator: AssetsGenerationOrchestratorUseCase,

@@ -1,24 +1,16 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { GenerateTextDto } from '../dtos/generate-text.dto';
 import { ProviderRegistry } from '../../infrastructure/providers/provider.registry';
 import { GeneratedTextOutput } from '../../domain/entities/generate-text.types';
 import { AuthContext } from 'src/shared/database/domain/ports/db-context.port';
-import {
-	HISTORY_SERVICE,
-	type HistoryServicePort,
-} from 'src/shared/history/domain/ports/history-service.port';
-import {
-	TOKEN_USAGE_SERVICE,
-	type TokenUsagePort,
-} from 'src/shared/token-usage/domain/ports/token-usage.port';
+import { HistoryServicePort } from 'src/shared/history/domain/ports/history-service.port';
+import { TokenUsagePort } from 'src/shared/token-usage/domain/ports/token-usage.port';
 
 @Injectable()
 export class GenerateTextUseCase {
 	constructor(
 		private readonly providerRegistry: ProviderRegistry,
-		@Inject(HISTORY_SERVICE)
 		private readonly historyService: HistoryServicePort,
-		@Inject(TOKEN_USAGE_SERVICE)
 		private readonly tokenUsageService: TokenUsagePort
 	) {}
 
@@ -37,8 +29,8 @@ export class GenerateTextUseCase {
 			ai?.provider || 'openai'
 		);
 
-		const summary = await this.historyService.getSummary(auth, courseId);
-		const window = await this.historyService.getWindowMessages(auth, courseId);
+		const summary = await this.historyService.getSummary(courseId, auth);
+		const window = await this.historyService.getWindowMessages(courseId, auth);
 
 		const { content: generatedText, tokenUsage } = await textGenerator.generate(
 			{
@@ -58,12 +50,12 @@ export class GenerateTextUseCase {
 			);
 		}
 
-		await this.historyService.saveMessage(auth, courseId, 'user', prompt);
+		await this.historyService.saveMessage(courseId, 'user', prompt, auth);
 		await this.historyService.saveMessageAndSummarizeIfNecessary(
-			auth,
 			courseId,
 			'assistant',
-			generatedText.text
+			generatedText.text,
+			auth
 		);
 
 		return generatedText;

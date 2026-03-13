@@ -1,23 +1,25 @@
-export const MEDIA_SERVICE = 'MediaService';
-
-export interface MediaPort {
-	getAudioDuration(file: string): Promise<number>;
-	mergeAudios(files: string[], output: string): Promise<void>;
-	addBackgroundMusic(
+export abstract class MediaPort {
+	abstract getAudioDuration(file: string): Promise<number>;
+	abstract mergeAudios(files: string[], output: string): Promise<void>;
+	abstract addBackgroundMusic(
 		voice: string,
 		music: string,
 		output: string,
 		vol?: number
 	): Promise<void>;
-	cutMedia(
+	abstract cutMedia(
 		input: string,
 		start: string,
 		duration: string,
 		output: string
 	): Promise<void>;
-	imageToVideo(image: string, audio: string, output: string): Promise<void>;
-	concatVideos(listFile: string, output: string): Promise<void>;
-	syncVideoWithAudio(
+	abstract imageToVideo(
+		image: string,
+		audio: string,
+		output: string
+	): Promise<void>;
+	abstract concatVideos(listFile: string, output: string): Promise<void>;
+	abstract syncVideoWithAudio(
 		video: string,
 		audio: string,
 		output: string
@@ -38,7 +40,7 @@ export interface MediaPort {
 	 * - Resolução intermediária (2K) para balancear qualidade/performance
 	 * - Flags otimizadas para ambientes com recursos limitados (Render)
 	 */
-	createDynamicScene(params: {
+	abstract createDynamicScene(params: {
 		imagePath: string;
 		audioPath: string;
 		outputPath: string;

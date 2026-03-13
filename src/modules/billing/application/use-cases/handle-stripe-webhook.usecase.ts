@@ -1,10 +1,7 @@
 import { Injectable, Inject, Logger } from '@nestjs/common';
 import Stripe from 'stripe';
 import { STRIPE_CLIENT } from 'src/shared/stripe/stripe.constants';
-import {
-	USAGE_REPOSITORY,
-	type UsageRepositoryPort,
-} from '../../domain/ports/usage-repository.port';
+import { UsageRepositoryPort } from '../../domain/ports/usage-repository.port';
 
 @Injectable()
 export class HandleStripeWebhookUseCase {
@@ -13,7 +10,6 @@ export class HandleStripeWebhookUseCase {
 	constructor(
 		@Inject(STRIPE_CLIENT)
 		private readonly stripe: Stripe,
-		@Inject(USAGE_REPOSITORY)
 		private readonly usageRepository: UsageRepositoryPort
 	) {}
 

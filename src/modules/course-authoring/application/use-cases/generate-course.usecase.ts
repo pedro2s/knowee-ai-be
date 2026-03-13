@@ -1,28 +1,13 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
-import {
-	COURSE_REPOSITORY,
-	type CourseRepositoryPort,
-} from '../../domain/ports/course-repository.port';
+import { Injectable, Logger } from '@nestjs/common';
+import { CourseRepositoryPort } from '../../domain/ports/course-repository.port';
 import { ProviderRegistry } from '../../infrastructure/providers/provider.registry';
 import { GenerateCourseDto } from '../dtos/generate-course.dto';
 import { Course } from '../../domain/entities/course.entity';
 import type { InputFile } from '../../domain/entities/course.types';
-import {
-	FILE_PROCESSING_SERVICE,
-	type FileProcessingPort,
-} from 'src/shared/storage/domain/ports/file-processing.port';
-import {
-	EMBEDDING_SERVICE,
-	type EmbeddingPort,
-} from 'src/shared/storage/domain/ports/embedding.port';
-import {
-	TOKEN_USAGE_SERVICE,
-	type TokenUsagePort,
-} from 'src/shared/token-usage/domain/ports/token-usage.port';
-import {
-	HISTORY_SERVICE,
-	type HistoryServicePort,
-} from 'src/shared/history/domain/ports/history-service.port';
+import { FileProcessingPort } from 'src/shared/storage/domain/ports/file-processing.port';
+import { EmbeddingPort } from 'src/shared/storage/domain/ports/embedding.port';
+import { TokenUsagePort } from 'src/shared/token-usage/domain/ports/token-usage.port';
+import { HistoryServicePort } from 'src/shared/history/domain/ports/history-service.port';
 import { AuthContext } from 'src/shared/database/domain/ports/db-context.port';
 
 @Injectable()
@@ -30,16 +15,11 @@ export class GenerateCourseUseCase {
 	private readonly logger = new Logger(GenerateCourseUseCase.name);
 
 	constructor(
-		@Inject(COURSE_REPOSITORY)
 		private readonly courseRepository: CourseRepositoryPort,
 		private readonly providerRegistry: ProviderRegistry,
-		@Inject(FILE_PROCESSING_SERVICE)
 		private readonly fileProcessingService: FileProcessingPort,
-		@Inject(EMBEDDING_SERVICE)
 		private readonly embeddingService: EmbeddingPort,
-		@Inject(TOKEN_USAGE_SERVICE)
 		private readonly tokenUsageService: TokenUsagePort,
-		@Inject(HISTORY_SERVICE)
 		private readonly historyService: HistoryServicePort
 	) {}
 
@@ -106,16 +86,16 @@ export class GenerateCourseUseCase {
 			files: 'omitted',
 		});
 		await this.historyService.saveMessage(
-			auth,
 			savedCourse.id,
 			'user',
-			userMessage
+			userMessage,
+			auth
 		);
 		await this.historyService.saveMessage(
-			auth,
 			savedCourse.id,
 			'assistant',
-			JSON.stringify(generatedCourse)
+			JSON.stringify(generatedCourse),
+			auth
 		);
 
 		return savedCourse;

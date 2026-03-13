@@ -1,15 +1,9 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { GenerateCourseDto } from '../dtos/generate-course.dto';
-import {
-	GENERATION_JOB_REPOSITORY,
-	type GenerationJobRepositoryPort,
-} from '../../domain/ports/generation-job-repository.port';
+import { GenerationJobRepositoryPort } from '../../domain/ports/generation-job-repository.port';
 import { GenerationEventsService } from '../services/generation-events.service';
 import { GenerationJob } from '../../domain/entities/generation-job.types';
-import {
-	GENERATION_JOB_PAYLOAD_REPOSITORY,
-	type GenerationJobPayloadRepositoryPort,
-} from '../../domain/ports/generation-job-payload-repository.port';
+import { GenerationJobPayloadRepositoryPort } from '../../domain/ports/generation-job-payload-repository.port';
 import { GenerationQueueProducer } from '../../infrastructure/queue/generation-queue.producer';
 import { GENERATION_QUEUE } from 'src/shared/queue/queue.constants';
 import { GenerationJobDescriptorService } from '../services/generation-job-descriptor.service';
@@ -17,9 +11,7 @@ import { GenerationJobDescriptorService } from '../services/generation-job-descr
 @Injectable()
 export class StartCourseGenerationUseCase {
 	constructor(
-		@Inject(GENERATION_JOB_REPOSITORY)
 		private readonly generationJobRepository: GenerationJobRepositoryPort,
-		@Inject(GENERATION_JOB_PAYLOAD_REPOSITORY)
 		private readonly generationJobPayloadRepository: GenerationJobPayloadRepositoryPort,
 		private readonly generationQueueProducer: GenerationQueueProducer,
 		private readonly generationEventsService: GenerationEventsService

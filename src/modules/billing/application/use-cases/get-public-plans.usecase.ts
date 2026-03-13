@@ -1,16 +1,10 @@
-import { Inject, Injectable } from '@nestjs/common';
-import {
-	USAGE_REPOSITORY,
-	type UsageRepositoryPort,
-} from '../../domain/ports/usage-repository.port';
+import { Injectable } from '@nestjs/common';
+import { UsageRepositoryPort } from '../../domain/ports/usage-repository.port';
 import { PublicBillingPlansResponseDto } from '../dtos/public-billing-plans.response.dto';
 
 @Injectable()
 export class GetPublicPlansUseCase {
-	constructor(
-		@Inject(USAGE_REPOSITORY)
-		private readonly usageRepository: UsageRepositoryPort
-	) {}
+	constructor(private readonly usageRepository: UsageRepositoryPort) {}
 
 	async execute(): Promise<PublicBillingPlansResponseDto> {
 		const tiers = await this.usageRepository.listPublicSubscriptionTiers();

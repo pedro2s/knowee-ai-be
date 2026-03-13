@@ -119,10 +119,10 @@ describe('GenerateAssessmentsUseCase', () => {
 		expect(generateAssessmentsMock).toHaveBeenCalled();
 		expect(saveTokenUsageMock).toHaveBeenCalledWith('user-1', 300, 'gpt-4.1');
 		expect(saveMessageMock).toHaveBeenCalledWith(
-			{ userId: 'user-1', role: 'authenticated' },
 			'course-1',
 			'user',
-			expect.stringContaining('Crie sugestões de avaliações')
+			expect.stringContaining('Crie sugestões de avaliações'),
+			{ userId: 'user-1', role: 'authenticated' }
 		);
 		expect(createLessonMock).toHaveBeenCalledTimes(1);
 		const [createdLessonInput] = createLessonMock.mock.calls[0];
@@ -131,10 +131,10 @@ describe('GenerateAssessmentsUseCase', () => {
 		expect(createdLesson.moduleId).toBe('module-1');
 		expect(createdLesson.orderIndex).toBe(1);
 		expect(saveMessageAndSummarizeMock).toHaveBeenCalledWith(
-			{ userId: 'user-1', role: 'authenticated' },
 			'course-1',
 			'assistant',
-			expect.any(String)
+			expect.any(String),
+			{ userId: 'user-1', role: 'authenticated' }
 		);
 	});
 

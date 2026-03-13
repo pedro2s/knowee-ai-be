@@ -1,14 +1,10 @@
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
-import {
-	GENERATION_JOB_REPOSITORY,
-	type GenerationJobRepositoryPort,
-} from '../../domain/ports/generation-job-repository.port';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { GenerationJobRepositoryPort } from '../../domain/ports/generation-job-repository.port';
 import { GenerationJob } from '../../domain/entities/generation-job.types';
 
 @Injectable()
 export class GetGenerationJobUseCase {
 	constructor(
-		@Inject(GENERATION_JOB_REPOSITORY)
 		private readonly generationJobRepository: GenerationJobRepositoryPort
 	) {}
 

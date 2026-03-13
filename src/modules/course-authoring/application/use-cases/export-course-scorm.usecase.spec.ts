@@ -78,7 +78,7 @@ describe('ExportCourseScormUseCase', () => {
 		});
 
 		expect(result).toBe(generatorResult);
-		// eslint-disable-next-line @typescript-eslint/unbound-method
+
 		const generateScormMock = scormPackageGenerator.generate;
 		expect(generateScormMock).toHaveBeenCalledWith(
 			expect.objectContaining({
@@ -136,7 +136,6 @@ describe('ExportCourseScormUseCase', () => {
 
 		await useCase.execute('course-1', 'user-1');
 
-		// eslint-disable-next-line @typescript-eslint/unbound-method
 		const generateScormMock = scormPackageGenerator.generate;
 		expect(generateScormMock).toHaveBeenCalledWith(
 			expect.objectContaining({

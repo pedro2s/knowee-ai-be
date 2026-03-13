@@ -85,6 +85,13 @@
 			"when": 1774972800000,
 			"tag": "0011_generation_job_inbox",
 			"breakpoints": true
+		},
+		{
+			"idx": 12,
+			"version": "7",
+			"when": 1775232000000,
+			"tag": "0012_assistant_pending_actions",
+			"breakpoints": true
 		}
 	]
 }

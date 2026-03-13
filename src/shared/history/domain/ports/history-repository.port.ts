@@ -1,20 +1,24 @@
 import { AuthContext } from 'src/shared/database/domain/ports/db-context.port';
 import { History } from '../entities/history.entity';
 
-export const HISTORY_REPOSITORY = 'HISTORY_REPOSITORY';
+export abstract class HistoryRepositoryPort {
+	abstract findHistory(
+		courseId: string,
+		context: AuthContext
+	): Promise<History[]>;
 
-export interface HistoryRepositoryPort {
-	findHistory(courseId: string, context: AuthContext): Promise<History[]>;
-
-	findWindowHistory(
+	abstract findWindowHistory(
 		courseId: string,
 		windowSize: number,
 		context: AuthContext
 	): Promise<History[]>;
 
-	countMessages(courseId: string, context: AuthContext): Promise<number>;
+	abstract countMessages(
+		courseId: string,
+		context: AuthContext
+	): Promise<number>;
 
-	saveHistory(history: History, context: AuthContext): Promise<void>;
+	abstract saveHistory(history: History, context: AuthContext): Promise<void>;
 
-	deleteHistory(courseId: string, context: AuthContext): Promise<void>;
+	abstract deleteHistory(courseId: string, context: AuthContext): Promise<void>;
 }

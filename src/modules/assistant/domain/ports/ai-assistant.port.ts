@@ -1,4 +1,4 @@
-import { QuestionAnswered } from '../entities/question-answer.types';
+import { AssistantModelAnswer } from '../entities/assistant-tool.types';
 import {
 	InteractionContext,
 	InteractionResult,
@@ -11,5 +11,5 @@ export interface AskQuestionInput {
 export interface AIAssistantPort {
 	ask(
 		context: InteractionContext<AskQuestionInput>
-	): Promise<InteractionResult<QuestionAnswered>>;
+	): Promise<InteractionResult<AssistantModelAnswer>>;
 }

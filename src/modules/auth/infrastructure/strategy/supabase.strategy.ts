@@ -25,7 +25,7 @@ export class SupabaseStrategy extends PassportStrategy(Strategy, 'jwt') {
 		});
 	}
 
-	async validate(req: Request, payload: any) {
+	async validate(req: Request) {
 		const accessToken = ExtractJwt.fromAuthHeaderAsBearerToken()(req);
 
 		const { data, error } = await this.supabaseClient.auth.getUser(

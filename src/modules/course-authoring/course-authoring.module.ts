@@ -5,8 +5,8 @@ import { GenerateCourseUseCase } from './application/use-cases/generate-course.u
 import { AIProvidersModule } from 'src/shared/ai-providers/ai-providers.module';
 import { DrizzleLessonRepository } from './infrastructure/persistence/drizzle/drizzle-lesson.repository';
 import { MediaModule } from 'src/shared/media/media.module';
-import { LESSON_REPOSITORY } from './domain/ports/lesson-repository.port';
-import { COURSE_REPOSITORY } from './domain/ports/course-repository.port';
+import { LessonRepositoryPort } from './domain/ports/lesson-repository.port';
+import { CourseRepositoryPort } from './domain/ports/course-repository.port';
 import { DatabaseModule } from 'src/shared/database/database.module';
 import { CoursesController } from './infrastructure/controllers/courses.controller';
 import { LessonsController } from './infrastructure/controllers/lessons.controller';
@@ -17,10 +17,11 @@ import { OpenAICourseGeneratorAdapter } from './infrastructure/providers/openai/
 import { ModulesController } from './infrastructure/controllers/modules.controller';
 import { GetModuleUseCase } from './application/use-cases/get-module.usecase';
 import { GetLessonUseCase } from './application/use-cases/get-lesson.usecase';
-import { MODULE_REPOSITORY } from './domain/ports/module-repository.port';
+import { ModuleRepositoryPort } from './domain/ports/module-repository.port';
 import { DrizzleModuleRepository } from './infrastructure/persistence/drizzle/drizzle-module.repository';
 import { FetchModulesUseCase } from './application/use-cases/fetch-modules.usecase';
 import { CreateModuleUseCase } from './application/use-cases/create-module.usecase';
+import { CreateModuleTreeUseCase } from './application/use-cases/create-module-tree.usecase';
 import { DeleteModuleUseCase } from './application/use-cases/delete-module.usecase';
 import { UpdateModuleUseCase } from './application/use-cases/update-module.usecase';
 import { HistoryModule } from '../../shared/history/history.module';
@@ -57,7 +58,7 @@ import { ScormPackageGeneratorAdapter } from './infrastructure/providers/scorm/s
 import { ScormManifestBuilder } from './infrastructure/providers/scorm/scorm-manifest.builder';
 import { StartCourseGenerationUseCase } from './application/use-cases/start-course-generation.usecase';
 import { CourseGenerationOrchestratorUseCase } from './application/use-cases/course-generation-orchestrator.usecase';
-import { GENERATION_JOB_REPOSITORY } from './domain/ports/generation-job-repository.port';
+import { GenerationJobRepositoryPort } from './domain/ports/generation-job-repository.port';
 import { DrizzleGenerationJobRepository } from './infrastructure/persistence/drizzle/drizzle-generation-job.repository';
 import { DrizzleGenerationJobPayloadRepository } from './infrastructure/persistence/drizzle/drizzle-generation-job-payload.repository';
 import { GenerationEventsService } from './application/services/generation-events.service';
@@ -70,7 +71,7 @@ import { AssetsGenerationOrchestratorUseCase } from './application/use-cases/ass
 import { GetActiveGenerationJobByCourseUseCase } from './application/use-cases/get-active-generation-job-by-course.usecase';
 import { GetActiveGenerationJobsByCourseUseCase } from './application/use-cases/get-active-generation-jobs-by-course.usecase';
 import { AccessControlModule } from '../access-control/access-control.module';
-import { GENERATION_JOB_PAYLOAD_REPOSITORY } from './domain/ports/generation-job-payload-repository.port';
+import { GenerationJobPayloadRepositoryPort } from './domain/ports/generation-job-payload-repository.port';
 import { GenerationQueueProducer } from './infrastructure/queue/generation-queue.producer';
 import { GenerationQueueProcessor } from './infrastructure/queue/generation-queue.processor';
 import { StartLessonAudioGenerationUseCase } from './application/use-cases/start-lesson-audio-generation.usecase';
@@ -101,15 +102,15 @@ const workerProviders =
 		AccessControlModule,
 	],
 	providers: [
-		{ provide: COURSE_REPOSITORY, useClass: DrizzleCourseRepository },
-		{ provide: LESSON_REPOSITORY, useClass: DrizzleLessonRepository },
-		{ provide: MODULE_REPOSITORY, useClass: DrizzleModuleRepository },
+		{ provide: CourseRepositoryPort, useClass: DrizzleCourseRepository },
+		{ provide: LessonRepositoryPort, useClass: DrizzleLessonRepository },
+		{ provide: ModuleRepositoryPort, useClass: DrizzleModuleRepository },
 		{
-			provide: GENERATION_JOB_REPOSITORY,
+			provide: GenerationJobRepositoryPort,
 			useClass: DrizzleGenerationJobRepository,
 		},
 		{
-			provide: GENERATION_JOB_PAYLOAD_REPOSITORY,
+			provide: GenerationJobPayloadRepositoryPort,
 			useClass: DrizzleGenerationJobPayloadRepository,
 		},
 		GenerateCourseUseCase,
@@ -131,6 +132,7 @@ const workerProviders =
 		GenerateSectionVideoUseCase,
 		MergeLessonSectionsVideoUseCase,
 		CreateModuleUseCase,
+		CreateModuleTreeUseCase,
 		GetCourseUseCase,
 		GetLessonUseCase,
 		FetchCoursesUseCase,
@@ -183,9 +185,10 @@ const workerProviders =
 		...workerProviders,
 	],
 	exports: [
-		{ provide: COURSE_REPOSITORY, useClass: DrizzleCourseRepository },
-		{ provide: LESSON_REPOSITORY, useClass: DrizzleLessonRepository },
-		{ provide: MODULE_REPOSITORY, useClass: DrizzleModuleRepository },
+		{ provide: CourseRepositoryPort, useClass: DrizzleCourseRepository },
+		{ provide: LessonRepositoryPort, useClass: DrizzleLessonRepository },
+		{ provide: ModuleRepositoryPort, useClass: DrizzleModuleRepository },
+		CreateModuleTreeUseCase,
 	],
 })
 export class CourseAuthoringModule {}

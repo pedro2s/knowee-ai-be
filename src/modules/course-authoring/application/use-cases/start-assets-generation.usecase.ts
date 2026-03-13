@@ -1,37 +1,23 @@
 import {
 	BadRequestException,
-	Inject,
 	Injectable,
 	NotFoundException,
 } from '@nestjs/common';
 import { StartAssetsGenerationDto } from '../dtos/start-assets-generation.dto';
-import {
-	COURSE_REPOSITORY,
-	type CourseRepositoryPort,
-} from '../../domain/ports/course-repository.port';
-import {
-	GENERATION_JOB_REPOSITORY,
-	type GenerationJobRepositoryPort,
-} from '../../domain/ports/generation-job-repository.port';
+import { CourseRepositoryPort } from '../../domain/ports/course-repository.port';
+import { GenerationJobRepositoryPort } from '../../domain/ports/generation-job-repository.port';
 import { StartAssetsGenerationResponseDto } from '../dtos/start-assets-generation.response.dto';
 import { GenerationEventsService } from '../services/generation-events.service';
-import {
-	GENERATION_JOB_PAYLOAD_REPOSITORY,
-	type GenerationJobPayloadRepositoryPort,
-} from '../../domain/ports/generation-job-payload-repository.port';
+import { GenerationJobPayloadRepositoryPort } from '../../domain/ports/generation-job-payload-repository.port';
 import { GenerationQueueProducer } from '../../infrastructure/queue/generation-queue.producer';
 import { GENERATION_QUEUE } from 'src/shared/queue/queue.constants';
 import { GenerationJobDescriptorService } from '../services/generation-job-descriptor.service';
-import { StartGenerationJobResult } from '../dtos/start-generation-job.result';
 
 @Injectable()
 export class StartAssetsGenerationUseCase {
 	constructor(
-		@Inject(COURSE_REPOSITORY)
 		private readonly courseRepository: CourseRepositoryPort,
-		@Inject(GENERATION_JOB_REPOSITORY)
 		private readonly generationJobRepository: GenerationJobRepositoryPort,
-		@Inject(GENERATION_JOB_PAYLOAD_REPOSITORY)
 		private readonly generationJobPayloadRepository: GenerationJobPayloadRepositoryPort,
 		private readonly generationQueueProducer: GenerationQueueProducer,
 		private readonly generationEventsService: GenerationEventsService

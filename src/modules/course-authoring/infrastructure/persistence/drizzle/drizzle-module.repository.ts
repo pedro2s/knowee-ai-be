@@ -12,7 +12,6 @@ import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import * as schema from 'src/shared/database/infrastructure/drizzle/schema';
 import { asc, eq } from 'drizzle-orm';
 import { GeneratedModule } from 'src/modules/course-authoring/domain/entities/course.types';
-import { Lesson } from 'src/modules/course-authoring/domain/entities/lesson.entity';
 
 type DrizzleDB = NodePgDatabase<typeof schema>;
 
@@ -141,9 +140,9 @@ export class DrizzleModuleRepository implements ModuleRepositoryPort {
 			const lessonsToInsert = lessons.map((lesson) => ({
 				moduleId,
 				courseId,
-				lessonType: 'article',
+				lessonType: lesson.lessonType,
 				title: lesson.title,
-				content: lesson.content,
+				content: lesson.content ?? {},
 				orderIndex: lesson.orderIndex,
 				description: lesson.description,
 			}));

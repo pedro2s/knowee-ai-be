@@ -4,7 +4,6 @@ import { ChatModel } from 'openai/resources';
 import {
 	GeneratedLessonScript,
 	GenerateLessonScriptInput,
-	ScriptSection,
 } from 'src/modules/course-authoring/domain/entities/lesson-script.types';
 import { LessonScriptGeneratorPort } from 'src/modules/course-authoring/domain/ports/lesson-script-generator.port';
 import {
