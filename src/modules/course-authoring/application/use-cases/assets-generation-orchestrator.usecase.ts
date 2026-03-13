@@ -41,6 +41,14 @@ type SummaryItem = {
 	error?: string;
 };
 
+type EnsureScriptSectionsResult = {
+	lesson: {
+		id: string;
+		content: Record<string, unknown>;
+	};
+	generatedScript: boolean;
+};
+
 @Injectable()
 export class AssetsGenerationOrchestratorUseCase {
 	private readonly logger = new Logger(
@@ -119,16 +127,17 @@ export class AssetsGenerationOrchestratorUseCase {
 
 				try {
 					if (lesson.lessonType === 'video') {
-						const lessonWithScript = await this.ensureScriptSections({
-							lessonId: lesson.id,
-							lessonType: lesson.lessonType,
-							courseId: input.courseId,
-							moduleId: lesson.moduleId,
-							title: lesson.title,
-							description: lesson.description ?? lesson.title,
-							content: lesson.content,
-							userId: input.userId,
-						});
+						const { lesson: lessonWithScript, generatedScript } =
+							await this.ensureScriptSections({
+								lessonId: lesson.id,
+								lessonType: lesson.lessonType,
+								courseId: input.courseId,
+								moduleId: lesson.moduleId,
+								title: lesson.title,
+								description: lesson.description ?? lesson.title,
+								content: lesson.content,
+								userId: input.userId,
+							});
 						const sections =
 							(getSafeLessonContent(lessonWithScript?.content)
 								.scriptSections as ScriptSection[] | undefined) ?? [];
@@ -151,7 +160,10 @@ export class AssetsGenerationOrchestratorUseCase {
 								error: 'no_script_sections',
 							});
 						} else {
-							for (const section of sections) {
+							const sectionsMissingVideo = sections.filter(
+								(section) => !this.hasExistingSectionVideo(section)
+							);
+							for (const section of sectionsMissingVideo) {
 								await this.generateSectionVideoUseCase.execute(
 									{
 										lessonId: lesson.id,
@@ -165,10 +177,16 @@ export class AssetsGenerationOrchestratorUseCase {
 								);
 							}
 
-							await this.mergeLessonSectionsVideoUseCase.execute(
-								lesson.id,
-								input.userId
+							const shouldMergeFinalVideo = !this.hasExistingFinalVideo(
+								lessonWithScript?.content
 							);
+
+							if (shouldMergeFinalVideo) {
+								await this.mergeLessonSectionsVideoUseCase.execute(
+									lesson.id,
+									input.userId
+								);
+							}
 
 							const refreshedLesson = await this.lessonRepository.findById(
 								lesson.id,
@@ -184,13 +202,20 @@ export class AssetsGenerationOrchestratorUseCase {
 							summary.push({
 								lessonId: lesson.id,
 								lessonType: lesson.lessonType,
-								status: readiness.isReady ? 'success' : 'failed',
+								status:
+									!generatedScript &&
+									sectionsMissingVideo.length === 0 &&
+									!shouldMergeFinalVideo
+										? 'skipped'
+										: readiness.isReady
+											? 'success'
+											: 'failed',
 								readiness: readiness.readiness,
 								error: readiness.blockingIssues[0]?.code,
 							});
 						}
 					} else if (lesson.lessonType === 'audio') {
-						await this.ensureScriptSections({
+						const { generatedScript } = await this.ensureScriptSections({
 							lessonId: lesson.id,
 							lessonType: lesson.lessonType,
 							courseId: input.courseId,
@@ -201,13 +226,19 @@ export class AssetsGenerationOrchestratorUseCase {
 							userId: input.userId,
 						});
 
-						await this.generateLessonAudioUseCase.execute({
-							lessonId: lesson.id,
-							audioProvider: input.providerSelection.audioProvider,
-							audioVoiceId: input.providerSelection.audioVoiceId,
-							userId: input.userId,
-							runInBackground: false,
-						});
+						const shouldGenerateAudio = !this.hasExistingLessonAudio(
+							lesson.content
+						);
+
+						if (shouldGenerateAudio) {
+							await this.generateLessonAudioUseCase.execute({
+								lessonId: lesson.id,
+								audioProvider: input.providerSelection.audioProvider,
+								audioVoiceId: input.providerSelection.audioVoiceId,
+								userId: input.userId,
+								runInBackground: false,
+							});
+						}
 
 						const refreshedLesson = await this.lessonRepository.findById(
 							lesson.id,
@@ -222,83 +253,103 @@ export class AssetsGenerationOrchestratorUseCase {
 						summary.push({
 							lessonId: lesson.id,
 							lessonType: lesson.lessonType,
-							status: readiness.isReady ? 'success' : 'failed',
+							status:
+								!generatedScript && !shouldGenerateAudio
+									? 'skipped'
+									: readiness.isReady
+										? 'success'
+										: 'failed',
 							readiness: readiness.readiness,
 							error: readiness.blockingIssues[0]?.code,
 						});
 					} else if (lesson.lessonType === 'article') {
-						const generatedArticle = await this.generateArticleUseCase.execute(
-							{
-								courseId: input.courseId,
-								moduleId: lesson.moduleId,
-								title: lesson.title,
-								description: lesson.description ?? lesson.title,
-								ai: {
-									provider: 'openai',
-								},
-							},
-							input.userId
-						);
+						const currentContent = getSafeLessonContent(lesson.content);
 
-						if (!generatedArticle.content?.trim()) {
-							throw new Error('article_content_empty');
+						if (this.hasExistingArticleContent(currentContent)) {
+							summary.push({
+								lessonId: lesson.id,
+								lessonType: lesson.lessonType,
+								status: 'skipped',
+								readiness: 'ready',
+							});
+						} else {
+							const generatedArticle =
+								await this.generateArticleUseCase.execute(
+									{
+										courseId: input.courseId,
+										moduleId: lesson.moduleId,
+										title: lesson.title,
+										description: lesson.description ?? lesson.title,
+										ai: {
+											provider: 'openai',
+										},
+									},
+									input.userId
+								);
+
+							if (!generatedArticle.content?.trim()) {
+								throw new Error('article_content_empty');
+							}
+
+							await this.lessonRepository.update(
+								lesson.id,
+								{
+									content: {
+										...currentContent,
+										articleContent: generatedArticle.content,
+									},
+								},
+								auth
+							);
+
+							summary.push({
+								lessonId: lesson.id,
+								lessonType: lesson.lessonType,
+								status: 'success',
+								readiness: 'ready',
+							});
 						}
-
-						const currentContent =
-							lesson.content && typeof lesson.content === 'object'
-								? (lesson.content as Record<string, unknown>)
-								: {};
-						await this.lessonRepository.update(
-							lesson.id,
-							{
-								content: {
-									...currentContent,
-									articleContent: generatedArticle.content,
-								},
-							},
-							auth
-						);
-
-						summary.push({
-							lessonId: lesson.id,
-							lessonType: lesson.lessonType,
-							status: 'success',
-							readiness: 'ready',
-						});
 					} else if (lesson.lessonType === 'quiz') {
-						const generatedQuiz = await this.generateQuizUseCase.execute(
-							{
-								courseId: input.courseId,
-								moduleId: lesson.moduleId,
-							},
-							input.userId
-						);
+						const currentContent = getSafeLessonContent(lesson.content);
 
-						if (!generatedQuiz.quizQuestions?.length) {
-							throw new Error('quiz_questions_empty');
-						}
-
-						const currentContent =
-							lesson.content && typeof lesson.content === 'object'
-								? (lesson.content as Record<string, unknown>)
-								: {};
-						await this.lessonRepository.update(
-							lesson.id,
-							{
-								content: {
-									...currentContent,
-									quizQuestions: generatedQuiz.quizQuestions,
+						if (this.hasExistingQuizQuestions(currentContent)) {
+							summary.push({
+								lessonId: lesson.id,
+								lessonType: lesson.lessonType,
+								status: 'skipped',
+								readiness: 'ready',
+							});
+						} else {
+							const generatedQuiz = await this.generateQuizUseCase.execute(
+								{
+									courseId: input.courseId,
+									moduleId: lesson.moduleId,
 								},
-							},
-							auth
-						);
+								input.userId
+							);
 
-						summary.push({
-							lessonId: lesson.id,
-							lessonType: lesson.lessonType,
-							status: 'success',
-							readiness: 'ready',
-						});
+							if (!generatedQuiz.quizQuestions?.length) {
+								throw new Error('quiz_questions_empty');
+							}
+
+							await this.lessonRepository.update(
+								lesson.id,
+								{
+									content: {
+										...currentContent,
+										quizQuestions: generatedQuiz.quizQuestions,
+									},
+								},
+								auth
+							);
+
+							summary.push({
+								lessonId: lesson.id,
+								lessonType: lesson.lessonType,
+								status: 'success',
+								readiness: 'ready',
+							});
+						}
 					} else if (
 						lesson.lessonType === 'pdf' ||
 						lesson.lessonType === 'external'
@@ -520,7 +571,7 @@ export class AssetsGenerationOrchestratorUseCase {
 		description: string;
 		content: unknown;
 		userId: string;
-	}) {
+	}): Promise<EnsureScriptSectionsResult> {
 		const currentContent = getSafeLessonContent(input.content);
 		const scriptSections = Array.isArray(currentContent.scriptSections)
 			? (currentContent.scriptSections as ScriptSection[])
@@ -528,8 +579,11 @@ export class AssetsGenerationOrchestratorUseCase {
 
 		if (scriptSections.length > 0) {
 			return {
-				id: input.lessonId,
-				content: currentContent,
+				lesson: {
+					id: input.lessonId,
+					content: currentContent,
+				},
+				generatedScript: false,
 			};
 		}
 
@@ -557,9 +611,52 @@ export class AssetsGenerationOrchestratorUseCase {
 			{ userId: input.userId, role: 'authenticated' as const }
 		);
 
-		return this.lessonRepository.findById(input.lessonId, {
-			userId: input.userId,
-			role: 'authenticated' as const,
-		});
+		const refreshedLesson = await this.lessonRepository.findById(
+			input.lessonId,
+			{
+				userId: input.userId,
+				role: 'authenticated' as const,
+			}
+		);
+
+		return {
+			lesson: {
+				id: input.lessonId,
+				content: getSafeLessonContent(refreshedLesson?.content),
+			},
+			generatedScript: true,
+		};
+	}
+
+	private hasExistingSectionVideo(section: ScriptSection): boolean {
+		return (
+			this.hasNonEmptyString(section.videoPath) ||
+			this.hasNonEmptyString(section.videoUrl)
+		);
+	}
+
+	private hasExistingFinalVideo(content: unknown): boolean {
+		return this.hasNonEmptyString(getSafeLessonContent(content).finalVideoPath);
+	}
+
+	private hasExistingLessonAudio(content: unknown): boolean {
+		const safeContent = getSafeLessonContent(content);
+		return (
+			this.hasNonEmptyString(safeContent.audioPath) ||
+			this.hasNonEmptyString(safeContent.audioUrl)
+		);
+	}
+
+	private hasExistingArticleContent(content: unknown): boolean {
+		return this.hasNonEmptyString(getSafeLessonContent(content).articleContent);
+	}
+
+	private hasExistingQuizQuestions(content: unknown): boolean {
+		const quizQuestions = getSafeLessonContent(content).quizQuestions;
+		return Array.isArray(quizQuestions) ? quizQuestions.length > 0 : false;
+	}
+
+	private hasNonEmptyString(value: unknown): boolean {
+		return typeof value === 'string' && value.trim().length > 0;
 	}
 }

@@ -101,7 +101,7 @@ describe('AssetsGenerationOrchestratorUseCase', () => {
 			title: 'Aula Artigo',
 			description: null,
 			lessonType: 'article',
-			content: { keep: 'value', articleContent: 'old' },
+			content: { keep: 'value' },
 		} as never);
 		generateArticleExecuteMock.mockResolvedValue({
 			content: 'novo artigo',
@@ -246,6 +246,9 @@ describe('AssetsGenerationOrchestratorUseCase', () => {
 		expect(completionCall?.[1].metadata).toEqual(
 			expect.objectContaining({
 				isExportReady: true,
+				lessonSummary: expect.objectContaining({
+					skipped: 0,
+				}),
 				blockingIssues: [],
 			})
 		);
@@ -310,7 +313,343 @@ describe('AssetsGenerationOrchestratorUseCase', () => {
 		expect(completionCall?.[1].metadata).toEqual(
 			expect.objectContaining({
 				isExportReady: true,
+				lessonSummary: expect.objectContaining({
+					skipped: 0,
+				}),
 				blockingIssues: [],
+			})
+		);
+	});
+
+	it('reaproveita video final e secoes prontas sem regerar nada e marca a aula como skipped', async () => {
+		lessonRepository.findById
+			.mockResolvedValueOnce({
+				id: 'lesson-video-existing',
+				moduleId: 'module-1',
+				title: 'Aula Video',
+				description: 'desc',
+				lessonType: 'video',
+				content: {
+					scriptSections: [
+						{
+							id: 'section-1',
+							content: 'texto',
+							videoPath: 'user-1/lesson-video-existing/section-1.mp4',
+						},
+					],
+					finalVideoPath: 'user-1/lesson-video-existing/final.mp4',
+				},
+			} as never)
+			.mockResolvedValueOnce({
+				id: 'lesson-video-existing',
+				moduleId: 'module-1',
+				title: 'Aula Video',
+				description: 'desc',
+				lessonType: 'video',
+				content: {
+					scriptSections: [
+						{
+							id: 'section-1',
+							content: 'texto',
+							videoPath: 'user-1/lesson-video-existing/section-1.mp4',
+						},
+					],
+					finalVideoPath: 'user-1/lesson-video-existing/final.mp4',
+				},
+			} as never);
+
+		await useCase.run({
+			jobId: 'job-video-existing',
+			userId: 'user-1',
+			courseId: 'course-1',
+			lessonIds: ['lesson-video-existing'],
+			strategy: 'all',
+			providerSelection,
+		});
+
+		expect(generateSectionVideoUseCase.execute).not.toHaveBeenCalled();
+		expect(mergeLessonSectionsVideoUseCase.execute).not.toHaveBeenCalled();
+
+		const completionCall = generationJobRepository.update.mock.calls.find(
+			(call) => call[1].status === 'completed'
+		);
+		expect(completionCall?.[1].metadata).toEqual(
+			expect.objectContaining({
+				lessonSummary: expect.objectContaining({
+					success: 0,
+					skipped: 1,
+					items: expect.arrayContaining([
+						expect.objectContaining({
+							lessonId: 'lesson-video-existing',
+							status: 'skipped',
+							readiness: 'ready',
+						}),
+					]),
+				}),
+			})
+		);
+	});
+
+	it('executa apenas o merge final quando as secoes ja possuem video', async () => {
+		lessonRepository.findById
+			.mockResolvedValueOnce({
+				id: 'lesson-video-merge-only',
+				moduleId: 'module-1',
+				title: 'Aula Video',
+				description: 'desc',
+				lessonType: 'video',
+				content: {
+					scriptSections: [
+						{
+							id: 'section-1',
+							content: 'texto',
+							videoUrl: 'https://cdn.test/section-1.mp4',
+						},
+					],
+				},
+			} as never)
+			.mockResolvedValueOnce({
+				id: 'lesson-video-merge-only',
+				moduleId: 'module-1',
+				title: 'Aula Video',
+				description: 'desc',
+				lessonType: 'video',
+				content: {
+					scriptSections: [
+						{
+							id: 'section-1',
+							content: 'texto',
+							videoUrl: 'https://cdn.test/section-1.mp4',
+						},
+					],
+					finalVideoPath: 'user-1/lesson-video-merge-only/final.mp4',
+				},
+			} as never);
+		mergeLessonSectionsVideoUseCase.execute.mockResolvedValue({} as never);
+
+		await useCase.run({
+			jobId: 'job-video-merge-only',
+			userId: 'user-1',
+			courseId: 'course-1',
+			lessonIds: ['lesson-video-merge-only'],
+			strategy: 'all',
+			providerSelection,
+		});
+
+		expect(generateSectionVideoUseCase.execute).not.toHaveBeenCalled();
+		expect(mergeLessonSectionsVideoUseCase.execute).toHaveBeenCalledWith(
+			'lesson-video-merge-only',
+			'user-1'
+		);
+	});
+
+	it('gera apenas as secoes sem video quando a aula esta parcialmente pronta', async () => {
+		lessonRepository.findById
+			.mockResolvedValueOnce({
+				id: 'lesson-video-partial',
+				moduleId: 'module-1',
+				title: 'Aula Video',
+				description: 'desc',
+				lessonType: 'video',
+				content: {
+					scriptSections: [
+						{
+							id: 'section-ready',
+							content: 'texto pronto',
+							videoPath: 'user-1/lesson-video-partial/ready.mp4',
+						},
+						{
+							id: 'section-missing',
+							content: 'texto faltante',
+						},
+					],
+				},
+			} as never)
+			.mockResolvedValueOnce({
+				id: 'lesson-video-partial',
+				moduleId: 'module-1',
+				title: 'Aula Video',
+				description: 'desc',
+				lessonType: 'video',
+				content: {
+					scriptSections: [
+						{
+							id: 'section-ready',
+							content: 'texto pronto',
+							videoPath: 'user-1/lesson-video-partial/ready.mp4',
+						},
+						{
+							id: 'section-missing',
+							content: 'texto faltante',
+							videoPath: 'user-1/lesson-video-partial/missing.mp4',
+						},
+					],
+					finalVideoPath: 'user-1/lesson-video-partial/final.mp4',
+				},
+			} as never);
+		generateSectionVideoUseCase.execute.mockResolvedValue({} as never);
+		mergeLessonSectionsVideoUseCase.execute.mockResolvedValue({} as never);
+
+		await useCase.run({
+			jobId: 'job-video-partial',
+			userId: 'user-1',
+			courseId: 'course-1',
+			lessonIds: ['lesson-video-partial'],
+			strategy: 'all',
+			providerSelection,
+		});
+
+		expect(generateSectionVideoUseCase.execute).toHaveBeenCalledTimes(1);
+		expect(generateSectionVideoUseCase.execute).toHaveBeenCalledWith(
+			expect.objectContaining({
+				lessonId: 'lesson-video-partial',
+				sectionId: 'section-missing',
+			}),
+			'user-1'
+		);
+		expect(mergeLessonSectionsVideoUseCase.execute).toHaveBeenCalledWith(
+			'lesson-video-partial',
+			'user-1'
+		);
+	});
+
+	it('reaproveita audio existente e marca a aula como skipped', async () => {
+		lessonRepository.findById
+			.mockResolvedValueOnce({
+				id: 'lesson-audio-existing',
+				moduleId: 'module-1',
+				title: 'Aula Audio',
+				description: 'desc',
+				lessonType: 'audio',
+				content: {
+					scriptSections: [{ id: 'section-1', content: 'texto' }],
+					audioPath: 'user-1/lesson-audio-existing/audio.mp3',
+				},
+			} as never)
+			.mockResolvedValueOnce({
+				id: 'lesson-audio-existing',
+				moduleId: 'module-1',
+				title: 'Aula Audio',
+				description: 'desc',
+				lessonType: 'audio',
+				content: {
+					scriptSections: [{ id: 'section-1', content: 'texto' }],
+					audioPath: 'user-1/lesson-audio-existing/audio.mp3',
+				},
+			} as never);
+
+		await useCase.run({
+			jobId: 'job-audio-existing',
+			userId: 'user-1',
+			courseId: 'course-1',
+			lessonIds: ['lesson-audio-existing'],
+			strategy: 'all',
+			providerSelection,
+		});
+
+		expect(generateLessonAudioUseCase.execute).not.toHaveBeenCalled();
+		const completionCall = generationJobRepository.update.mock.calls.find(
+			(call) => call[1].status === 'completed'
+		);
+		expect(completionCall?.[1].metadata).toEqual(
+			expect.objectContaining({
+				lessonSummary: expect.objectContaining({
+					success: 0,
+					skipped: 1,
+					items: expect.arrayContaining([
+						expect.objectContaining({
+							lessonId: 'lesson-audio-existing',
+							status: 'skipped',
+						}),
+					]),
+				}),
+			})
+		);
+	});
+
+	it('reaproveita article existente e nao chama a geracao novamente', async () => {
+		lessonRepository.findById.mockResolvedValue({
+			id: 'lesson-article-existing',
+			moduleId: 'module-1',
+			title: 'Aula Artigo',
+			description: 'desc',
+			lessonType: 'article',
+			content: { articleContent: 'conteudo pronto' },
+		} as never);
+
+		await useCase.run({
+			jobId: 'job-article-existing',
+			userId: 'user-1',
+			courseId: 'course-1',
+			lessonIds: ['lesson-article-existing'],
+			strategy: 'selected',
+			providerSelection,
+		});
+
+		expect(generateArticleExecuteMock).not.toHaveBeenCalled();
+		const completionCall = generationJobRepository.update.mock.calls.find(
+			(call) => call[1].status === 'completed'
+		);
+		expect(completionCall?.[1].metadata).toEqual(
+			expect.objectContaining({
+				lessonSummary: expect.objectContaining({
+					success: 0,
+					skipped: 1,
+					items: expect.arrayContaining([
+						expect.objectContaining({
+							lessonId: 'lesson-article-existing',
+							status: 'skipped',
+						}),
+					]),
+				}),
+			})
+		);
+	});
+
+	it('reaproveita quiz existente e nao chama a geracao novamente', async () => {
+		lessonRepository.findById.mockResolvedValue({
+			id: 'lesson-quiz-existing',
+			moduleId: 'module-1',
+			title: 'Quiz 1',
+			description: 'desc',
+			lessonType: 'quiz',
+			content: {
+				quizQuestions: [
+					{
+						id: 'q1',
+						question: 'Pergunta',
+						options: ['A', 'B', 'C', 'D'],
+						correctAnswer: 0,
+					},
+				],
+			},
+		} as never);
+
+		await useCase.run({
+			jobId: 'job-quiz-existing',
+			userId: 'user-1',
+			courseId: 'course-1',
+			lessonIds: ['lesson-quiz-existing'],
+			strategy: 'selected',
+			providerSelection,
+		});
+
+		expect(generateQuizExecuteMock).not.toHaveBeenCalled();
+		const completionCall = generationJobRepository.update.mock.calls.find(
+			(call) => call[1].status === 'completed'
+		);
+		expect(completionCall?.[1].metadata).toEqual(
+			expect.objectContaining({
+				lessonSummary: expect.objectContaining({
+					success: 0,
+					skipped: 1,
+					items: expect.arrayContaining([
+						expect.objectContaining({
+							lessonId: 'lesson-quiz-existing',
+							status: 'skipped',
+						}),
+					]),
+				}),
 			})
 		);
 	});
