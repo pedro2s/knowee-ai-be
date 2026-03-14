@@ -6,6 +6,7 @@ export type GenerationJobStatus =
 
 export type GenerationJobPhase =
 	| 'structure'
+	| 'course_text_content'
 	| 'demo_script'
 	| 'demo_storyboard'
 	| 'demo_section_video'
@@ -38,6 +39,20 @@ export interface GenerationJobScope {
 }
 
 export interface GenerationJobMetadata {
+	textContentSummary?: {
+		total: number;
+		success: number;
+		failed: number;
+		skipped: number;
+		items: Array<{
+			lessonId: string;
+			moduleId: string;
+			lessonType: string;
+			contentKind: 'script' | 'article' | 'quiz';
+			status: 'success' | 'failed' | 'skipped';
+			error?: string;
+		}>;
+	};
 	jobType?: GenerationJobType;
 	jobFamily?: GenerationJobFamily;
 	jobIntent?: string;

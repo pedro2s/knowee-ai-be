@@ -1,7 +1,9 @@
 import { CourseGenerationOrchestratorUseCase } from './course-generation-orchestrator.usecase';
 import type { GenerateCourseUseCase } from './generate-course.usecase';
+import type { GenerateArticleUseCase } from './generate-article.usecase';
 import type { GenerateLessonScriptUseCase } from './generate-lesson-script.usecase';
 import type { GenerateLessonStoryboardUseCase } from './generate-lesson-storyboard.usecase';
+import type { GenerateQuizUseCase } from './generate-quiz.usecase';
 import type { GenerateSectionVideoUseCase } from './generate-section-video.usecase';
 import type { GenerationEventsService } from '../services/generation-events.service';
 import type { GenerationJobRepositoryPort } from '../../domain/ports/generation-job-repository.port';
@@ -12,8 +14,10 @@ import type { MarkFreemiumSampleConsumedUseCase } from 'src/modules/access-contr
 describe('CourseGenerationOrchestratorUseCase', () => {
 	let useCase: CourseGenerationOrchestratorUseCase;
 	let generateCourseUseCase: jest.Mocked<GenerateCourseUseCase>;
+	let generateArticleUseCase: jest.Mocked<GenerateArticleUseCase>;
 	let generateLessonScriptUseCase: jest.Mocked<GenerateLessonScriptUseCase>;
 	let generateLessonStoryboardUseCase: jest.Mocked<GenerateLessonStoryboardUseCase>;
+	let generateQuizUseCase: jest.Mocked<GenerateQuizUseCase>;
 	let generateSectionVideoUseCase: jest.Mocked<GenerateSectionVideoUseCase>;
 	let generationEventsService: jest.Mocked<GenerationEventsService>;
 	let generationJobRepository: jest.Mocked<GenerationJobRepositoryPort>;
@@ -39,6 +43,26 @@ describe('CourseGenerationOrchestratorUseCase', () => {
 		generateLessonScriptUseCase = {
 			execute: jest.fn().mockResolvedValue({
 				scriptSections: [{ id: 'section-1', content: 'texto' }],
+			}),
+		} as never;
+
+		generateArticleUseCase = {
+			execute: jest.fn().mockResolvedValue({
+				content: 'artigo gerado',
+			}),
+		} as never;
+
+		generateQuizUseCase = {
+			execute: jest.fn().mockResolvedValue({
+				quizQuestions: [
+					{
+						id: 'quiz-1',
+						question: 'Pergunta',
+						options: ['A', 'B', 'C', 'D'],
+						correctAnswer: 0,
+						explanation: 'explicacao',
+					},
+				],
 			}),
 		} as never;
 
@@ -83,6 +107,28 @@ describe('CourseGenerationOrchestratorUseCase', () => {
 								id: 'lesson-1',
 								title: 'Aula 1',
 								description: 'desc',
+								lessonType: 'video',
+								content: {},
+							},
+							{
+								id: 'lesson-2',
+								title: 'Leitura',
+								description: 'artigo',
+								lessonType: 'article',
+								content: {},
+							},
+							{
+								id: 'lesson-3',
+								title: 'Quiz',
+								description: 'quiz',
+								lessonType: 'quiz',
+								content: {},
+							},
+							{
+								id: 'lesson-4',
+								title: 'Audio',
+								description: 'audio',
+								lessonType: 'audio',
 								content: {},
 							},
 						],
@@ -116,6 +162,8 @@ describe('CourseGenerationOrchestratorUseCase', () => {
 		useCase = new CourseGenerationOrchestratorUseCase(
 			generateCourseUseCase,
 			generateLessonScriptUseCase,
+			generateArticleUseCase,
+			generateQuizUseCase,
 			generateLessonStoryboardUseCase,
 			generateSectionVideoUseCase,
 			generationEventsService,
@@ -126,13 +174,23 @@ describe('CourseGenerationOrchestratorUseCase', () => {
 		);
 	});
 
-	it('emite demo_storyboard@75, demo_section_video started@75, demo_section_video completed@95 e completed@100 no caminho de sucesso', async () => {
+	it('gera o conteudo textual do curso, reaproveita o roteiro da demo e conclui o fluxo da demo', async () => {
 		await useCase.run(input);
 
 		const publishCalls = generationEventsService.publish.mock.calls;
 		expect(publishCalls).toContainEqual([
 			'job-1',
 			'generation.phase.completed',
+			expect.objectContaining({
+				phase: 'course_text_content',
+				progress: 65,
+				courseId: 'course-1',
+			}),
+		]);
+
+		expect(publishCalls).toContainEqual([
+			'job-1',
+			'generation.phase.started',
 			expect.objectContaining({
 				phase: 'demo_script',
 				progress: 65,
@@ -145,7 +203,7 @@ describe('CourseGenerationOrchestratorUseCase', () => {
 			'generation.phase.started',
 			expect.objectContaining({
 				phase: 'demo_storyboard',
-				progress: 70,
+				progress: 75,
 				courseId: 'course-1',
 			}),
 		]);
@@ -155,7 +213,7 @@ describe('CourseGenerationOrchestratorUseCase', () => {
 			'generation.phase.completed',
 			expect.objectContaining({
 				phase: 'demo_storyboard',
-				progress: 75,
+				progress: 85,
 				courseId: 'course-1',
 			}),
 		]);
@@ -165,7 +223,7 @@ describe('CourseGenerationOrchestratorUseCase', () => {
 			'generation.phase.started',
 			expect.objectContaining({
 				phase: 'demo_section_video',
-				progress: 75,
+				progress: 85,
 				courseId: 'course-1',
 			}),
 		]);
@@ -190,13 +248,45 @@ describe('CourseGenerationOrchestratorUseCase', () => {
 			}),
 		]);
 
-		const storyboardUpdateCall = generationJobRepository.update.mock.calls.find(
+		expect(generateLessonScriptUseCase.execute).toHaveBeenCalledTimes(2);
+		expect(generateLessonScriptUseCase.execute).toHaveBeenNthCalledWith(
+			1,
+			expect.objectContaining({
+				moduleId: 'module-1',
+				title: 'Aula 1',
+			}),
+			'user-1'
+		);
+		expect(generateLessonScriptUseCase.execute).toHaveBeenNthCalledWith(
+			2,
+			expect.objectContaining({
+				moduleId: 'module-1',
+				title: 'Audio',
+			}),
+			'user-1'
+		);
+		expect(generateArticleUseCase.execute).toHaveBeenCalledWith(
+			expect.objectContaining({
+				moduleId: 'module-1',
+				title: 'Leitura',
+			}),
+			'user-1'
+		);
+		expect(generateQuizUseCase.execute).toHaveBeenCalledWith(
+			{
+				courseId: 'course-1',
+				moduleId: 'module-1',
+			},
+			'user-1'
+		);
+
+		const textPhaseUpdateCall = generationJobRepository.update.mock.calls.find(
 			(call) =>
 				call[0] === 'job-1' &&
-				call[1].phase === 'demo_storyboard' &&
-				call[1].progress === 70
+				call[1].phase === 'course_text_content' &&
+				typeof call[1].metadata?.textContentSummary === 'object'
 		);
-		expect(storyboardUpdateCall).toBeDefined();
+		expect(textPhaseUpdateCall).toBeDefined();
 	});
 
 	it('mantém fluxo best-effort quando vídeo demo falha e fecha demo_section_video em 95 com status failed', async () => {
@@ -223,6 +313,9 @@ describe('CourseGenerationOrchestratorUseCase', () => {
 		expect(completedUpdateCall?.[1].metadata).toEqual(
 			expect.objectContaining({
 				demoSectionVideoStatus: 'failed',
+				textContentSummary: expect.objectContaining({
+					failed: 0,
+				}),
 			})
 		);
 	});
@@ -269,6 +362,44 @@ describe('CourseGenerationOrchestratorUseCase', () => {
 		expect(completedUpdateCall?.[1].metadata).toEqual(
 			expect.objectContaining({
 				demoSectionVideoStatus: 'missing',
+			})
+		);
+	});
+
+	it('conclui com resumo parcial quando uma geracao textual falha', async () => {
+		generateArticleUseCase.execute.mockRejectedValueOnce(
+			new Error('article failed')
+		);
+
+		await useCase.run(input);
+
+		const completedUpdateCall = generationJobRepository.update.mock.calls.find(
+			(call) => call[1].status === 'completed'
+		);
+		expect(completedUpdateCall?.[1].metadata).toEqual(
+			expect.objectContaining({
+				textContentSummary: expect.objectContaining({
+					total: 4,
+					success: 3,
+					failed: 1,
+					skipped: 0,
+					items: expect.arrayContaining([
+						expect.objectContaining({
+							lessonId: 'lesson-2',
+							contentKind: 'article',
+							status: 'failed',
+							error: 'article failed',
+						}),
+					]),
+				}),
+			})
+		);
+
+		expect(generationEventsService.publish).toHaveBeenCalledWith(
+			'job-1',
+			'generation.redirect-ready',
+			expect.objectContaining({
+				courseId: 'course-1',
 			})
 		);
 	});
