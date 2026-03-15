@@ -45,6 +45,9 @@ export interface UserEntitlements {
 	monthlyTokenLimit: number;
 	usedTokensInPeriod: number;
 	remainingTokensInPeriod: number;
+	monthlyCreditLimit: number;
+	usedCreditsInPeriod: number;
+	remainingCreditsInPeriod: number;
 	sampleConsumed: boolean;
 	sampleGenerationCount: number;
 	freemiumScope: FreemiumScope;

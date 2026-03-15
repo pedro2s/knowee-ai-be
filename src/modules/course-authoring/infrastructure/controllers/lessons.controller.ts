@@ -37,6 +37,7 @@ import { GeneratedQuizResponseDto } from '../../application/dtos/generated-quiz.
 import { GenerateQuizUseCase } from '../../application/use-cases/generate-quiz.usecase';
 import { ProductAccessGuard } from 'src/modules/access-control/infrastructure/guards/product-access.guard';
 import { RequireAccess } from 'src/modules/access-control/infrastructure/decorators/require-access.decorator';
+import { LegalAcceptanceGuard } from 'src/modules/legal/infrastructure/guards/legal-acceptance.guard';
 import { StartLessonAudioGenerationUseCase } from '../../application/use-cases/start-lesson-audio-generation.usecase';
 import { StartSectionVideoGenerationUseCase } from '../../application/use-cases/start-section-video-generation.usecase';
 import { StartLessonMergeVideoGenerationUseCase } from '../../application/use-cases/start-lesson-merge-video-generation.usecase';
@@ -47,7 +48,7 @@ import { LessonMediaAccessResponseDto } from '../../application/dtos/lesson-medi
 import { Lesson } from '../../domain/entities/lesson.entity';
 
 @Controller('lessons')
-@UseGuards(JwtAuthGuard, ProductAccessGuard)
+@UseGuards(JwtAuthGuard, LegalAcceptanceGuard, ProductAccessGuard)
 export class LessonsController {
 	constructor(
 		private readonly getLessonUseCase: GetLessonUseCase,

@@ -17,9 +17,10 @@ import { ReorderContentUseCase } from '../../application/use-cases/quick-actions
 import { GenerateAssessmentsUseCase } from '../../application/use-cases/quick-actions/generate-assessments.usecase';
 import { ProductAccessGuard } from 'src/modules/access-control/infrastructure/guards/product-access.guard';
 import { RequireAccess } from 'src/modules/access-control/infrastructure/decorators/require-access.decorator';
+import { LegalAcceptanceGuard } from 'src/modules/legal/infrastructure/guards/legal-acceptance.guard';
 
 @Controller('quick-actions')
-@UseGuards(JwtAuthGuard, ProductAccessGuard)
+@UseGuards(JwtAuthGuard, LegalAcceptanceGuard, ProductAccessGuard)
 export class QuickActionsController {
 	constructor(
 		private readonly generateModuleUseCase: GenerateModuleUseCase,

@@ -25,6 +25,19 @@ export class OpenAITTSProviderAdapter implements TTSProviderPort {
 
 		return {
 			content: buffer,
+			tokenUsage: {
+				provider: 'openai',
+				model: 'gpt-4o-mini-tts',
+				operation: 'media.generate_tts',
+				modality: 'tts',
+				unitType: 'audio_char',
+				totalUnits: input.text.length,
+				billableUnits: 0,
+				metadata: {
+					characterCount: input.text.length,
+					voice: input.voice || 'cedar',
+				},
+			},
 		};
 	}
 }

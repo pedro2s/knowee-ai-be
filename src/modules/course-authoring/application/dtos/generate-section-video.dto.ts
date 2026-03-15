@@ -33,4 +33,8 @@ export class GenerateSectionVideoDto {
 	@IsOptional()
 	@IsString()
 	audioVoiceId?: string;
+
+	@IsOptional()
+	@IsString()
+	videoProvider?: string;
 }

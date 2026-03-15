@@ -17,3 +17,5 @@ export * from './generation-jobs';
 export * from './generation-job-payloads';
 export * from './provider-preferences';
 export * from './assistant-pending-actions';
+export * from './legal-documents';
+export * from './legal-acceptances';

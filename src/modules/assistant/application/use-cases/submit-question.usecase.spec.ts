@@ -10,6 +10,7 @@ import type { AssistantPendingActionRepositoryPort } from '../../domain/ports/as
 import type { AssistantToolRegistry } from '../services/assistant-tool.registry';
 import type { AssistantToolExecutor } from '../services/assistant-tool.executor';
 import { AssistantPendingAction } from '../../domain/entities/assistant-pending-action.entity';
+import type { TokenUsagePort } from 'src/shared/token-usage/domain/ports/token-usage.port';
 
 describe('SubmitQuestionUseCase', () => {
 	const buildUseCase = ({
@@ -78,6 +79,9 @@ describe('SubmitQuestionUseCase', () => {
 						}
 					),
 		} as unknown as jest.Mocked<AssistantToolExecutor>;
+		const tokenUsageService = {
+			record: jest.fn().mockResolvedValue(undefined),
+		} as unknown as jest.Mocked<TokenUsagePort>;
 
 		const useCase = new SubmitQuestionUseCase(
 			providerRegistry,
@@ -85,7 +89,8 @@ describe('SubmitQuestionUseCase', () => {
 			historyService,
 			pendingActionRepository,
 			assistantToolRegistry,
-			assistantToolExecutor
+			assistantToolExecutor,
+			tokenUsageService
 		);
 
 		return {
@@ -97,6 +102,7 @@ describe('SubmitQuestionUseCase', () => {
 			pendingActionRepository,
 			assistantToolRegistry,
 			assistantToolExecutor,
+			tokenUsageService,
 		};
 	};
 
@@ -108,6 +114,7 @@ describe('SubmitQuestionUseCase', () => {
 			assistantToolRegistry,
 			historyService,
 			questionAnswerRepository,
+			tokenUsageService,
 		} = buildUseCase();
 
 		await expect(
@@ -135,6 +142,7 @@ describe('SubmitQuestionUseCase', () => {
 			'Como melhorar isso?',
 			{ userId: 'user-1', role: 'authenticated' }
 		);
+		expect(tokenUsageService.record).not.toHaveBeenCalled();
 		expect(questionAnswerRepository.create).toHaveBeenCalled();
 	});
 

@@ -21,7 +21,7 @@ describe('GenerateTextUseCase', () => {
 				.mockResolvedValue(undefined),
 		} as unknown as jest.Mocked<HistoryServicePort>;
 		const tokenUsageService = {
-			save: jest.fn().mockResolvedValue(undefined),
+			record: jest.fn().mockResolvedValue(undefined),
 		} as unknown as jest.Mocked<TokenUsagePort>;
 
 		const useCase = new GenerateTextUseCase(
@@ -47,11 +47,12 @@ describe('GenerateTextUseCase', () => {
 			summary: 'Resumo',
 			recentHistory: [],
 		});
-		expect(tokenUsageService.save).toHaveBeenCalledWith(
-			'user-1',
-			42,
-			'gpt-test'
-		);
+		expect(tokenUsageService.record).toHaveBeenCalledWith({
+			userId: 'user-1',
+			courseId: 'course-1',
+			totalTokens: 42,
+			model: 'gpt-test',
+		});
 		expect(historyService.saveMessage).toHaveBeenCalledWith(
 			'course-1',
 			'user',
@@ -83,7 +84,7 @@ describe('GenerateTextUseCase', () => {
 				.mockResolvedValue(undefined),
 		} as unknown as jest.Mocked<HistoryServicePort>;
 		const tokenUsageService = {
-			save: jest.fn(),
+			record: jest.fn(),
 		} as unknown as jest.Mocked<TokenUsagePort>;
 
 		const useCase = new GenerateTextUseCase(
@@ -101,6 +102,6 @@ describe('GenerateTextUseCase', () => {
 			'user-1'
 		);
 
-		expect(tokenUsageService.save).not.toHaveBeenCalled();
+		expect(tokenUsageService.record).not.toHaveBeenCalled();
 	});
 });

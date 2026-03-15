@@ -6,6 +6,7 @@ import { HistorySummaryRepositoryPort } from '../../domain/ports/history-summary
 import { OpenAISummarizeHistoryAdapter } from '../providers/openai/openai-summarize-history.adapter';
 import { HistorySummary } from '../../domain/entities/history-summary.entity';
 import { HistoryServicePort } from '../../domain/ports/history-service.port';
+import { TokenUsagePort } from 'src/shared/token-usage/domain/ports/token-usage.port';
 
 const MAX_WINDOW_MESSAGES = 10;
 
@@ -16,7 +17,8 @@ export class HistoryService implements HistoryServicePort {
 	constructor(
 		private readonly historyRepository: HistoryRepositoryPort,
 		private readonly historySummaryRepository: HistorySummaryRepositoryPort,
-		private readonly openAISumarizeHistory: OpenAISummarizeHistoryAdapter
+		private readonly openAISumarizeHistory: OpenAISummarizeHistoryAdapter,
+		private readonly tokenUsageService: TokenUsagePort
 	) {}
 
 	public async getWindowMessages(courseId: string, context: AuthContext) {
@@ -99,8 +101,16 @@ export class HistoryService implements HistoryServicePort {
 			})
 			.join('\n');
 
-		const summaryText =
+		const { content: summaryText, tokenUsage } =
 			await this.openAISumarizeHistory.summarize(textToSummarize);
+
+		if (tokenUsage) {
+			await this.tokenUsageService.record({
+				userId: context.userId,
+				courseId,
+				...tokenUsage,
+			});
+		}
 
 		const summary = HistorySummary.create({
 			courseId,

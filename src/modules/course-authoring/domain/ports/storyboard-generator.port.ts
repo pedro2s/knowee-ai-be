@@ -1,3 +1,5 @@
+import { AIUsageMetrics } from 'src/shared/types/interaction';
+
 export const STORYBOARD_GENERATOR = 'StoryboardGenerator';
 
 export interface GenerateStoryboardInput {
@@ -24,6 +26,7 @@ export interface Scene {
 }
 export interface GeneratedStoryboardOutput {
 	storyboard: Array<Scene>;
+	tokenUsage?: AIUsageMetrics;
 }
 
 export interface StoryboardGeneratorPort {

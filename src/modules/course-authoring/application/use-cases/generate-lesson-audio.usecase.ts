@@ -12,6 +12,7 @@ import { ProviderRegistry } from 'src/shared/ai-providers/infrastructure/registr
 import { ScriptSection } from '../../domain/entities/lesson-script.types';
 import { AuthContext } from 'src/shared/database/domain/ports/db-context.port';
 import { StoragePort } from 'src/shared/storage/domain/ports/storage.port';
+import { TokenUsagePort } from 'src/shared/token-usage/domain/ports/token-usage.port';
 
 @Injectable()
 export class GenerateLessonAudioUseCase {
@@ -22,7 +23,8 @@ export class GenerateLessonAudioUseCase {
 		private readonly lessonRepository: LessonRepositoryPort,
 		private readonly registry: ProviderRegistry,
 		private readonly mediaService: MediaPort,
-		private readonly storage: StoragePort
+		private readonly storage: StoragePort,
+		private readonly tokenUsageService: TokenUsagePort
 	) {}
 
 	async execute(input: {
@@ -62,10 +64,21 @@ export class GenerateLessonAudioUseCase {
 
 			try {
 				for (const [i, section] of sections.entries()) {
-					const { content: audioBuffer } = await audioGen.generate({
+					const { content: audioBuffer, tokenUsage } = await audioGen.generate({
 						text: section.content,
 						voice: input.audioVoiceId,
 					});
+					if (tokenUsage) {
+						await this.tokenUsageService.record({
+							userId: input.userId,
+							lessonId: input.lessonId,
+							...tokenUsage,
+							metadata: {
+								...tokenUsage.metadata,
+								sectionId: section.id,
+							},
+						});
+					}
 					const tempFilePath = path.join(tempDir, `section-${i}.mp3`);
 					await fs.writeFile(tempFilePath, audioBuffer);
 					tempFilePaths.push(tempFilePath);

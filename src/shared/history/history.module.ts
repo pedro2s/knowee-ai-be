@@ -8,9 +8,10 @@ import { OpenAISummarizeHistoryAdapter } from './infrastructure/providers/openai
 import { DrizzleHistorySummaryRepository } from './infrastructure/persistence/drizzle/drizzle-history-summary.repository';
 import { HistorySummaryRepositoryPort } from './domain/ports/history-summary-repository.port';
 import { HistoryServicePort } from './domain/ports/history-service.port';
+import { TokenUsageModule } from '../token-usage/token-usage.module';
 
 @Module({
-	imports: [DatabaseModule, AIProvidersModule],
+	imports: [DatabaseModule, AIProvidersModule, TokenUsageModule],
 	providers: [
 		{ provide: HistoryServicePort, useClass: HistoryService },
 		{

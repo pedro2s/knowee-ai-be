@@ -12,11 +12,16 @@ import {
 } from 'src/shared/types/interaction';
 import { OPENAI_CLIENT } from 'src/shared/ai-providers/ai-providers.constants';
 import { scriptSectionsStructure } from './schemas/scription-sections-structure.schema';
+import { buildOpenAITextUsage } from 'src/shared/token-usage/infrastructure/ai-usage-metrics.factory';
+import { LLMExecutionPolicyService } from 'src/shared/ai-providers/infrastructure/llm-execution-policy.service';
 
 export class OpenAILessonScriptGeneratorAdapter implements LessonScriptGeneratorPort {
 	private readonly logger = new Logger(OpenAILessonScriptGeneratorAdapter.name);
 
-	constructor(@Inject(OPENAI_CLIENT) private readonly openai: OpenAI) {}
+	constructor(
+		@Inject(OPENAI_CLIENT) private readonly openai: OpenAI,
+		private readonly llmExecutionPolicy: LLMExecutionPolicyService
+	) {}
 
 	async generate(
 		context: InteractionContext<GenerateLessonScriptInput>
@@ -40,7 +45,7 @@ Sua tarefa é criar um roteiro completo e bem estruturado para uma aula online, 
 		}
 
 		if (context.recentHistory) {
-			for (const history of context.recentHistory) {
+			for (const history of context.recentHistory.slice(-4)) {
 				const { role, content } = history.toPrimitives().message;
 				messages.push({ role: role as any, content });
 			}
@@ -81,15 +86,33 @@ Agora, gere o roteiro completo para a aula descrita.`,
 		});
 
 		this.logger.log('Enviando solicitação para a OpenAI...');
-		const model: ChatModel = 'gpt-4.1';
+		const policy = this.llmExecutionPolicy.resolve(
+			'course_authoring.generate_lesson_script',
+			'openai'
+		);
+		const model = policy.model as ChatModel;
+		if (policy.optimized) {
+			this.logger.debug(
+				`Usando policy otimizada para course_authoring.generate_lesson_script com modelo ${policy.model}`
+			);
+		}
 		const completion = await this.openai.chat.completions.create({
 			model,
 			messages,
 			response_format: scriptSectionsStructure,
-			temperature: 1,
-			top_p: 1,
-			frequency_penalty: 0,
-			presence_penalty: 0,
+			...(policy.temperature !== undefined
+				? { temperature: policy.temperature }
+				: {}),
+			...(policy.topP !== undefined ? { top_p: policy.topP } : {}),
+			...(policy.frequencyPenalty !== undefined
+				? { frequency_penalty: policy.frequencyPenalty }
+				: {}),
+			...(policy.presencePenalty !== undefined
+				? { presence_penalty: policy.presencePenalty }
+				: {}),
+			...(policy.maxCompletionTokens !== undefined
+				? { max_completion_tokens: policy.maxCompletionTokens }
+				: {}),
 		});
 
 		this.logger.log('Resposta recebida da OpenAI.');
@@ -104,12 +127,12 @@ Agora, gere o roteiro completo para a aula descrita.`,
 
 		const generatedLessonScript = JSON.parse(content) as GeneratedLessonScript;
 
-		const tokenUsage = completion.usage?.total_tokens
-			? {
-					totalTokens: completion.usage.total_tokens,
-					model,
-				}
-			: undefined;
+		const tokenUsage = buildOpenAITextUsage({
+			model,
+			operation: 'course_authoring.generate_lesson_script',
+			modality: 'text',
+			usage: completion.usage,
+		});
 
 		return {
 			content: generatedLessonScript,

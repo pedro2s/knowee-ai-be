@@ -7,6 +7,7 @@ import { BillingModule } from './modules/billing/billing.module';
 import { ProfileModule } from './modules/profile/profile.module';
 import { ProviderPreferencesModule } from './modules/provider-preferences/provider-preferences.module';
 import { AccessControlModule } from './modules/access-control/access-control.module';
+import { LegalModule } from './modules/legal/legal.module';
 import { QueueModule } from './shared/queue/queue.module';
 import { AppController } from './app.controller';
 
@@ -24,6 +25,7 @@ import { AppController } from './app.controller';
 		ProfileModule,
 		ProviderPreferencesModule,
 		AccessControlModule,
+		LegalModule,
 	],
 })
 export class AppModule {}

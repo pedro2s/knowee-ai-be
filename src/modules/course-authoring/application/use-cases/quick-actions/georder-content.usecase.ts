@@ -71,11 +71,11 @@ export class ReorderContentUseCase {
 			});
 
 		if (tokenUsage) {
-			await this.tokenUsageService.save(
+			await this.tokenUsageService.record({
 				userId,
-				tokenUsage.totalTokens,
-				tokenUsage.model
-			);
+				courseId,
+				...tokenUsage,
+			});
 		}
 
 		// salvar histórico de reordenação ou atualizar o curso com a nova ordem

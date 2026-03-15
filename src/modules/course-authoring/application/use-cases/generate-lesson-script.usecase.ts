@@ -50,11 +50,11 @@ export class GenerateLessonScriptUseCase {
 			});
 
 		if (tokenUsage) {
-			await this.tokenUsageService.save(
-				authContext.userId,
-				tokenUsage.totalTokens,
-				tokenUsage.model
-			);
+			await this.tokenUsageService.record({
+				userId: authContext.userId,
+				courseId,
+				...tokenUsage,
+			});
 		}
 
 		await this.historyService.saveMessage(

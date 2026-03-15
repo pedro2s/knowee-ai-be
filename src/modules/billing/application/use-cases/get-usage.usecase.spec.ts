@@ -1,6 +1,7 @@
 import { NotFoundException } from '@nestjs/common';
 import { GetUsageUseCase } from './get-usage.usecase';
 import type { UsageRepositoryPort } from '../../domain/ports/usage-repository.port';
+import { AICreditService } from 'src/shared/token-usage/infrastructure/ai-credit.service';
 
 describe('GetUsageUseCase', () => {
 	function build() {
@@ -11,7 +12,7 @@ describe('GetUsageUseCase', () => {
 
 		return {
 			usageRepository,
-			useCase: new GetUsageUseCase(usageRepository),
+			useCase: new GetUsageUseCase(usageRepository, new AICreditService()),
 		};
 	}
 
@@ -36,7 +37,9 @@ describe('GetUsageUseCase', () => {
 		});
 		usageRepository.getUsageInPeriod.mockResolvedValue(88);
 
-		await expect(useCase.execute('user-1')).resolves.toEqual({ used: 88 });
+		await expect(useCase.execute('user-1')).resolves.toEqual({
+			usedCredits: 1,
+		});
 		expect(usageRepository.getUsageInPeriod).toHaveBeenCalledWith(
 			'user-1',
 			'sub-1',

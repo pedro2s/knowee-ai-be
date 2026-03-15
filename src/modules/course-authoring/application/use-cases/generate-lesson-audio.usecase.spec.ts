@@ -11,6 +11,7 @@ import type { LessonRepositoryPort } from '../../domain/ports/lesson-repository.
 import type { MediaPort } from 'src/shared/media/domain/ports/media.port';
 import type { ProviderRegistry } from 'src/shared/ai-providers/infrastructure/registry/provider.registry';
 import type { StoragePort } from 'src/shared/storage/domain/ports/storage.port';
+import type { TokenUsagePort } from 'src/shared/token-usage/domain/ports/token-usage.port';
 
 describe('GenerateLessonAudioUseCase', () => {
 	let useCase: GenerateLessonAudioUseCase;
@@ -19,6 +20,7 @@ describe('GenerateLessonAudioUseCase', () => {
 	let mediaService: jest.Mocked<MediaPort>;
 	let storage: jest.Mocked<StoragePort>;
 	let audioGenerator: { generate: jest.Mock };
+	let tokenUsageService: jest.Mocked<TokenUsagePort>;
 
 	beforeEach(() => {
 		jest.spyOn(Date, 'now').mockReturnValue(123);
@@ -64,12 +66,16 @@ describe('GenerateLessonAudioUseCase', () => {
 			download: jest.fn(),
 			getAccessUrl: jest.fn(),
 		};
+		tokenUsageService = {
+			record: jest.fn().mockResolvedValue(undefined),
+		} as never;
 
 		useCase = new GenerateLessonAudioUseCase(
 			lessonRepository,
 			registry,
 			mediaService,
-			storage
+			storage,
+			tokenUsageService
 		);
 	});
 
@@ -114,6 +120,7 @@ describe('GenerateLessonAudioUseCase', () => {
 			{ userId: 'user-1', role: 'authenticated' },
 		]);
 		expect(result).toEqual({ message: 'Geração de áudio concluída.' });
+		expect(tokenUsageService.record).not.toHaveBeenCalled();
 		expect(fs.rm).toHaveBeenCalledWith('/tmp/audio-dir', {
 			recursive: true,
 			force: true,

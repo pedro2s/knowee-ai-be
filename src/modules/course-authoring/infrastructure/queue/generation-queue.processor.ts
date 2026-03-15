@@ -40,9 +40,21 @@ export class GenerationQueueProcessor extends WorkerHost {
 		super();
 	}
 
-	private getAuth(data: GenerationQueueJobData) {
+	private getValidatedUserId(job: Job<GenerationQueueJobData>): string {
+		const userId = job.data?.userId;
+
+		if (typeof userId !== 'string' || userId.trim().length === 0) {
+			throw new Error(
+				`Invalid generation queue job: userId is required (jobId=${job.data?.jobId ?? 'unknown'}, name=${job.name}, data=${JSON.stringify(job.data)})`
+			);
+		}
+
+		return userId.trim();
+	}
+
+	private getJobAuth(job: Job<GenerationQueueJobData>) {
 		return {
-			userId: data.userId,
+			userId: this.getValidatedUserId(job),
 			role: 'authenticated' as const,
 		};
 	}
@@ -50,7 +62,7 @@ export class GenerationQueueProcessor extends WorkerHost {
 	private async getPayload(
 		job: Job<GenerationQueueJobData>
 	): Promise<PersistedGenerationJobPayload> {
-		const auth = this.getAuth(job.data);
+		const auth = this.getJobAuth(job);
 		const payload = await this.payloadRepository.findByJobId(
 			job.data.jobId,
 			auth
@@ -63,7 +75,8 @@ export class GenerationQueueProcessor extends WorkerHost {
 	}
 
 	async process(job: Job<GenerationQueueJobData>): Promise<void> {
-		const auth = this.getAuth(job.data);
+		const auth = this.getJobAuth(job);
+		const userId = auth.userId;
 		const payload = await this.getPayload(job);
 
 		await this.generationJobRepository.update(
@@ -90,7 +103,7 @@ export class GenerationQueueProcessor extends WorkerHost {
 
 				await this.courseOrchestrator.run({
 					jobId: job.data.jobId,
-					userId: job.data.userId,
+					userId,
 					data: payload.data,
 					files,
 				});
@@ -106,7 +119,7 @@ export class GenerationQueueProcessor extends WorkerHost {
 
 				await this.assetsOrchestrator.run({
 					jobId: job.data.jobId,
-					userId: job.data.userId,
+					userId,
 					courseId: payload.data.courseId,
 					lessonIds: payload.data.lessonIds ?? [],
 					strategy: payload.data.strategy as 'selected' | 'all',
@@ -144,7 +157,7 @@ export class GenerationQueueProcessor extends WorkerHost {
 					lessonId: payload.lessonId,
 					audioProvider: payload.audioProvider,
 					audioVoiceId: payload.audioVoiceId,
-					userId: job.data.userId,
+					userId,
 					runInBackground: false,
 				});
 
@@ -199,7 +212,7 @@ export class GenerationQueueProcessor extends WorkerHost {
 
 				const sectionResult = await this.generateSectionVideoUseCase.execute(
 					payload.data,
-					job.data.userId
+					userId
 				);
 
 				await this.generationJobRepository.update(
@@ -267,7 +280,7 @@ export class GenerationQueueProcessor extends WorkerHost {
 
 				const mergeResult = await this.mergeLessonSectionsVideoUseCase.execute(
 					payload.lessonId,
-					job.data.userId
+					userId
 				);
 
 				await this.generationJobRepository.update(
@@ -312,7 +325,7 @@ export class GenerationQueueProcessor extends WorkerHost {
 
 	@OnWorkerEvent('active')
 	async onActive(job: Job<GenerationQueueJobData>) {
-		const auth = this.getAuth(job.data);
+		const auth = this.getJobAuth(job);
 		await this.generationJobRepository.update(
 			job.data.jobId,
 			{
@@ -327,7 +340,7 @@ export class GenerationQueueProcessor extends WorkerHost {
 
 	@OnWorkerEvent('completed')
 	async onCompleted(job: Job<GenerationQueueJobData>) {
-		const auth = this.getAuth(job.data);
+		const auth = this.getJobAuth(job);
 		await this.generationJobRepository.update(
 			job.data.jobId,
 			{
@@ -344,7 +357,7 @@ export class GenerationQueueProcessor extends WorkerHost {
 			return;
 		}
 
-		const auth = this.getAuth(job.data);
+		const auth = this.getJobAuth(job);
 		const currentJob = await this.generationJobRepository.findById(
 			job.data.jobId,
 			auth

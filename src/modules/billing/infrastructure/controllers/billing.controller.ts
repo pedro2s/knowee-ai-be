@@ -23,7 +23,9 @@ export class BillingController {
 	) {}
 
 	@Get('usage')
-	async getUsage(@CurrentUser() user: UserPayload): Promise<{ used: number }> {
+	async getUsage(
+		@CurrentUser() user: UserPayload
+	): Promise<{ usedCredits: number }> {
 		return this.getUsageUseCase.execute(user.id);
 	}
 

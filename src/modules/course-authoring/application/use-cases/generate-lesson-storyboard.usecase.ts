@@ -8,6 +8,7 @@ import {
 	type Scene,
 } from '../../domain/ports/storyboard-generator.port';
 import { ScriptSection } from '../../domain/entities/lesson-script.types';
+import { TokenUsagePort } from 'src/shared/token-usage/domain/ports/token-usage.port';
 
 interface GenerateLessonStoryboardInput {
 	courseId: string;
@@ -31,7 +32,8 @@ export class GenerateLessonStoryboardUseCase {
 		private readonly moduleRepository: ModuleRepositoryPort,
 		private readonly courseRepository: CourseRepositoryPort,
 		@Inject(STORYBOARD_GENERATOR)
-		private readonly storyboardGenerator: StoryboardGeneratorPort
+		private readonly storyboardGenerator: StoryboardGeneratorPort,
+		private readonly tokenUsageService: TokenUsagePort
 	) {}
 
 	async execute(
@@ -61,21 +63,32 @@ export class GenerateLessonStoryboardUseCase {
 		const sectionsWithStoryboard: ScriptSection[] = [];
 
 		for (const section of scriptSections) {
-			const { storyboard } = await this.storyboardGenerator.generate({
-				course: {
-					title: course.title,
-					description: course.description ?? '',
-				},
-				module: {
-					title: module.title,
-					description: module.description ?? '',
-				},
-				lesson: {
-					title: lesson.title,
-					description: lesson.description ?? '',
-				},
-				script: section.content,
-			});
+			const { storyboard, tokenUsage } =
+				await this.storyboardGenerator.generate({
+					course: {
+						title: course.title,
+						description: course.description ?? '',
+					},
+					module: {
+						title: module.title,
+						description: module.description ?? '',
+					},
+					lesson: {
+						title: lesson.title,
+						description: lesson.description ?? '',
+					},
+					script: section.content,
+				});
+
+			if (tokenUsage) {
+				await this.tokenUsageService.record({
+					userId: input.userId,
+					courseId: input.courseId,
+					moduleId: input.moduleId,
+					lessonId: input.lessonId,
+					...tokenUsage,
+				});
+			}
 
 			totalScenes += storyboard.length;
 			sectionsWithStoryboard.push({

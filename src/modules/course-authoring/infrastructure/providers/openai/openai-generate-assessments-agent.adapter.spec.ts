@@ -1,6 +1,17 @@
 import { PreconditionFailedException } from '@nestjs/common';
+import type { ConfigService } from '@nestjs/config';
 import type OpenAI from 'openai';
 import { OpenAIGenerateAssessmentsAgentAdapter } from './openai-generate-assessments-agent.adapter';
+import { LLMExecutionPolicyService } from 'src/shared/ai-providers/infrastructure/llm-execution-policy.service';
+
+const buildPolicyService = (enabled = true) =>
+	new LLMExecutionPolicyService({
+		get: jest
+			.fn()
+			.mockImplementation((key: string) =>
+				key === 'LLM_OPTIMIZED_POLICY_ENABLED' && enabled ? 'true' : 'false'
+			),
+	} as unknown as jest.Mocked<ConfigService>);
 
 describe('OpenAIGenerateAssessmentsAgentAdapter', () => {
 	const createMock = jest.fn();
@@ -15,7 +26,10 @@ describe('OpenAIGenerateAssessmentsAgentAdapter', () => {
 				},
 			},
 		} as unknown as OpenAI;
-		adapter = new OpenAIGenerateAssessmentsAgentAdapter(openai);
+		adapter = new OpenAIGenerateAssessmentsAgentAdapter(
+			openai,
+			buildPolicyService()
+		);
 	});
 
 	it('deve montar mensagens, parsear conteúdo e retornar token usage', async () => {
@@ -66,7 +80,10 @@ describe('OpenAIGenerateAssessmentsAgentAdapter', () => {
 
 		expect(createMock).toHaveBeenCalledTimes(1);
 		const payload = createMock.mock.calls[0][0];
-		expect(payload.model).toBe('gpt-4.1');
+		expect(payload.model).toBe('gpt-4.1-mini');
+		expect(payload.temperature).toBe(0.35);
+		expect(payload.top_p).toBe(0.75);
+		expect(payload.max_completion_tokens).toBe(1536);
 		expect(payload.messages).toEqual(
 			expect.arrayContaining([
 				expect.objectContaining({
@@ -92,7 +109,16 @@ describe('OpenAIGenerateAssessmentsAgentAdapter', () => {
 					},
 				],
 			},
-			tokenUsage: { totalTokens: 200, model: 'gpt-4.1' },
+			tokenUsage: expect.objectContaining({
+				totalTokens: 200,
+				model: 'gpt-4.1-mini',
+				provider: 'openai',
+				operation: 'course_authoring.generate_assessments',
+				modality: 'text',
+				unitType: 'tokens',
+				billableUnits: 200,
+				totalUnits: 200,
+			}),
 		});
 	});
 

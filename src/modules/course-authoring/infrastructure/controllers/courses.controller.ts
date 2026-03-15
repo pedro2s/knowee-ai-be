@@ -41,9 +41,10 @@ import { EffectiveProviderPreferencesResponseDto } from 'src/modules/provider-pr
 import { GetProviderPreferencesUseCase } from 'src/modules/provider-preferences/application/use-cases/get-provider-preferences.usecase';
 import { ProductAccessGuard } from 'src/modules/access-control/infrastructure/guards/product-access.guard';
 import { RequireAccess } from 'src/modules/access-control/infrastructure/decorators/require-access.decorator';
+import { LegalAcceptanceGuard } from 'src/modules/legal/infrastructure/guards/legal-acceptance.guard';
 
 @Controller('courses')
-@UseGuards(JwtAuthGuard, ProductAccessGuard)
+@UseGuards(JwtAuthGuard, LegalAcceptanceGuard, ProductAccessGuard)
 export class CoursesController {
 	constructor(
 		private readonly createCourse: GenerateCourseUseCase,

@@ -8,9 +8,10 @@ import { AccessPolicyService } from './application/services/access-policy.servic
 import { ProductAccessGuard } from './infrastructure/guards/product-access.guard';
 import { AccessControlController } from './infrastructure/controllers/access-control.controller';
 import { MarkFreemiumSampleConsumedUseCase } from './application/use-cases/mark-freemium-sample-consumed.usecase';
+import { TokenUsageModule } from 'src/shared/token-usage/token-usage.module';
 
 @Module({
-	imports: [DatabaseModule],
+	imports: [DatabaseModule, TokenUsageModule],
 	controllers: [AccessControlController],
 	providers: [
 		{

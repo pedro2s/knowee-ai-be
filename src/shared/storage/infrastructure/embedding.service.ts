@@ -138,7 +138,19 @@ export class EmbeddingService implements EmbeddingPort {
 			await this.tokenUsageService.save(
 				userId,
 				tokens,
-				'text-embedding-3-small'
+				'text-embedding-3-small',
+				{
+					provider: 'openai',
+					operation: 'storage.embed_batch',
+					modality: 'embedding',
+					unitType: 'tokens',
+					inputTokens: tokens,
+					totalUnits: tokens,
+					billableUnits: tokens,
+					metadata: {
+						chunkCount: texts.length,
+					},
+				}
 			);
 		}
 
