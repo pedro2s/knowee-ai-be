@@ -38,9 +38,13 @@ export class AssistantController {
 	@Post('/analyze')
 	@RequireAccess('ai.interaction')
 	async analyze(
-		@Body() data: { title: string; description: string }
+		@Body() data: { title: string; description: string },
+		@CurrentUser() user: UserPayload
 	): Promise<AnalysisOutput> {
-		const analysis = await this.analyticsUseCase.execute(data);
+		const analysis = await this.analyticsUseCase.execute({
+			...data,
+			userId: user.id,
+		});
 		return analysis;
 	}
 

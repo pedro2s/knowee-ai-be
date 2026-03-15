@@ -17,6 +17,7 @@ import {
 } from 'src/shared/types/interaction';
 import { OPENAI_CLIENT } from 'src/shared/ai-providers/ai-providers.constants';
 import { quizContentStructure } from './schemas/quiz-content-structure.schema';
+import { buildOpenAITextUsage } from 'src/shared/token-usage/infrastructure/ai-usage-metrics.factory';
 
 @Injectable()
 export class OpenAIQuizGeneratorAdapter implements QuizGeneratorPort {
@@ -85,12 +86,12 @@ export class OpenAIQuizGeneratorAdapter implements QuizGeneratorPort {
 			);
 		}
 
-		const tokenUsage = completion.usage?.total_tokens
-			? {
-					totalTokens: completion.usage.total_tokens,
-					model,
-				}
-			: undefined;
+		const tokenUsage = buildOpenAITextUsage({
+			model,
+			operation: 'course_authoring.generate_quiz',
+			modality: 'text',
+			usage: completion.usage,
+		});
 
 		return {
 			content: generatedQuiz,

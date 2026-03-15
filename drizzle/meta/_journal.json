@@ -92,6 +92,13 @@
 			"when": 1775232000000,
 			"tag": "0012_assistant_pending_actions",
 			"breakpoints": true
+		},
+		{
+			"idx": 13,
+			"version": "7",
+			"when": 1775322000000,
+			"tag": "0013_ai_usage_accounting",
+			"breakpoints": true
 		}
 	]
 }

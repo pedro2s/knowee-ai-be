@@ -7,10 +7,11 @@ import OpenAI from 'openai';
 import { ChatCompletionMessageParam } from 'openai/resources';
 import {
 	AIAnalyticsPort,
-	AnalysisOutput,
+	AnalysisResult,
 } from 'src/modules/assistant/domain/ports/ai-analyze.port';
 import { OPENAI_CLIENT } from 'src/shared/ai-providers/ai-providers.constants';
 import { analyzeStructure } from './schemas/analyze-structure';
+import { buildOpenAITextUsage } from 'src/shared/token-usage/infrastructure/ai-usage-metrics.factory';
 
 @Injectable()
 export class OpenAIAnalyticsAdapter implements AIAnalyticsPort {
@@ -19,7 +20,7 @@ export class OpenAIAnalyticsAdapter implements AIAnalyticsPort {
 	async analyze(input: {
 		title: string;
 		description: string;
-	}): Promise<AnalysisOutput> {
+	}): Promise<AnalysisResult> {
 		const { title, description } = input;
 
 		const messages: ChatCompletionMessageParam[] = [
@@ -51,8 +52,16 @@ export class OpenAIAnalyticsAdapter implements AIAnalyticsPort {
 				'A API da OpenAI não retornou nenhum conteúdo.'
 			);
 
-		const analysis: AnalysisOutput = JSON.parse(content) as AnalysisOutput;
+		const analysis = JSON.parse(content) as AnalysisResult['analysis'];
 
-		return analysis;
+		return {
+			analysis,
+			tokenUsage: buildOpenAITextUsage({
+				model: 'gpt-4.1-nano',
+				operation: 'assistant.analytics',
+				modality: 'analysis',
+				usage: completion.usage,
+			}),
+		};
 	}
 }

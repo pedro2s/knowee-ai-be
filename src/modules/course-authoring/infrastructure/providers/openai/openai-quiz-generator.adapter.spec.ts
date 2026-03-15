@@ -90,10 +90,16 @@ describe('OpenAIQuizGeneratorAdapter', () => {
 					},
 				],
 			},
-			tokenUsage: {
+			tokenUsage: expect.objectContaining({
 				totalTokens: 87,
 				model: 'gpt-4.1',
-			},
+				provider: 'openai',
+				operation: 'course_authoring.generate_quiz',
+				modality: 'text',
+				unitType: 'tokens',
+				billableUnits: 87,
+				totalUnits: 87,
+			}),
 		});
 	});
 

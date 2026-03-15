@@ -1,0 +1,2512 @@
+{
+	"id": "db6784ad-d0a5-4251-a93f-133739286e0b",
+	"prevId": "ae7d0366-59e5-4027-a9a2-e468cd9ada71",
+	"version": "7",
+	"dialect": "postgresql",
+	"tables": {
+		"auth.users": {
+			"name": "users",
+			"schema": "auth",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "uuid",
+					"primaryKey": true,
+					"notNull": true,
+					"default": "gen_random_uuid()"
+				},
+				"email": {
+					"name": "email",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"encrypted_password": {
+					"name": "encrypted_password",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"email_confirmed_at": {
+					"name": "email_confirmed_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"invited_at": {
+					"name": "invited_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"confirmation_token": {
+					"name": "confirmation_token",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"recovery_token": {
+					"name": "recovery_token",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"email_change_token": {
+					"name": "email_change_token",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"email_change": {
+					"name": "email_change",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"role": {
+					"name": "role",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false,
+					"default": "'authenticated'"
+				},
+				"raw_app_meta_data": {
+					"name": "raw_app_meta_data",
+					"type": "jsonb",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "'{}'::jsonb"
+				},
+				"raw_user_meta_data": {
+					"name": "raw_user_meta_data",
+					"type": "jsonb",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "'{}'::jsonb"
+				},
+				"last_sign_in_at": {
+					"name": "last_sign_in_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"created_at": {
+					"name": "created_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				},
+				"updated_at": {
+					"name": "updated_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				}
+			},
+			"indexes": {},
+			"foreignKeys": {},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		},
+		"public.courses": {
+			"name": "courses",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "uuid",
+					"primaryKey": true,
+					"notNull": true,
+					"default": "gen_random_uuid()"
+				},
+				"user_id": {
+					"name": "user_id",
+					"type": "uuid",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"title": {
+					"name": "title",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"description": {
+					"name": "description",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"category": {
+					"name": "category",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"level": {
+					"name": "level",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"duration": {
+					"name": "duration",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"target_audience": {
+					"name": "target_audience",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"objectives": {
+					"name": "objectives",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"files": {
+					"name": "files",
+					"type": "jsonb",
+					"primaryKey": false,
+					"notNull": false,
+					"default": "'[]'::jsonb"
+				},
+				"created_at": {
+					"name": "created_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				},
+				"updated_at": {
+					"name": "updated_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				}
+			},
+			"indexes": {},
+			"foreignKeys": {
+				"courses_user_id_fkey": {
+					"name": "courses_user_id_fkey",
+					"tableFrom": "courses",
+					"tableTo": "users",
+					"schemaTo": "auth",
+					"columnsFrom": ["user_id"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {},
+			"policies": {
+				"Users can view their own courses": {
+					"name": "Users can view their own courses",
+					"as": "PERMISSIVE",
+					"for": "SELECT",
+					"to": ["public"],
+					"using": "(auth.uid() = user_id)"
+				},
+				"Users can create their own courses": {
+					"name": "Users can create their own courses",
+					"as": "PERMISSIVE",
+					"for": "INSERT",
+					"to": ["public"]
+				},
+				"Users can update their own courses": {
+					"name": "Users can update their own courses",
+					"as": "PERMISSIVE",
+					"for": "UPDATE",
+					"to": ["public"]
+				},
+				"Users can delete their own courses": {
+					"name": "Users can delete their own courses",
+					"as": "PERMISSIVE",
+					"for": "DELETE",
+					"to": ["public"]
+				}
+			},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		},
+		"public.modules": {
+			"name": "modules",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "uuid",
+					"primaryKey": true,
+					"notNull": true,
+					"default": "gen_random_uuid()"
+				},
+				"course_id": {
+					"name": "course_id",
+					"type": "uuid",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"title": {
+					"name": "title",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"description": {
+					"name": "description",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"order_index": {
+					"name": "order_index",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"default": 1
+				},
+				"created_at": {
+					"name": "created_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				},
+				"updated_at": {
+					"name": "updated_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				}
+			},
+			"indexes": {
+				"idx_modules_course_id": {
+					"name": "idx_modules_course_id",
+					"columns": [
+						{
+							"expression": "course_id",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last",
+							"opclass": "uuid_ops"
+						}
+					],
+					"isUnique": false,
+					"concurrently": false,
+					"method": "btree",
+					"with": {}
+				},
+				"idx_modules_order": {
+					"name": "idx_modules_order",
+					"columns": [
+						{
+							"expression": "course_id",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last",
+							"opclass": "uuid_ops"
+						},
+						{
+							"expression": "order_index",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last",
+							"opclass": "int4_ops"
+						}
+					],
+					"isUnique": false,
+					"concurrently": false,
+					"method": "btree",
+					"with": {}
+				}
+			},
+			"foreignKeys": {
+				"modules_course_id_fkey": {
+					"name": "modules_course_id_fkey",
+					"tableFrom": "modules",
+					"tableTo": "courses",
+					"columnsFrom": ["course_id"],
+					"columnsTo": ["id"],
+					"onDelete": "cascade",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {},
+			"policies": {
+				"Users can view their own course modules": {
+					"name": "Users can view their own course modules",
+					"as": "PERMISSIVE",
+					"for": "SELECT",
+					"to": ["public"],
+					"using": "(EXISTS ( SELECT 1\n   FROM courses\n  WHERE ((courses.id = modules.course_id) AND (courses.user_id = auth.uid()))))"
+				},
+				"Users can create modules for their courses": {
+					"name": "Users can create modules for their courses",
+					"as": "PERMISSIVE",
+					"for": "INSERT",
+					"to": ["public"]
+				},
+				"Users can update their course modules": {
+					"name": "Users can update their course modules",
+					"as": "PERMISSIVE",
+					"for": "UPDATE",
+					"to": ["public"]
+				},
+				"Users can delete their course modules": {
+					"name": "Users can delete their course modules",
+					"as": "PERMISSIVE",
+					"for": "DELETE",
+					"to": ["public"]
+				}
+			},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		},
+		"public.lessons": {
+			"name": "lessons",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "uuid",
+					"primaryKey": true,
+					"notNull": true,
+					"default": "gen_random_uuid()"
+				},
+				"course_id": {
+					"name": "course_id",
+					"type": "uuid",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"module_id": {
+					"name": "module_id",
+					"type": "uuid",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"title": {
+					"name": "title",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"description": {
+					"name": "description",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"lesson_type": {
+					"name": "lesson_type",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"content": {
+					"name": "content",
+					"type": "jsonb",
+					"primaryKey": false,
+					"notNull": false,
+					"default": "'{}'::jsonb"
+				},
+				"assets": {
+					"name": "assets",
+					"type": "jsonb",
+					"primaryKey": false,
+					"notNull": false,
+					"default": "'[]'::jsonb"
+				},
+				"order_index": {
+					"name": "order_index",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"default": 1
+				},
+				"duration": {
+					"name": "duration",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"is_published": {
+					"name": "is_published",
+					"type": "boolean",
+					"primaryKey": false,
+					"notNull": false,
+					"default": false
+				},
+				"created_at": {
+					"name": "created_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				},
+				"updated_at": {
+					"name": "updated_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				}
+			},
+			"indexes": {
+				"idx_lessons_course_id": {
+					"name": "idx_lessons_course_id",
+					"columns": [
+						{
+							"expression": "course_id",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last",
+							"opclass": "uuid_ops"
+						}
+					],
+					"isUnique": false,
+					"concurrently": false,
+					"method": "btree",
+					"with": {}
+				},
+				"idx_lessons_module_id": {
+					"name": "idx_lessons_module_id",
+					"columns": [
+						{
+							"expression": "module_id",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last",
+							"opclass": "uuid_ops"
+						}
+					],
+					"isUnique": false,
+					"concurrently": false,
+					"method": "btree",
+					"with": {}
+				},
+				"idx_lessons_order": {
+					"name": "idx_lessons_order",
+					"columns": [
+						{
+							"expression": "course_id",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last",
+							"opclass": "uuid_ops"
+						},
+						{
+							"expression": "module_id",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last",
+							"opclass": "uuid_ops"
+						},
+						{
+							"expression": "order_index",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last",
+							"opclass": "int4_ops"
+						}
+					],
+					"isUnique": false,
+					"concurrently": false,
+					"method": "btree",
+					"with": {}
+				}
+			},
+			"foreignKeys": {
+				"lessons_course_id_fkey": {
+					"name": "lessons_course_id_fkey",
+					"tableFrom": "lessons",
+					"tableTo": "courses",
+					"columnsFrom": ["course_id"],
+					"columnsTo": ["id"],
+					"onDelete": "cascade",
+					"onUpdate": "no action"
+				},
+				"lessons_module_id_fkey": {
+					"name": "lessons_module_id_fkey",
+					"tableFrom": "lessons",
+					"tableTo": "modules",
+					"columnsFrom": ["module_id"],
+					"columnsTo": ["id"],
+					"onDelete": "cascade",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {},
+			"policies": {
+				"Users can view their own course lessons": {
+					"name": "Users can view their own course lessons",
+					"as": "PERMISSIVE",
+					"for": "SELECT",
+					"to": ["public"],
+					"using": "(EXISTS ( SELECT 1\n   FROM courses\n  WHERE ((courses.id = lessons.course_id) AND (courses.user_id = auth.uid()))))"
+				},
+				"Users can create lessons for their courses": {
+					"name": "Users can create lessons for their courses",
+					"as": "PERMISSIVE",
+					"for": "INSERT",
+					"to": ["public"]
+				},
+				"Users can update their course lessons": {
+					"name": "Users can update their course lessons",
+					"as": "PERMISSIVE",
+					"for": "UPDATE",
+					"to": ["public"]
+				},
+				"Users can delete their course lessons": {
+					"name": "Users can delete their course lessons",
+					"as": "PERMISSIVE",
+					"for": "DELETE",
+					"to": ["public"]
+				}
+			},
+			"checkConstraints": {
+				"lessons_lesson_type_check": {
+					"name": "lessons_lesson_type_check",
+					"value": "lesson_type = ANY (ARRAY['video'::text, 'audio'::text, 'quiz'::text, 'pdf'::text, 'external'::text, 'article'::text])"
+				}
+			},
+			"isRLSEnabled": false
+		},
+		"public.documents": {
+			"name": "documents",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "serial",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"user_id": {
+					"name": "user_id",
+					"type": "uuid",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"content": {
+					"name": "content",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"embedding": {
+					"name": "embedding",
+					"type": "vector(1536)",
+					"primaryKey": false,
+					"notNull": false
+				}
+			},
+			"indexes": {
+				"documents_embedding_idx": {
+					"name": "documents_embedding_idx",
+					"columns": [
+						{
+							"expression": "embedding",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last",
+							"opclass": "vector_cosine_ops"
+						}
+					],
+					"isUnique": false,
+					"concurrently": false,
+					"method": "ivfflat",
+					"with": {
+						"lists": "100"
+					}
+				}
+			},
+			"foreignKeys": {},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {},
+			"policies": {
+				"Usuário pode ver seus próprios documentos": {
+					"name": "Usuário pode ver seus próprios documentos",
+					"as": "PERMISSIVE",
+					"for": "SELECT",
+					"to": ["public"],
+					"using": "(user_id = auth.uid())"
+				},
+				"Usuário pode inserir documentos seus próprios documentos": {
+					"name": "Usuário pode inserir documentos seus próprios documentos",
+					"as": "PERMISSIVE",
+					"for": "INSERT",
+					"to": ["public"]
+				},
+				"Usuário pode atualizar seus próprios documentos": {
+					"name": "Usuário pode atualizar seus próprios documentos",
+					"as": "PERMISSIVE",
+					"for": "UPDATE",
+					"to": ["public"]
+				},
+				"Usuário pode excluir seus próprios documentos": {
+					"name": "Usuário pode excluir seus próprios documentos",
+					"as": "PERMISSIVE",
+					"for": "DELETE",
+					"to": ["public"]
+				}
+			},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		},
+		"public.history_summary": {
+			"name": "history_summary",
+			"schema": "",
+			"columns": {
+				"user_id": {
+					"name": "user_id",
+					"type": "uuid",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"course_id": {
+					"name": "course_id",
+					"type": "uuid",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"summary": {
+					"name": "summary",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "''"
+				},
+				"created_at": {
+					"name": "created_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				},
+				"updated_at": {
+					"name": "updated_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				}
+			},
+			"indexes": {},
+			"foreignKeys": {
+				"history_summary_course_id_fkey": {
+					"name": "history_summary_course_id_fkey",
+					"tableFrom": "history_summary",
+					"tableTo": "courses",
+					"columnsFrom": ["course_id"],
+					"columnsTo": ["id"],
+					"onDelete": "cascade",
+					"onUpdate": "no action"
+				},
+				"history_summary_user_id_fkey": {
+					"name": "history_summary_user_id_fkey",
+					"tableFrom": "history_summary",
+					"tableTo": "users",
+					"schemaTo": "auth",
+					"columnsFrom": ["user_id"],
+					"columnsTo": ["id"],
+					"onDelete": "cascade",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {
+				"history_summary_pkey": {
+					"name": "history_summary_pkey",
+					"columns": ["user_id", "course_id"]
+				}
+			},
+			"uniqueConstraints": {},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		},
+		"public.history": {
+			"name": "history",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "uuid",
+					"primaryKey": true,
+					"notNull": true,
+					"default": "gen_random_uuid()"
+				},
+				"user_id": {
+					"name": "user_id",
+					"type": "uuid",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"message": {
+					"name": "message",
+					"type": "jsonb",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"created_at": {
+					"name": "created_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				},
+				"course_id": {
+					"name": "course_id",
+					"type": "uuid",
+					"primaryKey": false,
+					"notNull": true
+				}
+			},
+			"indexes": {
+				"history_user_id_idx": {
+					"name": "history_user_id_idx",
+					"columns": [
+						{
+							"expression": "user_id",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last",
+							"opclass": "uuid_ops"
+						}
+					],
+					"isUnique": false,
+					"concurrently": false,
+					"method": "btree",
+					"with": {}
+				}
+			},
+			"foreignKeys": {
+				"history_course_id_fkey": {
+					"name": "history_course_id_fkey",
+					"tableFrom": "history",
+					"tableTo": "courses",
+					"columnsFrom": ["course_id"],
+					"columnsTo": ["id"],
+					"onDelete": "cascade",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {},
+			"policies": {
+				"Usuário pode ver seus próprios históricos": {
+					"name": "Usuário pode ver seus próprios históricos",
+					"as": "PERMISSIVE",
+					"for": "SELECT",
+					"to": ["public"],
+					"using": "(user_id = auth.uid())"
+				},
+				"Usuário pode inserir documentos seus próprios documentos": {
+					"name": "Usuário pode inserir documentos seus próprios documentos",
+					"as": "PERMISSIVE",
+					"for": "INSERT",
+					"to": ["public"]
+				},
+				"Users can delete their own history": {
+					"name": "Users can delete their own history",
+					"as": "PERMISSIVE",
+					"for": "DELETE",
+					"to": ["public"]
+				}
+			},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		},
+		"public.mux_data": {
+			"name": "mux_data",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "serial",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"asset_id": {
+					"name": "asset_id",
+					"type": "varchar(255)",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"playback_id": {
+					"name": "playback_id",
+					"type": "varchar(255)",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"lesson_id": {
+					"name": "lesson_id",
+					"type": "uuid",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"created_at": {
+					"name": "created_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				},
+				"updated_at": {
+					"name": "updated_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				}
+			},
+			"indexes": {},
+			"foreignKeys": {
+				"mux_data_lesson_id_fkey": {
+					"name": "mux_data_lesson_id_fkey",
+					"tableFrom": "mux_data",
+					"tableTo": "lessons",
+					"columnsFrom": ["lesson_id"],
+					"columnsTo": ["id"],
+					"onDelete": "cascade",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {
+				"mux_data_lesson_id_unique": {
+					"name": "mux_data_lesson_id_unique",
+					"nullsNotDistinct": false,
+					"columns": ["lesson_id"]
+				}
+			},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		},
+		"public.profiles": {
+			"name": "profiles",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "uuid",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"email": {
+					"name": "email",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"full_name": {
+					"name": "full_name",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"avatar_url": {
+					"name": "avatar_url",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"created_at": {
+					"name": "created_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				},
+				"updated_at": {
+					"name": "updated_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				},
+				"phone": {
+					"name": "phone",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"company": {
+					"name": "company",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"bio": {
+					"name": "bio",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				}
+			},
+			"indexes": {},
+			"foreignKeys": {
+				"profiles_id_fkey": {
+					"name": "profiles_id_fkey",
+					"tableFrom": "profiles",
+					"tableTo": "users",
+					"schemaTo": "auth",
+					"columnsFrom": ["id"],
+					"columnsTo": ["id"],
+					"onDelete": "cascade",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {},
+			"policies": {
+				"Users can view their own profile": {
+					"name": "Users can view their own profile",
+					"as": "PERMISSIVE",
+					"for": "SELECT",
+					"to": ["public"],
+					"using": "(auth.uid() = id)"
+				},
+				"Users can update their own profile": {
+					"name": "Users can update their own profile",
+					"as": "PERMISSIVE",
+					"for": "UPDATE",
+					"to": ["public"]
+				},
+				"Users can insert their own profile": {
+					"name": "Users can insert their own profile",
+					"as": "PERMISSIVE",
+					"for": "INSERT",
+					"to": ["public"]
+				}
+			},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		},
+		"public.qa_history": {
+			"name": "qa_history",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "uuid",
+					"primaryKey": true,
+					"notNull": true,
+					"default": "gen_random_uuid()"
+				},
+				"user_id": {
+					"name": "user_id",
+					"type": "uuid",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"course_id": {
+					"name": "course_id",
+					"type": "uuid",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"question": {
+					"name": "question",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"answer": {
+					"name": "answer",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"created_at": {
+					"name": "created_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				}
+			},
+			"indexes": {},
+			"foreignKeys": {
+				"qa_history_course_id_fkey": {
+					"name": "qa_history_course_id_fkey",
+					"tableFrom": "qa_history",
+					"tableTo": "courses",
+					"columnsFrom": ["course_id"],
+					"columnsTo": ["id"],
+					"onDelete": "cascade",
+					"onUpdate": "no action"
+				},
+				"qa_history_user_id_fkey": {
+					"name": "qa_history_user_id_fkey",
+					"tableFrom": "qa_history",
+					"tableTo": "users",
+					"schemaTo": "auth",
+					"columnsFrom": ["user_id"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {},
+			"policies": {
+				"Usuário pode ver seus próprios históricos": {
+					"name": "Usuário pode ver seus próprios históricos",
+					"as": "PERMISSIVE",
+					"for": "SELECT",
+					"to": ["public"],
+					"using": "(user_id = auth.uid())"
+				},
+				"Usuário pode inserir seus próprios historicos": {
+					"name": "Usuário pode inserir seus próprios historicos",
+					"as": "PERMISSIVE",
+					"for": "INSERT",
+					"to": ["public"]
+				}
+			},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		},
+		"public.subscribers": {
+			"name": "subscribers",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "uuid",
+					"primaryKey": true,
+					"notNull": true,
+					"default": "gen_random_uuid()"
+				},
+				"user_id": {
+					"name": "user_id",
+					"type": "uuid",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"email": {
+					"name": "email",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"stripe_customer_id": {
+					"name": "stripe_customer_id",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"status": {
+					"name": "status",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "'free'"
+				},
+				"subscription_end": {
+					"name": "subscription_end",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"updated_at": {
+					"name": "updated_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				},
+				"created_at": {
+					"name": "created_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				},
+				"subscription_tier_id": {
+					"name": "subscription_tier_id",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"stripe_subscription_id": {
+					"name": "stripe_subscription_id",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"sample_course_id": {
+					"name": "sample_course_id",
+					"type": "uuid",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"sample_consumed_at": {
+					"name": "sample_consumed_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"sample_generation_count": {
+					"name": "sample_generation_count",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"default": 0
+				}
+			},
+			"indexes": {},
+			"foreignKeys": {
+				"subscribers_subscription_tier_id_fkey": {
+					"name": "subscribers_subscription_tier_id_fkey",
+					"tableFrom": "subscribers",
+					"tableTo": "subscription_tier",
+					"columnsFrom": ["subscription_tier_id"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				},
+				"subscribers_user_id_fkey": {
+					"name": "subscribers_user_id_fkey",
+					"tableFrom": "subscribers",
+					"tableTo": "users",
+					"schemaTo": "auth",
+					"columnsFrom": ["user_id"],
+					"columnsTo": ["id"],
+					"onDelete": "cascade",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {},
+			"policies": {
+				"select_own_subscription": {
+					"name": "select_own_subscription",
+					"as": "PERMISSIVE",
+					"for": "SELECT",
+					"to": ["public"],
+					"using": "((user_id = auth.uid()) OR (email = auth.email()))"
+				},
+				"update_own_subscription": {
+					"name": "update_own_subscription",
+					"as": "PERMISSIVE",
+					"for": "UPDATE",
+					"to": ["public"]
+				},
+				"insert_subscription": {
+					"name": "insert_subscription",
+					"as": "PERMISSIVE",
+					"for": "INSERT",
+					"to": ["public"]
+				}
+			},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		},
+		"public.subscription_tier": {
+			"name": "subscription_tier",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "serial",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"name": {
+					"name": "name",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"display_name": {
+					"name": "display_name",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"monthly_token_limit": {
+					"name": "monthly_token_limit",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"price": {
+					"name": "price",
+					"type": "numeric(8, 2)",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"billing_period": {
+					"name": "billing_period",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"description": {
+					"name": "description",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"features": {
+					"name": "features",
+					"type": "jsonb",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "'[]'::jsonb"
+				},
+				"is_highlighted": {
+					"name": "is_highlighted",
+					"type": "boolean",
+					"primaryKey": false,
+					"notNull": true,
+					"default": false
+				},
+				"is_contact_only": {
+					"name": "is_contact_only",
+					"type": "boolean",
+					"primaryKey": false,
+					"notNull": true,
+					"default": false
+				},
+				"sort_order": {
+					"name": "sort_order",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"default": 0
+				},
+				"is_public": {
+					"name": "is_public",
+					"type": "boolean",
+					"primaryKey": false,
+					"notNull": true,
+					"default": true
+				},
+				"support_channel": {
+					"name": "support_channel",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "'email'"
+				},
+				"support_sla_hours": {
+					"name": "support_sla_hours",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"default": 72
+				},
+				"stripe_price_id": {
+					"name": "stripe_price_id",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"stripe_price_id_annual": {
+					"name": "stripe_price_id_annual",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"annual_price": {
+					"name": "annual_price",
+					"type": "numeric(8, 2)",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"created_at": {
+					"name": "created_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				},
+				"updated_at": {
+					"name": "updated_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				}
+			},
+			"indexes": {
+				"subscription_tier_name_uidx": {
+					"name": "subscription_tier_name_uidx",
+					"columns": [
+						{
+							"expression": "name",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						}
+					],
+					"isUnique": true,
+					"concurrently": false,
+					"method": "btree",
+					"with": {}
+				}
+			},
+			"foreignKeys": {},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		},
+		"public.token_usage": {
+			"name": "token_usage",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "serial",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"user_id": {
+					"name": "user_id",
+					"type": "uuid",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"total_tokens": {
+					"name": "total_tokens",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"model": {
+					"name": "model",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"created_at": {
+					"name": "created_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				},
+				"subscription_id": {
+					"name": "subscription_id",
+					"type": "uuid",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"provider": {
+					"name": "provider",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "'unknown'"
+				},
+				"operation": {
+					"name": "operation",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "'legacy'"
+				},
+				"modality": {
+					"name": "modality",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "'text'"
+				},
+				"unit_type": {
+					"name": "unit_type",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "'tokens'"
+				},
+				"total_units": {
+					"name": "total_units",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"default": 0
+				},
+				"billable_units": {
+					"name": "billable_units",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"default": 0
+				},
+				"input_tokens": {
+					"name": "input_tokens",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"output_tokens": {
+					"name": "output_tokens",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"estimated_cost_usd": {
+					"name": "estimated_cost_usd",
+					"type": "numeric(12, 6)",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"course_id": {
+					"name": "course_id",
+					"type": "uuid",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"module_id": {
+					"name": "module_id",
+					"type": "uuid",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"lesson_id": {
+					"name": "lesson_id",
+					"type": "uuid",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"job_id": {
+					"name": "job_id",
+					"type": "uuid",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"subscription_status": {
+					"name": "subscription_status",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "'free'"
+				},
+				"plan_name": {
+					"name": "plan_name",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "'free'"
+				},
+				"metadata": {
+					"name": "metadata",
+					"type": "jsonb",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "'{}'::jsonb"
+				}
+			},
+			"indexes": {},
+			"foreignKeys": {
+				"token_usage_subscription_id_fkey": {
+					"name": "token_usage_subscription_id_fkey",
+					"tableFrom": "token_usage",
+					"tableTo": "subscribers",
+					"columnsFrom": ["subscription_id"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				},
+				"token_usage_user_id_fkey": {
+					"name": "token_usage_user_id_fkey",
+					"tableFrom": "token_usage",
+					"tableTo": "users",
+					"schemaTo": "auth",
+					"columnsFrom": ["user_id"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		},
+		"public.pgmigrations": {
+			"name": "pgmigrations",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "serial",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"name": {
+					"name": "name",
+					"type": "varchar(255)",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"run_on": {
+					"name": "run_on",
+					"type": "timestamp",
+					"primaryKey": false,
+					"notNull": true
+				}
+			},
+			"indexes": {},
+			"foreignKeys": {},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		},
+		"public.generation_jobs": {
+			"name": "generation_jobs",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "uuid",
+					"primaryKey": true,
+					"notNull": true,
+					"default": "gen_random_uuid()"
+				},
+				"user_id": {
+					"name": "user_id",
+					"type": "uuid",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"course_id": {
+					"name": "course_id",
+					"type": "uuid",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"status": {
+					"name": "status",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "'pending'"
+				},
+				"job_type": {
+					"name": "job_type",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "'course_generation'"
+				},
+				"job_family": {
+					"name": "job_family",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "'course'"
+				},
+				"job_intent": {
+					"name": "job_intent",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "'Gerando curso'"
+				},
+				"phase": {
+					"name": "phase",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "'structure'"
+				},
+				"progress": {
+					"name": "progress",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"default": 0
+				},
+				"dedupe_key": {
+					"name": "dedupe_key",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"target_label": {
+					"name": "target_label",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"scope_course_id": {
+					"name": "scope_course_id",
+					"type": "uuid",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"scope_lesson_id": {
+					"name": "scope_lesson_id",
+					"type": "uuid",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"scope_section_id": {
+					"name": "scope_section_id",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"queue_name": {
+					"name": "queue_name",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "'generation'"
+				},
+				"queue_job_id": {
+					"name": "queue_job_id",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"attempts": {
+					"name": "attempts",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"default": 0
+				},
+				"max_attempts": {
+					"name": "max_attempts",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"default": 3
+				},
+				"metadata": {
+					"name": "metadata",
+					"type": "jsonb",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "'{}'::jsonb"
+				},
+				"error": {
+					"name": "error",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"started_at": {
+					"name": "started_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"heartbeat_at": {
+					"name": "heartbeat_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"created_at": {
+					"name": "created_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				},
+				"updated_at": {
+					"name": "updated_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				},
+				"completed_at": {
+					"name": "completed_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": false
+				}
+			},
+			"indexes": {
+				"idx_generation_jobs_user_id": {
+					"name": "idx_generation_jobs_user_id",
+					"columns": [
+						{
+							"expression": "user_id",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						}
+					],
+					"isUnique": false,
+					"concurrently": false,
+					"method": "btree",
+					"with": {}
+				},
+				"idx_generation_jobs_course_id": {
+					"name": "idx_generation_jobs_course_id",
+					"columns": [
+						{
+							"expression": "course_id",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						}
+					],
+					"isUnique": false,
+					"concurrently": false,
+					"method": "btree",
+					"with": {}
+				},
+				"idx_generation_jobs_dedupe_key": {
+					"name": "idx_generation_jobs_dedupe_key",
+					"columns": [
+						{
+							"expression": "dedupe_key",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						}
+					],
+					"isUnique": false,
+					"concurrently": false,
+					"method": "btree",
+					"with": {}
+				},
+				"idx_generation_jobs_queue_job_id": {
+					"name": "idx_generation_jobs_queue_job_id",
+					"columns": [
+						{
+							"expression": "queue_job_id",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						}
+					],
+					"isUnique": false,
+					"concurrently": false,
+					"method": "btree",
+					"with": {}
+				},
+				"idx_generation_jobs_status_updated_at": {
+					"name": "idx_generation_jobs_status_updated_at",
+					"columns": [
+						{
+							"expression": "status",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						},
+						{
+							"expression": "updated_at",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						}
+					],
+					"isUnique": false,
+					"concurrently": false,
+					"method": "btree",
+					"with": {}
+				}
+			},
+			"foreignKeys": {
+				"generation_jobs_user_id_fkey": {
+					"name": "generation_jobs_user_id_fkey",
+					"tableFrom": "generation_jobs",
+					"tableTo": "users",
+					"schemaTo": "auth",
+					"columnsFrom": ["user_id"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				},
+				"generation_jobs_course_id_fkey": {
+					"name": "generation_jobs_course_id_fkey",
+					"tableFrom": "generation_jobs",
+					"tableTo": "courses",
+					"columnsFrom": ["course_id"],
+					"columnsTo": ["id"],
+					"onDelete": "set null",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {},
+			"policies": {
+				"Users can view their own generation jobs": {
+					"name": "Users can view their own generation jobs",
+					"as": "PERMISSIVE",
+					"for": "SELECT",
+					"to": ["public"],
+					"using": "(auth.uid() = user_id)"
+				},
+				"Users can create their own generation jobs": {
+					"name": "Users can create their own generation jobs",
+					"as": "PERMISSIVE",
+					"for": "INSERT",
+					"to": ["public"]
+				},
+				"Users can update their own generation jobs": {
+					"name": "Users can update their own generation jobs",
+					"as": "PERMISSIVE",
+					"for": "UPDATE",
+					"to": ["public"]
+				}
+			},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		},
+		"public.generation_job_payloads": {
+			"name": "generation_job_payloads",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "uuid",
+					"primaryKey": true,
+					"notNull": true,
+					"default": "gen_random_uuid()"
+				},
+				"job_id": {
+					"name": "job_id",
+					"type": "uuid",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"user_id": {
+					"name": "user_id",
+					"type": "uuid",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"payload": {
+					"name": "payload",
+					"type": "jsonb",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "'{}'::jsonb"
+				},
+				"created_at": {
+					"name": "created_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				},
+				"updated_at": {
+					"name": "updated_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				}
+			},
+			"indexes": {
+				"idx_generation_job_payloads_job_id": {
+					"name": "idx_generation_job_payloads_job_id",
+					"columns": [
+						{
+							"expression": "job_id",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						}
+					],
+					"isUnique": false,
+					"concurrently": false,
+					"method": "btree",
+					"with": {}
+				},
+				"idx_generation_job_payloads_user_id": {
+					"name": "idx_generation_job_payloads_user_id",
+					"columns": [
+						{
+							"expression": "user_id",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						}
+					],
+					"isUnique": false,
+					"concurrently": false,
+					"method": "btree",
+					"with": {}
+				},
+				"uq_generation_job_payloads_job_id": {
+					"name": "uq_generation_job_payloads_job_id",
+					"columns": [
+						{
+							"expression": "job_id",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						}
+					],
+					"isUnique": true,
+					"concurrently": false,
+					"method": "btree",
+					"with": {}
+				}
+			},
+			"foreignKeys": {
+				"generation_job_payloads_job_id_fkey": {
+					"name": "generation_job_payloads_job_id_fkey",
+					"tableFrom": "generation_job_payloads",
+					"tableTo": "generation_jobs",
+					"columnsFrom": ["job_id"],
+					"columnsTo": ["id"],
+					"onDelete": "cascade",
+					"onUpdate": "no action"
+				},
+				"generation_job_payloads_user_id_fkey": {
+					"name": "generation_job_payloads_user_id_fkey",
+					"tableFrom": "generation_job_payloads",
+					"tableTo": "users",
+					"schemaTo": "auth",
+					"columnsFrom": ["user_id"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {},
+			"policies": {
+				"Users can view their own generation job payloads": {
+					"name": "Users can view their own generation job payloads",
+					"as": "PERMISSIVE",
+					"for": "SELECT",
+					"to": ["public"],
+					"using": "(auth.uid() = user_id)"
+				},
+				"Users can create their own generation job payloads": {
+					"name": "Users can create their own generation job payloads",
+					"as": "PERMISSIVE",
+					"for": "INSERT",
+					"to": ["public"]
+				},
+				"Users can update their own generation job payloads": {
+					"name": "Users can update their own generation job payloads",
+					"as": "PERMISSIVE",
+					"for": "UPDATE",
+					"to": ["public"]
+				},
+				"Users can delete their own generation job payloads": {
+					"name": "Users can delete their own generation job payloads",
+					"as": "PERMISSIVE",
+					"for": "DELETE",
+					"to": ["public"],
+					"using": "(auth.uid() = user_id)"
+				}
+			},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		},
+		"public.course_provider_preferences": {
+			"name": "course_provider_preferences",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "uuid",
+					"primaryKey": true,
+					"notNull": true,
+					"default": "gen_random_uuid()"
+				},
+				"course_id": {
+					"name": "course_id",
+					"type": "uuid",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"user_id": {
+					"name": "user_id",
+					"type": "uuid",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"image_provider": {
+					"name": "image_provider",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "'openai'"
+				},
+				"audio_provider": {
+					"name": "audio_provider",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "'openai'"
+				},
+				"audio_voice_id": {
+					"name": "audio_voice_id",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "'nova'"
+				},
+				"video_provider": {
+					"name": "video_provider",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "'openai'"
+				},
+				"advanced_settings": {
+					"name": "advanced_settings",
+					"type": "jsonb",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "'{}'::jsonb"
+				},
+				"created_at": {
+					"name": "created_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				},
+				"updated_at": {
+					"name": "updated_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				}
+			},
+			"indexes": {
+				"course_provider_preferences_course_id_uidx": {
+					"name": "course_provider_preferences_course_id_uidx",
+					"columns": [
+						{
+							"expression": "course_id",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						}
+					],
+					"isUnique": true,
+					"concurrently": false,
+					"method": "btree",
+					"with": {}
+				},
+				"idx_course_provider_preferences_user_id": {
+					"name": "idx_course_provider_preferences_user_id",
+					"columns": [
+						{
+							"expression": "user_id",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						}
+					],
+					"isUnique": false,
+					"concurrently": false,
+					"method": "btree",
+					"with": {}
+				},
+				"idx_course_provider_preferences_course_id": {
+					"name": "idx_course_provider_preferences_course_id",
+					"columns": [
+						{
+							"expression": "course_id",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						}
+					],
+					"isUnique": false,
+					"concurrently": false,
+					"method": "btree",
+					"with": {}
+				}
+			},
+			"foreignKeys": {
+				"course_provider_preferences_course_id_fkey": {
+					"name": "course_provider_preferences_course_id_fkey",
+					"tableFrom": "course_provider_preferences",
+					"tableTo": "courses",
+					"columnsFrom": ["course_id"],
+					"columnsTo": ["id"],
+					"onDelete": "cascade",
+					"onUpdate": "no action"
+				},
+				"course_provider_preferences_user_id_fkey": {
+					"name": "course_provider_preferences_user_id_fkey",
+					"tableFrom": "course_provider_preferences",
+					"tableTo": "users",
+					"schemaTo": "auth",
+					"columnsFrom": ["user_id"],
+					"columnsTo": ["id"],
+					"onDelete": "cascade",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {},
+			"policies": {
+				"Users can view own course provider preferences": {
+					"name": "Users can view own course provider preferences",
+					"as": "PERMISSIVE",
+					"for": "SELECT",
+					"to": ["public"],
+					"using": "(auth.uid() = user_id)"
+				},
+				"Users can insert own course provider preferences": {
+					"name": "Users can insert own course provider preferences",
+					"as": "PERMISSIVE",
+					"for": "INSERT",
+					"to": ["public"]
+				},
+				"Users can update own course provider preferences": {
+					"name": "Users can update own course provider preferences",
+					"as": "PERMISSIVE",
+					"for": "UPDATE",
+					"to": ["public"]
+				}
+			},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		},
+		"public.provider_preferences": {
+			"name": "provider_preferences",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "uuid",
+					"primaryKey": true,
+					"notNull": true,
+					"default": "gen_random_uuid()"
+				},
+				"user_id": {
+					"name": "user_id",
+					"type": "uuid",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"image_provider": {
+					"name": "image_provider",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "'openai'"
+				},
+				"audio_provider": {
+					"name": "audio_provider",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "'openai'"
+				},
+				"audio_voice_id": {
+					"name": "audio_voice_id",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "'nova'"
+				},
+				"video_provider": {
+					"name": "video_provider",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "'openai'"
+				},
+				"advanced_settings": {
+					"name": "advanced_settings",
+					"type": "jsonb",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "'{}'::jsonb"
+				},
+				"created_at": {
+					"name": "created_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				},
+				"updated_at": {
+					"name": "updated_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				}
+			},
+			"indexes": {
+				"provider_preferences_user_id_uidx": {
+					"name": "provider_preferences_user_id_uidx",
+					"columns": [
+						{
+							"expression": "user_id",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						}
+					],
+					"isUnique": true,
+					"concurrently": false,
+					"method": "btree",
+					"with": {}
+				},
+				"idx_provider_preferences_user_id": {
+					"name": "idx_provider_preferences_user_id",
+					"columns": [
+						{
+							"expression": "user_id",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						}
+					],
+					"isUnique": false,
+					"concurrently": false,
+					"method": "btree",
+					"with": {}
+				}
+			},
+			"foreignKeys": {
+				"provider_preferences_user_id_fkey": {
+					"name": "provider_preferences_user_id_fkey",
+					"tableFrom": "provider_preferences",
+					"tableTo": "users",
+					"schemaTo": "auth",
+					"columnsFrom": ["user_id"],
+					"columnsTo": ["id"],
+					"onDelete": "cascade",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {},
+			"policies": {
+				"Users can view their own provider preferences": {
+					"name": "Users can view their own provider preferences",
+					"as": "PERMISSIVE",
+					"for": "SELECT",
+					"to": ["public"],
+					"using": "(auth.uid() = user_id)"
+				},
+				"Users can insert their own provider preferences": {
+					"name": "Users can insert their own provider preferences",
+					"as": "PERMISSIVE",
+					"for": "INSERT",
+					"to": ["public"]
+				},
+				"Users can update their own provider preferences": {
+					"name": "Users can update their own provider preferences",
+					"as": "PERMISSIVE",
+					"for": "UPDATE",
+					"to": ["public"]
+				}
+			},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		},
+		"public.assistant_pending_actions": {
+			"name": "assistant_pending_actions",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "uuid",
+					"primaryKey": true,
+					"notNull": true,
+					"default": "gen_random_uuid()"
+				},
+				"user_id": {
+					"name": "user_id",
+					"type": "uuid",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"course_id": {
+					"name": "course_id",
+					"type": "uuid",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"tool_name": {
+					"name": "tool_name",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"arguments_json": {
+					"name": "arguments_json",
+					"type": "jsonb",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"status": {
+					"name": "status",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "'pending'"
+				},
+				"proposed_answer": {
+					"name": "proposed_answer",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"execution_result_summary": {
+					"name": "execution_result_summary",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"error_message": {
+					"name": "error_message",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"created_at": {
+					"name": "created_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				},
+				"confirmed_at": {
+					"name": "confirmed_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"completed_at": {
+					"name": "completed_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"expires_at": {
+					"name": "expires_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true
+				}
+			},
+			"indexes": {
+				"idx_assistant_pending_actions_user_course_status": {
+					"name": "idx_assistant_pending_actions_user_course_status",
+					"columns": [
+						{
+							"expression": "user_id",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last",
+							"opclass": "uuid_ops"
+						},
+						{
+							"expression": "course_id",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last",
+							"opclass": "uuid_ops"
+						},
+						{
+							"expression": "status",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last",
+							"opclass": "text_ops"
+						}
+					],
+					"isUnique": false,
+					"concurrently": false,
+					"method": "btree",
+					"with": {}
+				}
+			},
+			"foreignKeys": {
+				"assistant_pending_actions_user_id_fkey": {
+					"name": "assistant_pending_actions_user_id_fkey",
+					"tableFrom": "assistant_pending_actions",
+					"tableTo": "users",
+					"schemaTo": "auth",
+					"columnsFrom": ["user_id"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				},
+				"assistant_pending_actions_course_id_fkey": {
+					"name": "assistant_pending_actions_course_id_fkey",
+					"tableFrom": "assistant_pending_actions",
+					"tableTo": "courses",
+					"columnsFrom": ["course_id"],
+					"columnsTo": ["id"],
+					"onDelete": "cascade",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {},
+			"policies": {
+				"User can read own assistant pending actions": {
+					"name": "User can read own assistant pending actions",
+					"as": "PERMISSIVE",
+					"for": "SELECT",
+					"to": ["public"],
+					"using": "(user_id = auth.uid())"
+				},
+				"User can insert own assistant pending actions": {
+					"name": "User can insert own assistant pending actions",
+					"as": "PERMISSIVE",
+					"for": "INSERT",
+					"to": ["public"]
+				},
+				"User can update own assistant pending actions": {
+					"name": "User can update own assistant pending actions",
+					"as": "PERMISSIVE",
+					"for": "UPDATE",
+					"to": ["public"],
+					"using": "(user_id = auth.uid())"
+				}
+			},
+			"checkConstraints": {
+				"assistant_pending_actions_status_check": {
+					"name": "assistant_pending_actions_status_check",
+					"value": "status = ANY (ARRAY['pending'::text, 'executed'::text, 'cancelled'::text, 'failed'::text, 'expired'::text])"
+				}
+			},
+			"isRLSEnabled": false
+		}
+	},
+	"enums": {},
+	"schemas": {
+		"auth": "auth"
+	},
+	"sequences": {},
+	"roles": {},
+	"policies": {},
+	"views": {},
+	"_meta": {
+		"columns": {},
+		"schemas": {},
+		"tables": {}
+	}
+}

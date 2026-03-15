@@ -68,7 +68,7 @@ export class DrizzleUsageRepository implements UsageRepositoryPort {
 	): Promise<number> {
 		const result = await this.drizzle.db
 			.select({
-				sum: sql<number>`COALESCE(SUM(${tokenUsage.totalTokens}), 0)`,
+				sum: sql<number>`COALESCE(SUM(${tokenUsage.billableUnits}), 0)`,
 			})
 			.from(tokenUsage)
 			.where(

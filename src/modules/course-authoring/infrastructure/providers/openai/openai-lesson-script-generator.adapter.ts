@@ -12,6 +12,7 @@ import {
 } from 'src/shared/types/interaction';
 import { OPENAI_CLIENT } from 'src/shared/ai-providers/ai-providers.constants';
 import { scriptSectionsStructure } from './schemas/scription-sections-structure.schema';
+import { buildOpenAITextUsage } from 'src/shared/token-usage/infrastructure/ai-usage-metrics.factory';
 
 export class OpenAILessonScriptGeneratorAdapter implements LessonScriptGeneratorPort {
 	private readonly logger = new Logger(OpenAILessonScriptGeneratorAdapter.name);
@@ -104,12 +105,12 @@ Agora, gere o roteiro completo para a aula descrita.`,
 
 		const generatedLessonScript = JSON.parse(content) as GeneratedLessonScript;
 
-		const tokenUsage = completion.usage?.total_tokens
-			? {
-					totalTokens: completion.usage.total_tokens,
-					model,
-				}
-			: undefined;
+		const tokenUsage = buildOpenAITextUsage({
+			model,
+			operation: 'course_authoring.generate_lesson_script',
+			modality: 'text',
+			usage: completion.usage,
+		});
 
 		return {
 			content: generatedLessonScript,

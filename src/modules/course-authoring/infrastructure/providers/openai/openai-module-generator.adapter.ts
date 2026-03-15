@@ -12,6 +12,7 @@ import {
 } from 'src/shared/types/interaction';
 import { OPENAI_CLIENT } from 'src/shared/ai-providers/ai-providers.constants';
 import { moduleStructure } from './schemas/module-structure.schema';
+import { buildOpenAITextUsage } from 'src/shared/token-usage/infrastructure/ai-usage-metrics.factory';
 
 export class OpenAIModuleGeneratorAdapter implements ModuleGeneratorPort {
 	private readonly logger = new Logger(OpenAIModuleGeneratorAdapter.name);
@@ -78,12 +79,12 @@ export class OpenAIModuleGeneratorAdapter implements ModuleGeneratorPort {
 
 		const module = JSON.parse(content) as GeneratedModule;
 
-		const tokenUsage = completion.usage?.total_tokens
-			? {
-					totalTokens: completion.usage.total_tokens,
-					model,
-				}
-			: undefined;
+		const tokenUsage = buildOpenAITextUsage({
+			model,
+			operation: 'course_authoring.generate_module',
+			modality: 'text',
+			usage: completion.usage,
+		});
 
 		return {
 			content: module,

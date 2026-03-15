@@ -5,11 +5,12 @@ import {
 } from '@nestjs/common';
 import {
 	AIAnalyticsPort,
-	AnalysisOutput,
+	AnalysisResult,
 } from 'src/modules/assistant/domain/ports/ai-analyze.port';
 import { GENAI_CLIENT } from 'src/shared/ai-providers/ai-providers.constants';
 import { GoogleGenAI, Content } from '@google/genai';
 import { analyzeSchema, analyzeStructure } from './schemas/analyze-structure';
+import { buildGeminiTextUsage } from 'src/shared/token-usage/infrastructure/ai-usage-metrics.factory';
 
 @Injectable()
 export class GenAIAnalyticsAdapter implements AIAnalyticsPort {
@@ -20,7 +21,7 @@ export class GenAIAnalyticsAdapter implements AIAnalyticsPort {
 	async analyze(input: {
 		title: string;
 		description: string;
-	}): Promise<AnalysisOutput> {
+	}): Promise<AnalysisResult> {
 		const { title, description } = input;
 
 		const messages: Content[] = [
@@ -59,6 +60,14 @@ export class GenAIAnalyticsAdapter implements AIAnalyticsPort {
 
 		const analysis = analyzeSchema.parse(JSON.parse(response.text));
 
-		return analysis as AnalysisOutput;
+		return {
+			analysis: analysis as AnalysisResult['analysis'],
+			tokenUsage: buildGeminiTextUsage({
+				model: 'gemini-3-flash-preview',
+				operation: 'assistant.analytics',
+				modality: 'analysis',
+				usageMetadata: response.usageMetadata,
+			}),
+		};
 	}
 }

@@ -22,6 +22,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import { ProviderRegistry as SharedProviderRegistry } from 'src/shared/ai-providers/infrastructure/registry/provider.registry';
 import { StoragePort } from 'src/shared/storage/domain/ports/storage.port';
+import { TokenUsagePort } from 'src/shared/token-usage/domain/ports/token-usage.port';
 
 @Injectable()
 export class GenerateSectionVideoUseCase {
@@ -45,7 +46,8 @@ export class GenerateSectionVideoUseCase {
 		private readonly mediaService: MediaPort,
 		private readonly storage: StoragePort,
 		private readonly providerRegistry: ProviderRegistry,
-		private readonly sharedProviderRegistry: SharedProviderRegistry
+		private readonly sharedProviderRegistry: SharedProviderRegistry,
+		private readonly tokenUsageService: TokenUsagePort
 	) {}
 
 	async execute(input: GenerateSectionVideoDto, userId: string) {
@@ -88,21 +90,31 @@ export class GenerateSectionVideoUseCase {
 		const section = scriptSections[sectionIndex];
 
 		if (!section.storyboard) {
-			const { storyboard } = await this.storyboardGenerator.generate({
-				course: {
-					title: course!.title,
-					description: course?.description || '',
-				},
-				module: {
-					title: module!.title,
-					description: module!.description || '',
-				},
-				lesson: {
-					title: lesson.title,
-					description: lesson.description || '',
-				},
-				script: section.content,
-			});
+			const { storyboard, tokenUsage } =
+				await this.storyboardGenerator.generate({
+					course: {
+						title: course!.title,
+						description: course?.description || '',
+					},
+					module: {
+						title: module!.title,
+						description: module!.description || '',
+					},
+					lesson: {
+						title: lesson.title,
+						description: lesson.description || '',
+					},
+					script: section.content,
+				});
+			if (tokenUsage) {
+				await this.tokenUsageService.record({
+					userId,
+					courseId: course!.id,
+					moduleId: module!.id,
+					lessonId: lesson.id,
+					...tokenUsage,
+				});
+			}
 			section.storyboard = storyboard;
 
 			// Salva storyboard para economia de gastos e computação
@@ -135,17 +147,47 @@ export class GenerateSectionVideoUseCase {
 					${this.NOTEBOOKLM_STYLE_PROMPT}
 					Make sure the background is a solid color (hex #F5F5F7) to match a video canvas.`;
 
-				const [{ content: imageBuffer }, { content: audioBuffer }] =
-					await Promise.all([
-						imageGen.generate({
-							prompt: finalImagePrompt,
-							size: '1536x1024', // Aspect ratio 3:2 é bom, mas 16:9 (1920x1080) é melhor para vídeo
-						}),
-						audioGen.generate({
-							text: scene.narration,
-							voice: input.audioVoiceId,
-						}),
-					]);
+				const [
+					{ content: imageBuffer, tokenUsage: imageUsage },
+					{ content: audioBuffer, tokenUsage: audioUsage },
+				] = await Promise.all([
+					imageGen.generate({
+						prompt: finalImagePrompt,
+						size: '1536x1024', // Aspect ratio 3:2 é bom, mas 16:9 (1920x1080) é melhor para vídeo
+					}),
+					audioGen.generate({
+						text: scene.narration,
+						voice: input.audioVoiceId,
+					}),
+				]);
+
+				if (imageUsage) {
+					await this.tokenUsageService.record({
+						userId,
+						courseId: course!.id,
+						moduleId: module!.id,
+						lessonId: lesson.id,
+						...imageUsage,
+						metadata: {
+							...imageUsage.metadata,
+							sceneId: scene.id,
+						},
+					});
+				}
+
+				if (audioUsage) {
+					await this.tokenUsageService.record({
+						userId,
+						courseId: course!.id,
+						moduleId: module!.id,
+						lessonId: lesson.id,
+						...audioUsage,
+						metadata: {
+							...audioUsage.metadata,
+							sceneId: scene.id,
+						},
+					});
+				}
 
 				const imagePath = path.join(tempDir, `image-${i}.jpg`);
 				const audioPath = path.join(tempDir, `scene-${i}.mp3`);

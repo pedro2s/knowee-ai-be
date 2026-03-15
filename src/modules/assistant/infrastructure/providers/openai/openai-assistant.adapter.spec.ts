@@ -54,10 +54,19 @@ describe('OpenAIAssistantAdapter', () => {
 					},
 				},
 			},
-			tokenUsage: {
+			tokenUsage: expect.objectContaining({
 				totalTokens: 15,
 				model: 'gpt-4o-mini',
-			},
+				provider: 'openai',
+				operation: 'assistant.submit_question',
+				modality: 'text',
+				unitType: 'tokens',
+				billableUnits: 15,
+				totalUnits: 15,
+				metadata: {
+					hasToolCall: true,
+				},
+			}),
 		});
 
 		expect(create).toHaveBeenCalledWith(
@@ -99,7 +108,19 @@ describe('OpenAIAssistantAdapter', () => {
 			})
 		).resolves.toEqual({
 			content: { answer: 'Resposta simples', toolCall: undefined },
-			tokenUsage: { totalTokens: 9, model: 'gpt-4o-mini' },
+			tokenUsage: expect.objectContaining({
+				totalTokens: 9,
+				model: 'gpt-4o-mini',
+				provider: 'openai',
+				operation: 'assistant.submit_question',
+				modality: 'text',
+				unitType: 'tokens',
+				billableUnits: 9,
+				totalUnits: 9,
+				metadata: {
+					hasToolCall: false,
+				},
+			}),
 		});
 	});
 });

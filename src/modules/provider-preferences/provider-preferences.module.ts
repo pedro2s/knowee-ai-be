@@ -17,6 +17,10 @@ import { DrizzleProviderPreferencesRepository } from './infrastructure/persisten
 		GetProviderPreferencesUseCase,
 		UpdateProviderPreferencesUseCase,
 	],
-	exports: [UpdateProviderPreferencesUseCase, GetProviderPreferencesUseCase],
+	exports: [
+		UpdateProviderPreferencesUseCase,
+		GetProviderPreferencesUseCase,
+		ProviderCatalogService,
+	],
 })
 export class ProviderPreferencesModule {}

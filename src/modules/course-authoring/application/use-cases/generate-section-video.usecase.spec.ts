@@ -15,6 +15,7 @@ import type { StoryboardGeneratorPort } from '../../domain/ports/storyboard-gene
 import type { StoragePort } from 'src/shared/storage/domain/ports/storage.port';
 import type { ProviderRegistry as SharedProviderRegistry } from 'src/shared/ai-providers/infrastructure/registry/provider.registry';
 import type { ProviderRegistry } from '../../infrastructure/providers/provider.registry';
+import type { TokenUsagePort } from 'src/shared/token-usage/domain/ports/token-usage.port';
 
 describe('GenerateSectionVideoUseCase', () => {
 	let useCase: GenerateSectionVideoUseCase;
@@ -27,6 +28,7 @@ describe('GenerateSectionVideoUseCase', () => {
 	let sharedProviderRegistry: jest.Mocked<SharedProviderRegistry>;
 	let imageGenerator: { generate: jest.Mock };
 	let audioGenerator: { generate: jest.Mock };
+	let tokenUsageService: jest.Mocked<TokenUsagePort>;
 
 	beforeEach(() => {
 		jest.spyOn(Date, 'now').mockReturnValue(123);
@@ -88,6 +90,9 @@ describe('GenerateSectionVideoUseCase', () => {
 		audioGenerator = {
 			generate: jest.fn().mockResolvedValue({ content: Buffer.from('audio') }),
 		};
+		tokenUsageService = {
+			record: jest.fn().mockResolvedValue(undefined),
+		} as never;
 		sharedProviderRegistry = {
 			get: jest
 				.fn()
@@ -104,7 +109,8 @@ describe('GenerateSectionVideoUseCase', () => {
 			mediaService,
 			storage,
 			{} as ProviderRegistry,
-			sharedProviderRegistry
+			sharedProviderRegistry,
+			tokenUsageService
 		);
 	});
 
@@ -199,5 +205,6 @@ describe('GenerateSectionVideoUseCase', () => {
 				isRecorded: true,
 			})
 		);
+		expect(tokenUsageService.record).not.toHaveBeenCalled();
 	});
 });

@@ -1,3 +1,5 @@
+import { AIUsageMetrics } from 'src/shared/types/interaction';
+
 export interface AnalysisOutput {
 	category: string;
 	level: string;
@@ -14,9 +16,14 @@ export interface AnalysisOutput {
 	};
 }
 
+export interface AnalysisResult {
+	analysis: AnalysisOutput;
+	tokenUsage?: AIUsageMetrics;
+}
+
 export interface AIAnalyticsPort {
 	analyze(input: {
 		title: string;
 		description: string;
-	}): Promise<AnalysisOutput>;
+	}): Promise<AnalysisResult>;
 }

@@ -92,7 +92,16 @@ describe('OpenAIGenerateAssessmentsAgentAdapter', () => {
 					},
 				],
 			},
-			tokenUsage: { totalTokens: 200, model: 'gpt-4.1' },
+			tokenUsage: expect.objectContaining({
+				totalTokens: 200,
+				model: 'gpt-4.1',
+				provider: 'openai',
+				operation: 'course_authoring.generate_assessments',
+				modality: 'text',
+				unitType: 'tokens',
+				billableUnits: 200,
+				totalUnits: 200,
+			}),
 		});
 	});
 

@@ -15,6 +15,7 @@ import {
 	InteractionResult,
 } from 'src/shared/types/interaction';
 import { ChatCompletionTool } from 'openai/resources/chat/completions';
+import { buildOpenAITextUsage } from 'src/shared/token-usage/infrastructure/ai-usage-metrics.factory';
 
 @Injectable()
 export class OpenAIAssistantAdapter implements AIAssistantPort {
@@ -105,12 +106,15 @@ Regras obrigatórias:
 					}
 				: undefined;
 
-		const tokenUsage = completion.usage?.total_tokens
-			? {
-					totalTokens: completion.usage.total_tokens,
-					model,
-				}
-			: undefined;
+		const tokenUsage = buildOpenAITextUsage({
+			model,
+			operation: 'assistant.submit_question',
+			modality: 'text',
+			usage: completion.usage,
+			metadata: {
+				hasToolCall: !!toolCall,
+			},
+		});
 
 		return {
 			content: {

@@ -85,7 +85,16 @@ describe('OpenAIReorderContentAgentAdapter', () => {
 
 		expect(result).toEqual({
 			content: { modules: [{ id: 'module-1', orderIndex: 0 }] },
-			tokenUsage: { totalTokens: 321, model: 'gpt-4.1' },
+			tokenUsage: expect.objectContaining({
+				totalTokens: 321,
+				model: 'gpt-4.1',
+				provider: 'openai',
+				operation: 'course_authoring.reorder_content',
+				modality: 'text',
+				unitType: 'tokens',
+				billableUnits: 321,
+				totalUnits: 321,
+			}),
 		});
 	});
 

@@ -17,6 +17,7 @@ import {
 } from 'src/shared/types/interaction';
 import { OPENAI_CLIENT } from 'src/shared/ai-providers/ai-providers.constants';
 import { assessmentsLessonsStructure } from './schemas/assessments-lessons-structure.schema';
+import { buildOpenAITextUsage } from 'src/shared/token-usage/infrastructure/ai-usage-metrics.factory';
 
 @Injectable()
 export class OpenAIGenerateAssessmentsAgentAdapter implements GenerateAssessmentsAgentPort {
@@ -93,12 +94,12 @@ Para cada avaliação, retorne a estrutura de uma aula. Certifique-se de:
 			);
 		}
 
-		const tokenUsage = completion.usage?.total_tokens
-			? {
-					totalTokens: completion.usage.total_tokens,
-					model,
-				}
-			: undefined;
+		const tokenUsage = buildOpenAITextUsage({
+			model,
+			operation: 'course_authoring.generate_assessments',
+			modality: 'text',
+			usage: completion.usage,
+		});
 
 		return {
 			content: generatedAssessments,

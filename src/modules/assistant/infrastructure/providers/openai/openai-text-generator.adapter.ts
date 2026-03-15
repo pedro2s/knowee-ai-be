@@ -11,6 +11,7 @@ import {
 	InteractionResult,
 } from 'src/shared/types/interaction';
 import { OPENAI_CLIENT } from 'src/shared/ai-providers/ai-providers.constants';
+import { buildOpenAITextUsage } from 'src/shared/token-usage/infrastructure/ai-usage-metrics.factory';
 
 @Injectable()
 export class OpenAITextGeneratorAdapter implements TextGeneratorPort {
@@ -60,12 +61,12 @@ Certifique-se de responder de forma clara e concisa. Devolva apenas a resposta s
 
 		const content = completion.choices[0].message.content || '';
 
-		const tokenUsage = completion.usage?.total_tokens
-			? {
-					totalTokens: completion.usage.total_tokens,
-					model,
-				}
-			: undefined;
+		const tokenUsage = buildOpenAITextUsage({
+			model,
+			operation: 'assistant.generate_text',
+			modality: 'text',
+			usage: completion.usage,
+		});
 
 		return {
 			content: { text: content },

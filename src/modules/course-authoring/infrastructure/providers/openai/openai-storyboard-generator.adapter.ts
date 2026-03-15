@@ -13,6 +13,7 @@ import {
 } from 'src/modules/course-authoring/domain/ports/storyboard-generator.port';
 import { OPENAI_CLIENT } from 'src/shared/ai-providers/ai-providers.constants';
 import { storyboardStructure } from './schemas/storyboard-structure.schema';
+import { buildOpenAITextUsage } from 'src/shared/token-usage/infrastructure/ai-usage-metrics.factory';
 
 @Injectable()
 export class OpenAIStoryboardGeneratorAdapter implements StoryboardGeneratorPort {
@@ -68,6 +69,14 @@ export class OpenAIStoryboardGeneratorAdapter implements StoryboardGeneratorPort
 			content
 		) as GeneratedStoryboardOutput;
 
-		return generatedStoryboard;
+		return {
+			...generatedStoryboard,
+			tokenUsage: buildOpenAITextUsage({
+				model,
+				operation: 'course_authoring.generate_storyboard',
+				modality: 'text',
+				usage: completion.usage,
+			}),
+		};
 	}
 }

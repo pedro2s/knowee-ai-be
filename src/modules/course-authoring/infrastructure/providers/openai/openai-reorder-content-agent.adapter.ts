@@ -17,6 +17,7 @@ import {
 } from 'src/shared/types/interaction';
 import { OPENAI_CLIENT } from 'src/shared/ai-providers/ai-providers.constants';
 import { reorderContentStructure } from './schemas/reorder-content-structure.schema';
+import { buildOpenAITextUsage } from 'src/shared/token-usage/infrastructure/ai-usage-metrics.factory';
 
 @Injectable()
 export class OpenAIReorderContentAgentAdapter implements ReorderContentAgentPort {
@@ -76,12 +77,12 @@ Retorne apenas os módulos com id e orderIndex atualizado.`,
 		}
 
 		const reorderedContent = JSON.parse(content) as ReorderedContentResult;
-		const tokenUsage = completion.usage?.total_tokens
-			? {
-					totalTokens: completion.usage.total_tokens,
-					model,
-				}
-			: undefined;
+		const tokenUsage = buildOpenAITextUsage({
+			model,
+			operation: 'course_authoring.reorder_content',
+			modality: 'text',
+			usage: completion.usage,
+		});
 
 		return {
 			content: reorderedContent,

@@ -15,6 +15,7 @@ import { OPENAI_CLIENT } from 'src/shared/ai-providers/ai-providers.constants';
 import { ChatModel } from 'openai/resources';
 import { InteractionResult } from 'src/shared/types/interaction';
 import { GeneratedCourse } from 'src/modules/course-authoring/domain/entities/course.types';
+import { buildOpenAITextUsage } from 'src/shared/token-usage/infrastructure/ai-usage-metrics.factory';
 
 @Injectable()
 export class OpenAICourseGeneratorAdapter implements CourseGeneratorPort {
@@ -59,12 +60,12 @@ export class OpenAICourseGeneratorAdapter implements CourseGeneratorPort {
 
 		const course = JSON.parse(content) as GeneratedCourse;
 
-		const tokenUsage = completion.usage?.total_tokens
-			? {
-					totalTokens: completion.usage.total_tokens,
-					model,
-				}
-			: undefined;
+		const tokenUsage = buildOpenAITextUsage({
+			model,
+			operation: 'course_authoring.generate_course',
+			modality: 'text',
+			usage: completion.usage,
+		});
 
 		return {
 			content: course,
