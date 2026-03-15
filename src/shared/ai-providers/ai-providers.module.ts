@@ -6,6 +6,7 @@ import { GENAI_CLIENT, OPENAI_CLIENT } from './ai-providers.constants';
 import { ProviderRegistry } from './infrastructure/registry/provider.registry';
 import { OpenAITTSProviderAdapter } from './infrastructure/adapters/openai/openai-tts.provider.adapter';
 import { OpenAIImageProviderAdapter } from './infrastructure/adapters/openai/openai-image.provider.adapter';
+import { LLMExecutionPolicyService } from './infrastructure/llm-execution-policy.service';
 
 @Module({
 	providers: [
@@ -23,10 +24,16 @@ import { OpenAIImageProviderAdapter } from './infrastructure/adapters/openai/ope
 			useFactory: () => new GoogleGenAI({}),
 		},
 		ProviderRegistry,
+		LLMExecutionPolicyService,
 		OpenAITTSProviderAdapter,
 		OpenAIImageProviderAdapter,
 	],
-	exports: [OPENAI_CLIENT, GENAI_CLIENT, ProviderRegistry],
+	exports: [
+		OPENAI_CLIENT,
+		GENAI_CLIENT,
+		ProviderRegistry,
+		LLMExecutionPolicyService,
+	],
 })
 export class AIProvidersModule implements OnModuleInit {
 	constructor(

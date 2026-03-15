@@ -16,6 +16,7 @@ import { ChatModel } from 'openai/resources';
 import { InteractionResult } from 'src/shared/types/interaction';
 import { GeneratedCourse } from 'src/modules/course-authoring/domain/entities/course.types';
 import { buildOpenAITextUsage } from 'src/shared/token-usage/infrastructure/ai-usage-metrics.factory';
+import { LLMExecutionPolicyService } from 'src/shared/ai-providers/infrastructure/llm-execution-policy.service';
 
 @Injectable()
 export class OpenAICourseGeneratorAdapter implements CourseGeneratorPort {
@@ -23,7 +24,8 @@ export class OpenAICourseGeneratorAdapter implements CourseGeneratorPort {
 
 	constructor(
 		@Inject(OPENAI_CLIENT)
-		private readonly openai: OpenAI
+		private readonly openai: OpenAI,
+		private readonly llmExecutionPolicy: LLMExecutionPolicyService
 	) {}
 
 	async generate({
@@ -37,15 +39,33 @@ export class OpenAICourseGeneratorAdapter implements CourseGeneratorPort {
 		const messages = buildCoursePrompt(courseDetails, filesAnalysis);
 
 		this.logger.log('Enviando solicitação para a OpenAI...');
-		const model: ChatModel = 'gpt-4.1';
+		const policy = this.llmExecutionPolicy.resolve(
+			'course_authoring.generate_course',
+			'openai'
+		);
+		const model = policy.model as ChatModel;
+		if (policy.optimized) {
+			this.logger.debug(
+				`Usando policy otimizada para course_authoring.generate_course com modelo ${policy.model}`
+			);
+		}
 		const completion = await this.openai.chat.completions.create({
 			model,
 			messages,
 			response_format: courseStructure,
-			temperature: 1,
-			top_p: 1,
-			frequency_penalty: 0,
-			presence_penalty: 0,
+			...(policy.temperature !== undefined
+				? { temperature: policy.temperature }
+				: {}),
+			...(policy.topP !== undefined ? { top_p: policy.topP } : {}),
+			...(policy.frequencyPenalty !== undefined
+				? { frequency_penalty: policy.frequencyPenalty }
+				: {}),
+			...(policy.presencePenalty !== undefined
+				? { presence_penalty: policy.presencePenalty }
+				: {}),
+			...(policy.maxCompletionTokens !== undefined
+				? { max_completion_tokens: policy.maxCompletionTokens }
+				: {}),
 		});
 
 		this.logger.log('Resposta recebida da OpenAI.');

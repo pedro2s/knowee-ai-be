@@ -2,6 +2,7 @@ import {
 	Inject,
 	Injectable,
 	PreconditionFailedException,
+	Logger,
 } from '@nestjs/common';
 import {
 	AIAnalyticsPort,
@@ -11,11 +12,15 @@ import { GENAI_CLIENT } from 'src/shared/ai-providers/ai-providers.constants';
 import { GoogleGenAI, Content } from '@google/genai';
 import { analyzeSchema, analyzeStructure } from './schemas/analyze-structure';
 import { buildGeminiTextUsage } from 'src/shared/token-usage/infrastructure/ai-usage-metrics.factory';
+import { LLMExecutionPolicyService } from 'src/shared/ai-providers/infrastructure/llm-execution-policy.service';
 
 @Injectable()
 export class GenAIAnalyticsAdapter implements AIAnalyticsPort {
+	private readonly logger = new Logger(GenAIAnalyticsAdapter.name);
+
 	constructor(
-		@Inject(GENAI_CLIENT) private readonly googleGenAI: GoogleGenAI
+		@Inject(GENAI_CLIENT) private readonly googleGenAI: GoogleGenAI,
+		private readonly llmExecutionPolicy: LLMExecutionPolicyService
 	) {}
 
 	async analyze(input: {
@@ -44,12 +49,29 @@ export class GenAIAnalyticsAdapter implements AIAnalyticsPort {
 			},
 		];
 
+		const policy = this.llmExecutionPolicy.resolve(
+			'assistant.analytics',
+			'google'
+		);
+		if (policy.optimized) {
+			this.logger.debug(
+				`Usando policy otimizada para assistant.analytics/google com modelo ${policy.model}`
+			);
+		}
+
 		const response = await this.googleGenAI.models.generateContent({
-			model: 'gemini-3-flash-preview',
+			model: policy.model,
 			contents: messages,
 			config: {
 				responseMimeType: 'application/json',
 				responseJsonSchema: analyzeStructure,
+				...(policy.temperature !== undefined
+					? { temperature: policy.temperature }
+					: {}),
+				...(policy.topP !== undefined ? { topP: policy.topP } : {}),
+				...(policy.maxCompletionTokens !== undefined
+					? { maxOutputTokens: policy.maxCompletionTokens }
+					: {}),
 			},
 		});
 
@@ -63,7 +85,7 @@ export class GenAIAnalyticsAdapter implements AIAnalyticsPort {
 		return {
 			analysis: analysis as AnalysisResult['analysis'],
 			tokenUsage: buildGeminiTextUsage({
-				model: 'gemini-3-flash-preview',
+				model: policy.model,
 				operation: 'assistant.analytics',
 				modality: 'analysis',
 				usageMetadata: response.usageMetadata,

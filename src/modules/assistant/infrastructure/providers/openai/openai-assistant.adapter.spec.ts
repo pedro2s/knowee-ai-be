@@ -1,4 +1,15 @@
 import { OpenAIAssistantAdapter } from './openai-assistant.adapter';
+import type { ConfigService } from '@nestjs/config';
+import { LLMExecutionPolicyService } from 'src/shared/ai-providers/infrastructure/llm-execution-policy.service';
+
+const buildPolicyService = (enabled = true) =>
+	new LLMExecutionPolicyService({
+		get: jest
+			.fn()
+			.mockImplementation((key: string) =>
+				key === 'LLM_OPTIMIZED_POLICY_ENABLED' && enabled ? 'true' : 'false'
+			),
+	} as unknown as jest.Mocked<ConfigService>);
 
 describe('OpenAIAssistantAdapter', () => {
 	it('deve enviar tools e retornar tool call estruturada', async () => {
@@ -22,9 +33,12 @@ describe('OpenAIAssistantAdapter', () => {
 			],
 			usage: { total_tokens: 15 },
 		});
-		const adapter = new OpenAIAssistantAdapter({
-			chat: { completions: { create } },
-		} as never);
+		const adapter = new OpenAIAssistantAdapter(
+			{
+				chat: { completions: { create } },
+			} as never,
+			buildPolicyService()
+		);
 
 		await expect(
 			adapter.ask({
@@ -72,6 +86,9 @@ describe('OpenAIAssistantAdapter', () => {
 		expect(create).toHaveBeenCalledWith(
 			expect.objectContaining({
 				model: 'gpt-4o-mini',
+				temperature: 0.2,
+				top_p: 0.8,
+				max_completion_tokens: 800,
 				tool_choice: 'auto',
 				messages: expect.arrayContaining([
 					expect.objectContaining({
@@ -95,9 +112,12 @@ describe('OpenAIAssistantAdapter', () => {
 			choices: [{ message: { content: 'Resposta simples' } }],
 			usage: { total_tokens: 9 },
 		});
-		const adapter = new OpenAIAssistantAdapter({
-			chat: { completions: { create } },
-		} as never);
+		const adapter = new OpenAIAssistantAdapter(
+			{
+				chat: { completions: { create } },
+			} as never,
+			buildPolicyService()
+		);
 
 		await expect(
 			adapter.ask({
