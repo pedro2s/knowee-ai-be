@@ -1,5 +1,6 @@
 import { GetPublicPlansUseCase } from './get-public-plans.usecase';
 import type { UsageRepositoryPort } from '../../domain/ports/usage-repository.port';
+import { AICreditService } from 'src/shared/token-usage/infrastructure/ai-credit.service';
 
 describe('GetPublicPlansUseCase', () => {
 	let useCase: GetPublicPlansUseCase;
@@ -20,7 +21,7 @@ describe('GetPublicPlansUseCase', () => {
 			updateSubscriberByStripeSubscriptionId: jest.fn(),
 		};
 
-		useCase = new GetPublicPlansUseCase(usageRepository);
+		useCase = new GetPublicPlansUseCase(usageRepository, new AICreditService());
 	});
 
 	it('retorna planos ordenados pelo repository e meta de self-service', async () => {
@@ -71,6 +72,7 @@ describe('GetPublicPlansUseCase', () => {
 			monthlyPrice: 0,
 			annualPrice: null,
 			annualDiscountPercent: null,
+			monthlyCreditLimit: 20,
 		});
 		expect(result.plans[1]).toMatchObject({
 			id: 'enterprise',
@@ -79,6 +81,7 @@ describe('GetPublicPlansUseCase', () => {
 			monthlyPrice: null,
 			annualPrice: null,
 			annualDiscountPercent: null,
+			monthlyCreditLimit: 2000,
 		});
 	});
 
@@ -108,6 +111,7 @@ describe('GetPublicPlansUseCase', () => {
 			monthlyPrice: 100,
 			annualPrice: 960,
 			annualDiscountPercent: 20,
+			monthlyCreditLimit: 100,
 		});
 	});
 });

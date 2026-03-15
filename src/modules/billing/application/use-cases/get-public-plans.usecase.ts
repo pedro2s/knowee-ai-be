@@ -1,10 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { UsageRepositoryPort } from '../../domain/ports/usage-repository.port';
 import { PublicBillingPlansResponseDto } from '../dtos/public-billing-plans.response.dto';
+import { AICreditService } from 'src/shared/token-usage/infrastructure/ai-credit.service';
 
 @Injectable()
 export class GetPublicPlansUseCase {
-	constructor(private readonly usageRepository: UsageRepositoryPort) {}
+	constructor(
+		private readonly usageRepository: UsageRepositoryPort,
+		private readonly aiCreditService: AICreditService
+	) {}
 
 	async execute(): Promise<PublicBillingPlansResponseDto> {
 		const tiers = await this.usageRepository.listPublicSubscriptionTiers();
@@ -23,7 +27,9 @@ export class GetPublicPlansUseCase {
 				),
 				description: tier.description,
 				features: tier.features,
-				monthlyTokenLimit: tier.monthlyTokenLimit,
+				monthlyCreditLimit: this.aiCreditService.toCredits(
+					tier.monthlyTokenLimit
+				),
 				isHighlighted: tier.isHighlighted,
 				isContactOnly: tier.isContactOnly,
 				supportChannel: tier.supportChannel,

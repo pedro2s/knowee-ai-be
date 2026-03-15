@@ -14,9 +14,16 @@ import { StripeModule } from 'src/shared/stripe/stripe.module';
 import { HandleStripeWebhookUseCase } from './application/use-cases/handle-stripe-webhook.usecase';
 import { ConfigModule } from '@nestjs/config';
 import { GetPublicPlansUseCase } from './application/use-cases/get-public-plans.usecase';
+import { TokenUsageModule } from 'src/shared/token-usage/token-usage.module';
 
 @Module({
-	imports: [DatabaseModule, AccessControlModule, StripeModule, ConfigModule],
+	imports: [
+		DatabaseModule,
+		AccessControlModule,
+		StripeModule,
+		ConfigModule,
+		TokenUsageModule,
+	],
 	controllers: [
 		BillingController,
 		BillingWebhookController,

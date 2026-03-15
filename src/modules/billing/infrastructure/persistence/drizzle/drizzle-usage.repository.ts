@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { and, desc, eq, gte, or, sql } from 'drizzle-orm';
 import { DrizzleService } from 'src/shared/database/infrastructure/drizzle/drizzle.service';
+import { AICreditService } from 'src/shared/token-usage/infrastructure/ai-credit.service';
 import {
 	subscribers,
 	subscriptionTier,
@@ -15,7 +16,10 @@ import { asc } from 'drizzle-orm';
 
 @Injectable()
 export class DrizzleUsageRepository implements UsageRepositoryPort {
-	constructor(private readonly drizzle: DrizzleService) {}
+	constructor(
+		private readonly drizzle: DrizzleService,
+		private readonly aiCreditService: AICreditService
+	) {}
 
 	async getActiveSubscription(userId: string): Promise<{
 		id: string;
@@ -101,7 +105,9 @@ export class DrizzleUsageRepository implements UsageRepositoryPort {
 				? {
 						id: result.subscriptionTier.id,
 						name: result.subscriptionTier.name,
-						monthlyTokenLimit: result.subscriptionTier.monthlyTokenLimit,
+						monthlyCreditLimit: this.aiCreditService.toCredits(
+							result.subscriptionTier.monthlyTokenLimit
+						),
 						price: result.subscriptionTier.price,
 						annualPrice: result.subscriptionTier.annualPrice,
 						stripePriceId: result.subscriptionTier.stripePriceId,
@@ -132,7 +138,9 @@ export class DrizzleUsageRepository implements UsageRepositoryPort {
 					? {
 							id: existing.subscriptionTier.id,
 							name: existing.subscriptionTier.name,
-							monthlyTokenLimit: existing.subscriptionTier.monthlyTokenLimit,
+							monthlyCreditLimit: this.aiCreditService.toCredits(
+								existing.subscriptionTier.monthlyTokenLimit
+							),
 							price: existing.subscriptionTier.price,
 							annualPrice: existing.subscriptionTier.annualPrice,
 							stripePriceId: existing.subscriptionTier.stripePriceId,
@@ -166,7 +174,9 @@ export class DrizzleUsageRepository implements UsageRepositoryPort {
 			subscription_tier: {
 				id: freeTier.id,
 				name: freeTier.name,
-				monthlyTokenLimit: freeTier.monthlyTokenLimit,
+				monthlyCreditLimit: this.aiCreditService.toCredits(
+					freeTier.monthlyTokenLimit
+				),
 				price: freeTier.price,
 				annualPrice: freeTier.annualPrice,
 				stripePriceId: freeTier.stripePriceId,

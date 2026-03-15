@@ -1,5 +1,6 @@
 import { GetUserEntitlementsUseCase } from './get-user-entitlements.usecase';
 import type { AccessControlRepositoryPort } from '../../domain/ports/access-control.repository.port';
+import { AICreditService } from 'src/shared/token-usage/infrastructure/ai-credit.service';
 
 describe('GetUserEntitlementsUseCase', () => {
 	function build() {
@@ -14,7 +15,10 @@ describe('GetUserEntitlementsUseCase', () => {
 
 		return {
 			repository,
-			useCase: new GetUserEntitlementsUseCase(repository),
+			useCase: new GetUserEntitlementsUseCase(
+				repository,
+				new AICreditService()
+			),
 		};
 	}
 
@@ -45,6 +49,9 @@ describe('GetUserEntitlementsUseCase', () => {
 			monthlyTokenLimit: 100,
 			usedTokensInPeriod: 25,
 			remainingTokensInPeriod: 75,
+			monthlyCreditLimit: 1,
+			usedCreditsInPeriod: 1,
+			remainingCreditsInPeriod: 1,
 			sampleConsumed: true,
 			sampleGenerationCount: 1,
 			freemiumScope: {
@@ -112,10 +119,11 @@ describe('GetUserEntitlementsUseCase', () => {
 		const result = await useCase.execute('user-1');
 
 		expect(result.remainingTokensInPeriod).toBe(0);
+		expect(result.remainingCreditsInPeriod).toBe(0);
 		expect(result.primaryRestriction).toEqual({
 			code: 'TOKEN_LIMIT_EXCEEDED',
 			message:
-				'Você atingiu o limite de uso do plano gratuito. Faça upgrade para continuar.',
+				'Voce atingiu o limite de creditos do plano gratuito. Faca upgrade para continuar.',
 			upgradeRequired: true,
 			nextStep: 'open_subscription_settings',
 		});

@@ -38,7 +38,7 @@ export class AccessPolicyService {
 				return {
 					allowed: false,
 					reasonCode: 'TOKEN_LIMIT_EXCEEDED',
-					message: 'Limite mensal de uso excedido para o plano atual.',
+					message: 'Limite mensal de creditos excedido para o plano atual.',
 					upgradeRequired: true,
 					nextStep: 'open_subscription_settings',
 				};
@@ -99,7 +99,7 @@ export class AccessPolicyService {
 					allowed: false,
 					reasonCode: 'TOKEN_LIMIT_EXCEEDED',
 					message:
-						'Você atingiu o limite de uso do plano gratuito. Faça upgrade para continuar.',
+						'Voce atingiu o limite de creditos do plano gratuito. Faca upgrade para continuar.',
 					upgradeRequired: true,
 					nextStep: 'open_subscription_settings',
 				};

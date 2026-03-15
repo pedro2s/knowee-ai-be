@@ -31,7 +31,7 @@ async function main() {
 					'1 curso de amostra vitalicio',
 					'Sem geracao de assets',
 					'Sem exportacao',
-					'IA limitada por tokens',
+					'IA limitada por creditos',
 					'Suporte humano por email (ate 72h)',
 				],
 			},
@@ -45,7 +45,7 @@ async function main() {
 				billingPeriod: '/mes',
 				description: 'Para criadores que querem escalar com IA sem friccao.',
 				features:
-					'["Cursos ilimitados", "IA avancada", "Exportacao LMS", "Suporte prioritario por email (ate 72h)", "Tokens/mes: 100k"]',
+					'["Cursos ilimitados", "IA avancada", "Exportacao LMS", "Suporte prioritario por email (ate 72h)", "Creditos de IA por mes: 100"]',
 				isHighlighted: true,
 				isContactOnly: false,
 				sortOrder: 2,
@@ -65,7 +65,7 @@ async function main() {
 				billingPeriod: '/mes',
 				description: 'Para operacoes com volume alto e automacao avancada.',
 				features:
-					'["Tudo do Iniciante", "API customizada", "Suporte dedicado por email (ate 72h)", "Tokens/mes: 400k"]',
+					'["Tudo do Iniciante", "API customizada", "Suporte dedicado por email (ate 72h)", "Creditos de IA por mes: 400"]',
 				isHighlighted: false,
 				isContactOnly: false,
 				sortOrder: 3,

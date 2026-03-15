@@ -15,7 +15,7 @@ describe('BillingPublicController', () => {
 					annualDiscountPercent: 20,
 					description: 'Plano recomendado',
 					features: ['Cursos ilimitados'],
-					monthlyTokenLimit: 100000,
+					monthlyCreditLimit: 100,
 					isHighlighted: true,
 					isContactOnly: false,
 					supportChannel: 'email',
