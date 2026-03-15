@@ -99,6 +99,13 @@
 			"when": 1775322000000,
 			"tag": "0013_ai_usage_accounting",
 			"breakpoints": true
+		},
+		{
+			"idx": 14,
+			"version": "7",
+			"when": 1775408400000,
+			"tag": "0014_legal_terms_acceptance",
+			"breakpoints": true
 		}
 	]
 }

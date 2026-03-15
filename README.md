@@ -93,6 +93,38 @@ DATABASE_SSL_CA="-----BEGIN CERTIFICATE-----\n...\n-----END CERTIFICATE-----"
 
 On AWS, verify whether TLS is being enforced by the RDS parameter group (`rds.force_ssl=1`) or by an RDS Proxy with `Require TLS` enabled.
 
+## Drizzle migration repair
+
+If a migration changed the schema but its row is missing from `drizzle.__drizzle_migrations`, `npm run migration:run` may try to replay an already-applied file and fail.
+
+Recommended repair flow:
+
+```bash
+npm run migration:inspect
+```
+
+If the schema already reflects a migration but the corresponding hash is missing from `drizzle.__drizzle_migrations`, insert the missing row manually and rerun:
+
+```sql
+insert into drizzle.__drizzle_migrations (hash, created_at)
+select
+  '<missing_migration_hash>',
+  '<migration_created_at>'
+where not exists (
+  select 1
+  from drizzle.__drizzle_migrations
+  where hash = '<missing_migration_hash>'
+);
+```
+
+Then run:
+
+```bash
+npm run migration:run
+```
+
+Use `npm run migration:verify` to validate that the latest local Drizzle migration, including recent schema additions, can be applied cleanly in a temporary database.
+
 ## AWS local development
 
 The S3 adapter keeps using the AWS SDK default credential chain by default. This preserves production behavior when the app runs with an instance/task role.

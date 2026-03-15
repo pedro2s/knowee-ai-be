@@ -14,9 +14,10 @@ import { AnalyticsUseCase } from '../../application/use-cases/analytics.usecase'
 import { AnalysisOutput } from '../../domain/ports/ai-analyze.port';
 import { ProductAccessGuard } from 'src/modules/access-control/infrastructure/guards/product-access.guard';
 import { RequireAccess } from 'src/modules/access-control/infrastructure/decorators/require-access.decorator';
+import { LegalAcceptanceGuard } from 'src/modules/legal/infrastructure/guards/legal-acceptance.guard';
 
 @Controller('assistant')
-@UseGuards(JwtAuthGuard, ProductAccessGuard)
+@UseGuards(JwtAuthGuard, LegalAcceptanceGuard, ProductAccessGuard)
 export class AssistantController {
 	constructor(
 		private readonly getChatHistory: GetChatHistoryUseCase,

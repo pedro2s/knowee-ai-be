@@ -5,6 +5,34 @@ const fs = require('node:fs');
 const { spawnSync } = require('node:child_process');
 const { Client } = require('pg');
 
+const EXPECTED_MIGRATIONS = [
+	{
+		file: 'drizzle/0013_ai_usage_accounting.sql',
+		requiredColumns: [
+			'provider',
+			'operation',
+			'modality',
+			'unit_type',
+			'total_units',
+			'billable_units',
+			'input_tokens',
+			'output_tokens',
+			'estimated_cost_usd',
+			'course_id',
+			'module_id',
+			'lesson_id',
+			'job_id',
+			'subscription_status',
+			'plan_name',
+			'metadata',
+		],
+	},
+	{
+		file: 'drizzle/0014_legal_terms_acceptance.sql',
+		requiredTables: ['legal_documents', 'legal_acceptances'],
+	},
+];
+
 function getConnectionString() {
 	if (!process.env.DATABASE_URL) {
 		throw new Error('DATABASE_URL is not set');
@@ -73,10 +101,11 @@ async function main() {
 			);
 		}
 
-		const [columns, migrations] = await Promise.all([
-			queryTempDb(
-				tempConnectionString,
-				`
+		const [columns, migrations, tokenUsageColumns, legalTables] =
+			await Promise.all([
+				queryTempDb(
+					tempConnectionString,
+					`
 					select column_name
 					from information_schema.columns
 					where table_schema = 'public'
@@ -84,21 +113,65 @@ async function main() {
 						and column_name in ('created_at', 'updated_at')
 					order by column_name
 				`
-			),
-			queryTempDb(
-				tempConnectionString,
-				`
+				),
+				queryTempDb(
+					tempConnectionString,
+					`
 					select hash
 					from drizzle.__drizzle_migrations
 					order by id desc
 					limit 1
 				`
-			),
-		]);
+				),
+				queryTempDb(
+					tempConnectionString,
+					`
+					select column_name
+					from information_schema.columns
+					where table_schema = 'public'
+						and table_name = 'token_usage'
+						and column_name in (
+							'provider',
+							'operation',
+							'modality',
+							'unit_type',
+							'total_units',
+							'billable_units',
+							'input_tokens',
+							'output_tokens',
+							'estimated_cost_usd',
+							'course_id',
+							'module_id',
+							'lesson_id',
+							'job_id',
+							'subscription_status',
+							'plan_name',
+							'metadata'
+						)
+					order by column_name
+				`
+				),
+				queryTempDb(
+					tempConnectionString,
+					`
+					select table_name
+					from information_schema.tables
+					where table_schema = 'public'
+						and table_name in ('legal_documents', 'legal_acceptances')
+					order by table_name
+				`
+				),
+			]);
 
-		const expectedHash = hashFile('drizzle/0010_vengeful_prodigy.sql');
+		const expectedHash = hashFile(
+			EXPECTED_MIGRATIONS[EXPECTED_MIGRATIONS.length - 1].file
+		);
 		const foundColumns = columns.rows.map((row) => row.column_name);
 		const latestHash = migrations.rows[0]?.hash;
+		const foundTokenUsageColumns = tokenUsageColumns.rows.map(
+			(row) => row.column_name
+		);
+		const foundLegalTables = legalTables.rows.map((row) => row.table_name);
 
 		if (foundColumns.join(',') !== 'created_at,updated_at') {
 			throw new Error(
@@ -109,6 +182,27 @@ async function main() {
 		if (latestHash !== expectedHash) {
 			throw new Error(
 				`latest migration hash mismatch in temp db: ${latestHash ?? 'none'}`
+			);
+		}
+
+		const missingTokenUsageColumns =
+			EXPECTED_MIGRATIONS[0].requiredColumns.filter(
+				(column) => !foundTokenUsageColumns.includes(column)
+			);
+
+		if (missingTokenUsageColumns.length > 0) {
+			throw new Error(
+				`token_usage columns missing in temp db: ${missingTokenUsageColumns.join(', ')}`
+			);
+		}
+
+		const missingLegalTables = EXPECTED_MIGRATIONS[1].requiredTables.filter(
+			(table) => !foundLegalTables.includes(table)
+		);
+
+		if (missingLegalTables.length > 0) {
+			throw new Error(
+				`legal tables missing in temp db: ${missingLegalTables.join(', ')}`
 			);
 		}
 

@@ -21,6 +21,7 @@ import { GetActiveGenerationJobByCourseUseCase } from '../../application/use-cas
 import { GetActiveGenerationJobsByCourseUseCase } from '../../application/use-cases/get-active-generation-jobs-by-course.usecase';
 import { ProductAccessGuard } from 'src/modules/access-control/infrastructure/guards/product-access.guard';
 import { RequireAccess } from 'src/modules/access-control/infrastructure/decorators/require-access.decorator';
+import { LegalAcceptanceGuard } from 'src/modules/legal/infrastructure/guards/legal-acceptance.guard';
 
 interface SseMessage {
 	type: string;
@@ -28,7 +29,7 @@ interface SseMessage {
 }
 
 @Controller('generation')
-@UseGuards(JwtAuthGuard, ProductAccessGuard)
+@UseGuards(JwtAuthGuard, LegalAcceptanceGuard, ProductAccessGuard)
 export class GenerationController {
 	constructor(
 		private readonly getGenerationJobUseCase: GetGenerationJobUseCase,
