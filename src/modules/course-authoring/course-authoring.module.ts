@@ -79,6 +79,7 @@ import { StartSectionVideoGenerationUseCase } from './application/use-cases/star
 import { StartLessonMergeVideoGenerationUseCase } from './application/use-cases/start-lesson-merge-video-generation.usecase';
 import { LessonMediaAccessService } from './application/services/lesson-media-access.service';
 import { GenerationJobDescriptorService } from './application/services/generation-job-descriptor.service';
+import { LegalModule } from '../legal/legal.module';
 
 const workerProviders =
 	process.env.ENABLE_QUEUE_WORKERS === 'true' ? [GenerationQueueProcessor] : [];
@@ -100,6 +101,7 @@ const workerProviders =
 		TokenUsageModule,
 		ProviderPreferencesModule,
 		AccessControlModule,
+		LegalModule,
 	],
 	providers: [
 		{ provide: CourseRepositoryPort, useClass: DrizzleCourseRepository },

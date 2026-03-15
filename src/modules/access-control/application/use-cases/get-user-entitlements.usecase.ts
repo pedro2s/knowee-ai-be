@@ -1,10 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { UserEntitlements } from '../../domain/entities/access-control.types';
 import { AccessControlRepositoryPort } from '../../domain/ports/access-control.repository.port';
+import { AICreditService } from 'src/shared/token-usage/infrastructure/ai-credit.service';
 
 @Injectable()
 export class GetUserEntitlementsUseCase {
-	constructor(private readonly repository: AccessControlRepositoryPort) {}
+	constructor(
+		private readonly repository: AccessControlRepositoryPort,
+		private readonly aiCreditService: AICreditService
+	) {}
 
 	async execute(userId: string): Promise<UserEntitlements> {
 		const subscriber = await this.repository.getLatestSubscriber(userId);
@@ -73,6 +77,11 @@ export class GetUserEntitlementsUseCase {
 		}
 
 		const remaining = Math.max(monthlyTokenLimit - usedTokensInPeriod, 0);
+		const monthlyCreditLimit =
+			this.aiCreditService.toCredits(monthlyTokenLimit);
+		const usedCreditsInPeriod =
+			this.aiCreditService.toCredits(usedTokensInPeriod);
+		const remainingCreditsInPeriod = this.aiCreditService.toCredits(remaining);
 
 		const capabilities = hasActiveSubscription
 			? {
@@ -97,6 +106,9 @@ export class GetUserEntitlementsUseCase {
 			monthlyTokenLimit,
 			usedTokensInPeriod,
 			remainingTokensInPeriod: remaining,
+			monthlyCreditLimit,
+			usedCreditsInPeriod,
+			remainingCreditsInPeriod,
 			sampleConsumed,
 			sampleGenerationCount,
 			freemiumScope: {
@@ -111,7 +123,7 @@ export class GetUserEntitlementsUseCase {
 			entitlements.primaryRestriction = {
 				code: 'TOKEN_LIMIT_EXCEEDED',
 				message:
-					'Você atingiu o limite de uso do plano gratuito. Faça upgrade para continuar.',
+					'Voce atingiu o limite de creditos do plano gratuito. Faca upgrade para continuar.',
 				upgradeRequired: true,
 				nextStep: 'open_subscription_settings',
 			};
@@ -121,7 +133,7 @@ export class GetUserEntitlementsUseCase {
 			entitlements.primaryRestriction = {
 				code: 'TOKEN_LIMIT_EXCEEDED',
 				message:
-					'Seu limite mensal de tokens foi atingido. Faça upgrade para continuar.',
+					'Seu limite mensal de creditos foi atingido. Faca upgrade para continuar.',
 				upgradeRequired: true,
 				nextStep: 'open_subscription_settings',
 			};

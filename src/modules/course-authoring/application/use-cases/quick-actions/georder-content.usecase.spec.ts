@@ -17,14 +17,14 @@ describe('ReorderContentUseCase', () => {
 	let reorderContentAgent: jest.Mocked<ReorderContentAgentPort>;
 	let tokenUsageService: jest.Mocked<TokenUsagePort>;
 	let reorderContentMock: jest.Mock;
-	let tokenUsageSaveMock: jest.Mock;
+	let tokenUsageRecordMock: jest.Mock;
 	let saveMessageMock: jest.Mock;
 	let saveMessageAndSummarizeIfNecessaryMock: jest.Mock;
 	let updateModuleMock: jest.Mock;
 
 	beforeEach(() => {
 		reorderContentMock = jest.fn();
-		tokenUsageSaveMock = jest.fn();
+		tokenUsageRecordMock = jest.fn();
 		saveMessageMock = jest.fn();
 		saveMessageAndSummarizeIfNecessaryMock = jest.fn();
 		updateModuleMock = jest.fn();
@@ -64,7 +64,7 @@ describe('ReorderContentUseCase', () => {
 		};
 
 		tokenUsageService = {
-			save: tokenUsageSaveMock,
+			record: tokenUsageRecordMock,
 		};
 
 		useCase = new ReorderContentUseCase(
@@ -126,7 +126,7 @@ describe('ReorderContentUseCase', () => {
 		updateModuleMock.mockResolvedValue(null);
 		saveMessageMock.mockResolvedValue();
 		saveMessageAndSummarizeIfNecessaryMock.mockResolvedValue();
-		tokenUsageSaveMock.mockResolvedValue();
+		tokenUsageRecordMock.mockResolvedValue();
 
 		await useCase.execute('course-1', 'user-1');
 
@@ -142,7 +142,12 @@ describe('ReorderContentUseCase', () => {
 			})
 		);
 
-		expect(tokenUsageSaveMock).toHaveBeenCalledWith('user-1', 123, 'gpt-4.1');
+		expect(tokenUsageRecordMock).toHaveBeenCalledWith({
+			userId: 'user-1',
+			courseId: 'course-1',
+			totalTokens: 123,
+			model: 'gpt-4.1',
+		});
 		expect(saveMessageMock).toHaveBeenCalledWith(
 			'course-1',
 			'user',

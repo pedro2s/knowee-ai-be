@@ -73,11 +73,11 @@ export class GenerateModuleUseCase {
 		});
 
 		if (tokenUsage) {
-			await this.tokenUsageService.save(
+			await this.tokenUsageService.record({
 				userId,
-				tokenUsage.totalTokens,
-				tokenUsage.model
-			);
+				courseId: input.courseId,
+				...tokenUsage,
+			});
 		}
 
 		const savedModule = await this.moduleRepository.saveModuleTree(

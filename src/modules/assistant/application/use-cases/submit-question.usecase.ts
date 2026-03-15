@@ -10,6 +10,7 @@ import { AssistantPendingAction } from '../../domain/entities/assistant-pending-
 import { AssistantToolRegistry } from '../services/assistant-tool.registry';
 import { AssistantToolExecutor } from '../services/assistant-tool.executor';
 import { QuestionAnswered } from '../../domain/entities/question-answer.types';
+import { TokenUsagePort } from 'src/shared/token-usage/domain/ports/token-usage.port';
 
 const CONFIRMATION_TTL_MS = 30 * 60 * 1000;
 
@@ -23,7 +24,8 @@ export class SubmitQuestionUseCase {
 		private readonly historyService: HistoryServicePort,
 		private readonly pendingActionRepository: AssistantPendingActionRepositoryPort,
 		private readonly assistantToolRegistry: AssistantToolRegistry,
-		private readonly assistantToolExecutor: AssistantToolExecutor
+		private readonly assistantToolExecutor: AssistantToolExecutor,
+		private readonly tokenUsageService: TokenUsagePort
 	) {}
 
 	async execute(
@@ -96,12 +98,20 @@ export class SubmitQuestionUseCase {
 			input.provider || 'openai'
 		);
 
-		const { content: questionAnswered } = await aiAssistant.ask({
+		const { content: questionAnswered, tokenUsage } = await aiAssistant.ask({
 			input: { question },
 			summary: summary || null,
 			recentHistory: window,
 			tools: this.assistantToolRegistry.getDefinitions(),
 		});
+
+		if (tokenUsage) {
+			await this.tokenUsageService.record({
+				userId: auth.userId,
+				courseId,
+				...tokenUsage,
+			});
+		}
 
 		if (questionAnswered.toolCall) {
 			const validation = this.assistantToolRegistry.validateToolCall(

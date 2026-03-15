@@ -15,14 +15,14 @@ describe('GenerateAssessmentsUseCase', () => {
 	let assessmentsAgent: jest.Mocked<GenerateAssessmentsAgentPort>;
 	let generateAssessmentsMock: jest.Mock;
 	let createLessonMock: jest.MockedFunction<LessonRepositoryPort['create']>;
-	let saveTokenUsageMock: jest.Mock;
+	let recordTokenUsageMock: jest.Mock;
 	let saveMessageMock: jest.Mock;
 	let saveMessageAndSummarizeMock: jest.Mock;
 
 	beforeEach(() => {
 		generateAssessmentsMock = jest.fn();
 		createLessonMock = jest.fn();
-		saveTokenUsageMock = jest.fn();
+		recordTokenUsageMock = jest.fn();
 		saveMessageMock = jest.fn();
 		saveMessageAndSummarizeMock = jest.fn();
 
@@ -51,7 +51,7 @@ describe('GenerateAssessmentsUseCase', () => {
 			summarizeHistory: jest.fn(),
 		};
 		tokenUsageService = {
-			save: saveTokenUsageMock,
+			record: recordTokenUsageMock,
 		};
 		assessmentsAgent = {
 			generateAssessments: generateAssessmentsMock,
@@ -117,7 +117,12 @@ describe('GenerateAssessmentsUseCase', () => {
 		await useCase.execute('course-1', 'user-1');
 
 		expect(generateAssessmentsMock).toHaveBeenCalled();
-		expect(saveTokenUsageMock).toHaveBeenCalledWith('user-1', 300, 'gpt-4.1');
+		expect(recordTokenUsageMock).toHaveBeenCalledWith({
+			userId: 'user-1',
+			courseId: 'course-1',
+			totalTokens: 300,
+			model: 'gpt-4.1',
+		});
 		expect(saveMessageMock).toHaveBeenCalledWith(
 			'course-1',
 			'user',

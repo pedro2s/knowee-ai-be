@@ -21,6 +21,7 @@ import { DrizzleAssistantPendingActionRepository } from './infrastructure/persis
 import { AssistantToolRegistry } from './application/services/assistant-tool.registry';
 import { AssistantToolExecutor } from './application/services/assistant-tool.executor';
 import { CourseAuthoringModule } from '../course-authoring/course-authoring.module';
+import { LegalModule } from '../legal/legal.module';
 
 @Module({
 	controllers: [AssistantController],
@@ -31,6 +32,7 @@ import { CourseAuthoringModule } from '../course-authoring/course-authoring.modu
 		TokenUsageModule,
 		AccessControlModule,
 		CourseAuthoringModule,
+		LegalModule,
 	],
 	providers: [
 		{

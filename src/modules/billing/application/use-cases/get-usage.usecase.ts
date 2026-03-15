@@ -1,11 +1,15 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { UsageRepositoryPort } from '../../domain/ports/usage-repository.port';
+import { AICreditService } from 'src/shared/token-usage/infrastructure/ai-credit.service';
 
 @Injectable()
 export class GetUsageUseCase {
-	constructor(private readonly usageRepository: UsageRepositoryPort) {}
+	constructor(
+		private readonly usageRepository: UsageRepositoryPort,
+		private readonly aiCreditService: AICreditService
+	) {}
 
-	async execute(userId: string): Promise<{ used: number }> {
+	async execute(userId: string): Promise<{ usedCredits: number }> {
 		const subscription =
 			await this.usageRepository.getLatestSubscriptionSnapshot(userId);
 
@@ -44,6 +48,6 @@ export class GetUsageUseCase {
 			startOfPeriod
 		);
 
-		return { used };
+		return { usedCredits: this.aiCreditService.toCredits(used) };
 	}
 }

@@ -8,7 +8,7 @@ import type { CreateCheckoutSessionUseCase } from '../../application/use-cases/c
 describe('BillingController', () => {
 	it('deve delegar endpoints de billing aos respectivos use cases', async () => {
 		const getUsageUseCase = {
-			execute: jest.fn().mockResolvedValue({ used: 12 }),
+			execute: jest.fn().mockResolvedValue({ usedCredits: 1 }),
 		} as unknown as jest.Mocked<GetUsageUseCase>;
 		const getSubscriptionUseCase = {
 			execute: jest.fn().mockResolvedValue({
@@ -34,6 +34,9 @@ describe('BillingController', () => {
 				monthlyTokenLimit: 10,
 				usedTokensInPeriod: 2,
 				remainingTokensInPeriod: 8,
+				monthlyCreditLimit: 1,
+				usedCreditsInPeriod: 1,
+				remainingCreditsInPeriod: 1,
 				sampleConsumed: false,
 				sampleGenerationCount: 0,
 				freemiumScope: {
@@ -65,7 +68,9 @@ describe('BillingController', () => {
 			email: 'user@example.com',
 		} as never;
 
-		await expect(controller.getUsage(user)).resolves.toEqual({ used: 12 });
+		await expect(controller.getUsage(user)).resolves.toEqual({
+			usedCredits: 1,
+		});
 		await expect(controller.getSubscription(user)).resolves.toEqual({
 			status: 'active',
 			subscription_tier: null,
@@ -75,6 +80,7 @@ describe('BillingController', () => {
 		await expect(controller.getEntitlements(user)).resolves.toMatchObject({
 			planName: 'free',
 			remainingTokensInPeriod: 8,
+			remainingCreditsInPeriod: 1,
 		});
 		await expect(controller.createFreeSubscription(user)).resolves.toEqual({
 			message: 'Plano gratuito ativado',

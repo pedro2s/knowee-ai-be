@@ -10,9 +10,10 @@ import {
 	ProviderCatalogResponseDto,
 } from '../../application/dtos/provider-preferences.response.dto';
 import { UpdateProviderPreferencesDto } from '../../application/dtos/update-provider-preferences.dto';
+import { LegalAcceptanceGuard } from 'src/modules/legal/infrastructure/guards/legal-acceptance.guard';
 
 @Controller('providers')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, LegalAcceptanceGuard)
 export class ProviderPreferencesController {
 	constructor(
 		private readonly getProviderCatalogUseCase: GetProviderCatalogUseCase,

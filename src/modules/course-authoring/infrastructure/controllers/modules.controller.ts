@@ -20,9 +20,10 @@ import { UpdateModuleDto } from '../../application/dtos/update-module.dto';
 import { UpdateModuleUseCase } from '../../application/use-cases/update-module.usecase';
 import { ProductAccessGuard } from 'src/modules/access-control/infrastructure/guards/product-access.guard';
 import { RequireAccess } from 'src/modules/access-control/infrastructure/decorators/require-access.decorator';
+import { LegalAcceptanceGuard } from 'src/modules/legal/infrastructure/guards/legal-acceptance.guard';
 
 @Controller('modules')
-@UseGuards(JwtAuthGuard, ProductAccessGuard)
+@UseGuards(JwtAuthGuard, LegalAcceptanceGuard, ProductAccessGuard)
 export class ModulesController {
 	constructor(
 		private readonly createModule: CreateModuleUseCase,

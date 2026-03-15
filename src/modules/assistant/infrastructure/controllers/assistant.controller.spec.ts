@@ -49,7 +49,7 @@ describe('AssistantController', () => {
 			)
 		).resolves.toEqual({ generatedText: 'Texto gerado' });
 		await expect(
-			controller.analyze({ title: 'Curso', description: 'Descricao' })
+			controller.analyze({ title: 'Curso', description: 'Descricao' }, user)
 		).resolves.toEqual({ targetAudience: 'Beginners' });
 		await expect(
 			controller.question({ courseId: 'course-1', question: 'Pergunta?' }, user)
@@ -74,6 +74,7 @@ describe('AssistantController', () => {
 		expect(analyticsUseCase.execute).toHaveBeenCalledWith({
 			title: 'Curso',
 			description: 'Descricao',
+			userId: 'user-1',
 		});
 		expect(submitQuestion.execute).toHaveBeenCalledWith(
 			{ courseId: 'course-1', question: 'Pergunta?' },

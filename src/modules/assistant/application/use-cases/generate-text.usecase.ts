@@ -43,11 +43,11 @@ export class GenerateTextUseCase {
 		);
 
 		if (tokenUsage) {
-			await this.tokenUsageService.save(
-				auth.userId,
-				tokenUsage.totalTokens,
-				tokenUsage.model
-			);
+			await this.tokenUsageService.record({
+				userId: auth.userId,
+				courseId,
+				...tokenUsage,
+			});
 		}
 
 		await this.historyService.saveMessage(courseId, 'user', prompt, auth);

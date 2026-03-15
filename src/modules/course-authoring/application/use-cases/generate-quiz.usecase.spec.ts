@@ -14,13 +14,13 @@ describe('GenerateQuizUseCase', () => {
 	let generateQuizMock: jest.Mock;
 	let saveMessageMock: jest.Mock;
 	let saveMessageAndSummarizeMock: jest.Mock;
-	let saveTokenUsageMock: jest.Mock;
+	let recordTokenUsageMock: jest.Mock;
 
 	beforeEach(() => {
 		generateQuizMock = jest.fn();
 		saveMessageMock = jest.fn();
 		saveMessageAndSummarizeMock = jest.fn();
-		saveTokenUsageMock = jest.fn();
+		recordTokenUsageMock = jest.fn();
 
 		moduleRepository = {
 			create: jest.fn(),
@@ -42,7 +42,7 @@ describe('GenerateQuizUseCase', () => {
 		};
 
 		tokenUsageService = {
-			save: saveTokenUsageMock,
+			record: recordTokenUsageMock,
 		};
 
 		quizGenerator = {
@@ -105,7 +105,13 @@ describe('GenerateQuizUseCase', () => {
 				}),
 			})
 		);
-		expect(saveTokenUsageMock).toHaveBeenCalledWith('user-1', 120, 'gpt-4.1');
+		expect(recordTokenUsageMock).toHaveBeenCalledWith({
+			userId: 'user-1',
+			courseId: 'course-1',
+			moduleId: 'module-1',
+			totalTokens: 120,
+			model: 'gpt-4.1',
+		});
 		expect(saveMessageMock).toHaveBeenCalledWith(
 			'course-1',
 			'user',

@@ -55,11 +55,12 @@ export class GenerateArticleUseCase {
 			});
 
 		if (tokenUsage) {
-			await this.tokenUsageService.save(
-				authContext.userId,
-				tokenUsage.totalTokens,
-				tokenUsage.model
-			);
+			await this.tokenUsageService.record({
+				userId: authContext.userId,
+				courseId,
+				moduleId,
+				...tokenUsage,
+			});
 		}
 
 		await this.historyService.saveMessage(

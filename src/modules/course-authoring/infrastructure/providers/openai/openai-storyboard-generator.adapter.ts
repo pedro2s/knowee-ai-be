@@ -13,12 +13,17 @@ import {
 } from 'src/modules/course-authoring/domain/ports/storyboard-generator.port';
 import { OPENAI_CLIENT } from 'src/shared/ai-providers/ai-providers.constants';
 import { storyboardStructure } from './schemas/storyboard-structure.schema';
+import { buildOpenAITextUsage } from 'src/shared/token-usage/infrastructure/ai-usage-metrics.factory';
+import { LLMExecutionPolicyService } from 'src/shared/ai-providers/infrastructure/llm-execution-policy.service';
 
 @Injectable()
 export class OpenAIStoryboardGeneratorAdapter implements StoryboardGeneratorPort {
 	private readonly logger = new Logger(OpenAIStoryboardGeneratorAdapter.name);
 
-	constructor(@Inject(OPENAI_CLIENT) private readonly openai: OpenAI) {}
+	constructor(
+		@Inject(OPENAI_CLIENT) private readonly openai: OpenAI,
+		private readonly llmExecutionPolicy: LLMExecutionPolicyService
+	) {}
 
 	async generate(
 		input: GenerateStoryboardInput
@@ -45,15 +50,33 @@ export class OpenAIStoryboardGeneratorAdapter implements StoryboardGeneratorPort
 		});
 
 		this.logger.log('Enviando solicitação para a OpenAI...');
-		const model: ChatModel = 'gpt-4.1-mini';
+		const policy = this.llmExecutionPolicy.resolve(
+			'course_authoring.generate_storyboard',
+			'openai'
+		);
+		const model = policy.model as ChatModel;
+		if (policy.optimized) {
+			this.logger.debug(
+				`Usando policy otimizada para course_authoring.generate_storyboard com modelo ${policy.model}`
+			);
+		}
 		const completion = await this.openai.chat.completions.create({
 			model,
 			messages,
 			response_format: storyboardStructure,
-			temperature: 0.3,
-			top_p: 0.9,
-			frequency_penalty: 0,
-			presence_penalty: 0,
+			...(policy.temperature !== undefined
+				? { temperature: policy.temperature }
+				: {}),
+			...(policy.topP !== undefined ? { top_p: policy.topP } : {}),
+			...(policy.frequencyPenalty !== undefined
+				? { frequency_penalty: policy.frequencyPenalty }
+				: {}),
+			...(policy.presencePenalty !== undefined
+				? { presence_penalty: policy.presencePenalty }
+				: {}),
+			...(policy.maxCompletionTokens !== undefined
+				? { max_completion_tokens: policy.maxCompletionTokens }
+				: {}),
 		});
 
 		const content = completion.choices[0].message.content;
@@ -68,6 +91,14 @@ export class OpenAIStoryboardGeneratorAdapter implements StoryboardGeneratorPort
 			content
 		) as GeneratedStoryboardOutput;
 
-		return generatedStoryboard;
+		return {
+			...generatedStoryboard,
+			tokenUsage: buildOpenAITextUsage({
+				model,
+				operation: 'course_authoring.generate_storyboard',
+				modality: 'text',
+				usage: completion.usage,
+			}),
+		};
 	}
 }

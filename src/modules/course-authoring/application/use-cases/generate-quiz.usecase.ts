@@ -78,11 +78,12 @@ export class GenerateQuizUseCase {
 			});
 
 		if (tokenUsage) {
-			await this.tokenUsageService.save(
-				authContext.userId,
-				tokenUsage.totalTokens,
-				tokenUsage.model
-			);
+			await this.tokenUsageService.record({
+				userId: authContext.userId,
+				courseId,
+				moduleId,
+				...tokenUsage,
+			});
 		}
 
 		const normalizedQuestions = (generatedQuiz.quizQuestions || []).map(

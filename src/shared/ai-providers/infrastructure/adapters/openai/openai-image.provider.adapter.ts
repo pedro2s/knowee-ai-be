@@ -34,6 +34,18 @@ export class OpenAIImageProviderAdapter implements ImageProviderPort {
 
 		return {
 			content: buffer,
+			tokenUsage: {
+				provider: 'openai',
+				model: 'gpt-image-1-mini',
+				operation: 'media.generate_image',
+				modality: 'image',
+				unitType: 'image',
+				totalUnits: 1,
+				billableUnits: 0,
+				metadata: {
+					size: input.size,
+				},
+			},
 		};
 	}
 }

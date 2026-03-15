@@ -23,7 +23,7 @@ describe('GetSubscriptionUseCase', () => {
 				subscription_tier: {
 					id: 1,
 					name: 'premium',
-					monthlyTokenLimit: 1000,
+					monthlyCreditLimit: 1,
 					price: '29.00',
 					annualPrice: '290.00',
 					stripePriceId: 'price_1',
@@ -40,7 +40,7 @@ describe('GetSubscriptionUseCase', () => {
 			subscription_tier: {
 				id: 1,
 				name: 'premium',
-				monthlyTokenLimit: 1000,
+				monthlyCreditLimit: 1,
 				price: '29.00',
 				annualPrice: '290.00',
 				stripePriceId: 'price_1',

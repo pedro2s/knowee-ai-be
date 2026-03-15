@@ -8,7 +8,7 @@ export class PublicBillingPlanDto {
 	annualDiscountPercent: number | null;
 	description: string | null;
 	features: string[];
-	monthlyTokenLimit: number;
+	monthlyCreditLimit: number;
 	isHighlighted: boolean;
 	isContactOnly: boolean;
 	supportChannel: string;

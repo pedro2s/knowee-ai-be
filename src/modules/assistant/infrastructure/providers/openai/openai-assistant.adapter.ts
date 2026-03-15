@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import OpenAI from 'openai';
 import {
 	AIAssistantPort,
@@ -15,10 +15,17 @@ import {
 	InteractionResult,
 } from 'src/shared/types/interaction';
 import { ChatCompletionTool } from 'openai/resources/chat/completions';
+import { buildOpenAITextUsage } from 'src/shared/token-usage/infrastructure/ai-usage-metrics.factory';
+import { LLMExecutionPolicyService } from 'src/shared/ai-providers/infrastructure/llm-execution-policy.service';
 
 @Injectable()
 export class OpenAIAssistantAdapter implements AIAssistantPort {
-	constructor(@Inject(OPENAI_CLIENT) private readonly openai: OpenAI) {}
+	private readonly logger = new Logger(OpenAIAssistantAdapter.name);
+
+	constructor(
+		@Inject(OPENAI_CLIENT) private readonly openai: OpenAI,
+		private readonly llmExecutionPolicy: LLMExecutionPolicyService
+	) {}
 
 	async ask(
 		context: InteractionContext<AskQuestionInput>
@@ -66,7 +73,16 @@ Regras obrigatórias:
 			content: `Pergunta do usuário:\n${input.question}`,
 		});
 
-		const model: ChatModel = 'gpt-4o-mini';
+		const policy = this.llmExecutionPolicy.resolve(
+			'assistant.submit_question',
+			'openai'
+		);
+		const model = policy.model as ChatModel;
+		if (policy.optimized) {
+			this.logger.debug(
+				`Usando policy otimizada para assistant.submit_question com modelo ${policy.model}`
+			);
+		}
 
 		const tools = ((context.tools ?? []) as AssistantToolDefinition[]).map(
 			(tool): ChatCompletionTool => ({
@@ -80,8 +96,21 @@ Regras obrigatórias:
 		);
 
 		const completion = await this.openai.chat.completions.create({
-			model: model,
-			messages: messages,
+			model,
+			messages,
+			...(policy.temperature !== undefined
+				? { temperature: policy.temperature }
+				: {}),
+			...(policy.topP !== undefined ? { top_p: policy.topP } : {}),
+			...(policy.frequencyPenalty !== undefined
+				? { frequency_penalty: policy.frequencyPenalty }
+				: {}),
+			...(policy.presencePenalty !== undefined
+				? { presence_penalty: policy.presencePenalty }
+				: {}),
+			...(policy.maxCompletionTokens !== undefined
+				? { max_completion_tokens: policy.maxCompletionTokens }
+				: {}),
 			...(tools.length > 0
 				? {
 						tools,
@@ -105,12 +134,15 @@ Regras obrigatórias:
 					}
 				: undefined;
 
-		const tokenUsage = completion.usage?.total_tokens
-			? {
-					totalTokens: completion.usage.total_tokens,
-					model,
-				}
-			: undefined;
+		const tokenUsage = buildOpenAITextUsage({
+			model,
+			operation: 'assistant.submit_question',
+			modality: 'text',
+			usage: completion.usage,
+			metadata: {
+				hasToolCall: !!toolCall,
+			},
+		});
 
 		return {
 			content: {

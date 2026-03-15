@@ -11,6 +11,9 @@ describe('AccessControlController', () => {
 				monthlyTokenLimit: 10,
 				usedTokensInPeriod: 2,
 				remainingTokensInPeriod: 8,
+				monthlyCreditLimit: 1,
+				usedCreditsInPeriod: 1,
+				remainingCreditsInPeriod: 1,
 				sampleConsumed: false,
 				sampleGenerationCount: 0,
 				freemiumScope: {
@@ -38,6 +41,9 @@ describe('AccessControlController', () => {
 			monthlyTokenLimit: 10,
 			usedTokensInPeriod: 2,
 			remainingTokensInPeriod: 8,
+			monthlyCreditLimit: 1,
+			usedCreditsInPeriod: 1,
+			remainingCreditsInPeriod: 1,
 			sampleConsumed: false,
 			sampleGenerationCount: 0,
 			freemiumScope: {

@@ -10,6 +10,9 @@ describe('AccessPolicyService', () => {
 		monthlyTokenLimit: 10,
 		usedTokensInPeriod: 0,
 		remainingTokensInPeriod: 10,
+		monthlyCreditLimit: 1,
+		usedCreditsInPeriod: 0,
+		remainingCreditsInPeriod: 1,
 		sampleConsumed: false,
 		sampleGenerationCount: 0,
 		freemiumScope: {

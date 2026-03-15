@@ -6,9 +6,10 @@ import { GetProviderPreferencesUseCase } from './application/use-cases/get-provi
 import { UpdateProviderPreferencesUseCase } from './application/use-cases/update-provider-preferences.usecase';
 import { ProviderCatalogService } from './application/services/provider-catalog.service';
 import { DrizzleProviderPreferencesRepository } from './infrastructure/persistence/drizzle/drizzle-provider-preferences.repository';
+import { LegalModule } from '../legal/legal.module';
 
 @Module({
-	imports: [DatabaseModule],
+	imports: [DatabaseModule, LegalModule],
 	controllers: [ProviderPreferencesController],
 	providers: [
 		ProviderCatalogService,
@@ -17,6 +18,10 @@ import { DrizzleProviderPreferencesRepository } from './infrastructure/persisten
 		GetProviderPreferencesUseCase,
 		UpdateProviderPreferencesUseCase,
 	],
-	exports: [UpdateProviderPreferencesUseCase, GetProviderPreferencesUseCase],
+	exports: [
+		UpdateProviderPreferencesUseCase,
+		GetProviderPreferencesUseCase,
+		ProviderCatalogService,
+	],
 })
 export class ProviderPreferencesModule {}

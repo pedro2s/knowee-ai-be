@@ -63,11 +63,10 @@ export class GenerateCourseUseCase {
 		});
 
 		if (tokenUsage) {
-			await this.tokenUsageService.save(
-				input.userId,
-				tokenUsage.totalTokens,
-				tokenUsage.model
-			);
+			await this.tokenUsageService.record({
+				userId: input.userId,
+				...tokenUsage,
+			});
 		}
 
 		const auth: AuthContext = {

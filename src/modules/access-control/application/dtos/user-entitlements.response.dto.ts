@@ -7,6 +7,9 @@ export class UserEntitlementsResponseDto {
 	monthlyTokenLimit: number;
 	usedTokensInPeriod: number;
 	remainingTokensInPeriod: number;
+	monthlyCreditLimit: number;
+	usedCreditsInPeriod: number;
+	remainingCreditsInPeriod: number;
 	sampleConsumed: boolean;
 	sampleGenerationCount: number;
 	freemiumScope: UserEntitlements['freemiumScope'];
@@ -21,6 +24,9 @@ export class UserEntitlementsResponseDto {
 			monthlyTokenLimit: input.monthlyTokenLimit,
 			usedTokensInPeriod: input.usedTokensInPeriod,
 			remainingTokensInPeriod: input.remainingTokensInPeriod,
+			monthlyCreditLimit: input.monthlyCreditLimit,
+			usedCreditsInPeriod: input.usedCreditsInPeriod,
+			remainingCreditsInPeriod: input.remainingCreditsInPeriod,
 			sampleConsumed: input.sampleConsumed,
 			sampleGenerationCount: input.sampleGenerationCount,
 			freemiumScope: input.freemiumScope,

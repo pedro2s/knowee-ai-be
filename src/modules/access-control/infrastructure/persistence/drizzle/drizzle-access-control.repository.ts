@@ -68,7 +68,9 @@ export class DrizzleAccessControlRepository implements AccessControlRepositoryPo
 		startDateIso: string
 	): Promise<number> {
 		const result = await this.drizzle.db
-			.select({ sum: sql<number>`coalesce(sum(${tokenUsage.totalTokens}), 0)` })
+			.select({
+				sum: sql<number>`coalesce(sum(${tokenUsage.billableUnits}), 0)`,
+			})
 			.from(tokenUsage)
 			.where(
 				and(
